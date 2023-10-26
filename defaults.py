@@ -22,4 +22,4 @@ SMU_MarginY=40
 PhotoMaxSizeX=550
 
 
-Loucura='asdurugudego'
+Loucura='doido'
