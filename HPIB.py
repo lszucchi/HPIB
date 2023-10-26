@@ -7,8 +7,7 @@ import os
 import datetime
 import matplotlib.pyplot as plt
 
-from INOSerial import *
-
+#from INOSerial import *
 
 ########## Tabelas para intruções HPIB ###########
 
@@ -32,6 +31,7 @@ voltage='V'
 
 
 ## Classe genérica HP com código compartilhado
+
 class HP:
 
     def __init__(self, addr, read_termination = '\n', write_termination = '\n', timeout=None, debug=False):
@@ -65,7 +65,7 @@ class HP:
         self.measure()
         print(self.term)
         if self.PollDR(1, 1000, timeout):
-            return "Timeout"
+            return "Operation stopped or timeout"
         
         df=self.get_data()
         print(df)
@@ -98,8 +98,7 @@ class HP:
         return 0
     
     def SetVds(self, VdStart, VdStop, VdStep, VgStart, VgStop, VgStep, ptype=False):
-
-        VgPoints=1+(VgStop-VgStart)/VgStep
+        
         if ptype:
                 VdStart=-VdStart
                 VdStop=-VdStop
@@ -128,18 +127,21 @@ class HP:
         print("Set " + self.term)
         return 0
 
-    def SetVgs(self, VgStart, VgStop, VgStep, VdValue=0.1, VdSweep=False, ptype=False, sat=False):
+    def SetVGS(self, dict):
+        self.SetVgs(dict['VGstart'], dict['VGstop'], dict['VGstep'], dict['VD'], dict['Compliance'])
+
+    def SetVgs(self, VgStart, VgStop, VgStep, VdValue=0.1, Comp=1e-3, VdSweep=False, ptype=False, sat=False):
         
         if ptype:
                     VdValue=-VdValue
                     VgStart=-VgStart
                     VgStop=-VgStop
                     VgStep=-VgStep
-        print(VgStart, VgStop, VgStep, VdValue,VdSweep)
+        print(VgStart, VgStop, VgStep, VdValue, Comp)
 
         self.DisableAll()
         self.SetSMU('SMU1', 'VS', 'IS', 'COMM', 'CONS')
-        self.SetSMU('SMU3', 'VG', 'IG', 'V', 'VAR1', Comp=1e-3)
+        self.SetSMU('SMU3', 'VG', 'IG', 'V', 'VAR1', Comp=Comp)
         self.SetSMU('SMU4', 'VB', 'IB', 'COMM', 'CONS')
 
         if VdSweep:
@@ -192,7 +194,7 @@ class HP:
         print("Set " + self.term)
         return 0
 
-    def SetEx_Ib(self, VsStart, VsStop, VsStep, ptype=False):
+    def SetEx_Ib(self, VsStart, VsStop, VsStep, VgStart, VgStop, VgStep, ptype=False):
         if ptype:
                 VsStart=-VsStart
                 VsStop=-VsStop
@@ -209,10 +211,7 @@ class HP:
 
         
         self.SetVar('VAR1', 'V', VsStart, VsStop, VsStep)
-        VAR2_Step=-(VsStop-VsStart)/(2*Points)
-        VAR2_Start=VsStop
-        print(VAR2_Step, VAR2_Start)
-        self.SetVar('VAR2', 'V', VAR2_Start, Points, VAR2_Step)
+        self.SetVar('VAR2', 'V', VgStart, VgStop, VgStep)
 
         self.SetAxis('X', 'VS', 'LIN', VsStart, VsStop)
         self.SetAxis('Y1', 'ID', 'LIN', 0, 1)

@@ -61,13 +61,15 @@ class HP4155(HP):
         if self.debug:
             time.sleep(2)
             print("Debug DR")
-
             return 0
         
         for i in range(maxpoll):
+            if self.StopFlag:
+                return 1
+            
             if int(self.ask("*ESR?"))&1==state:
                 return 0
-            time.sleep(delay/1000)
+                time.sleep(delay/1000)
             
         return 1
 
