@@ -1,3 +1,6 @@
+import sys
+sys.path.append("Modules")
+
 from Tab_GP import *
 from Tab_IV import *
 from Tab_CV import *
