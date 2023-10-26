@@ -20,3 +20,6 @@ SMU_MarginX=90
 SMU_MarginY=40
 
 PhotoMaxSizeX=550
+
+
+Loucura=135
