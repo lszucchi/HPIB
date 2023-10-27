@@ -33,7 +33,7 @@ def ReadDF(path):
         return pd.read_csv(path, header=[0, 1])
     return pd.read_csv(path)
 
-def Plot(self, path, X, Y):
+def Plot(path, X, Y):
     
     df=pd.read_csv(path, header=[0, 1])
     
@@ -51,7 +51,7 @@ def Plot(self, path, X, Y):
     
     ax1.set_ylabel(f"{Y[0]} ({prefix[i]}{unit})")
     if df.columns.levels[1][0] != 'None':
-        ax1.legend([np.around(float(x), 2) for x in df.columns.levels[1]])
+        ax1.legend([np.around(float(ETF(x)), 2) for x in df.columns.levels[1]])
 
     if X[0]=='I': unit='A'
     else: unit='V'
@@ -154,10 +154,10 @@ def PlotVgs(path,draw=False):
 
     try: df=pd.read_csv(path, header=[0, 1])
     except: print("Error opening VGS\n")
-    VG=df['VG']
-    ID=df['ID']
-    VG=VG.to_numpy()[0]
-    ID=ID.to_numpy()[0]
+    if df.columns.levels[1][0] != 'None':
+        df.columns.levels[1][0] != ''
+    VG=df['VG'][df.columns.levels[1][0]].to_numpy()
+    ID=df['ID'][df.columns.levels[1][0]].to_numpy()
     
     gm=np.diff(ID)/np.diff(VG)
 
@@ -175,16 +175,16 @@ def PlotVgs(path,draw=False):
     ax1.plot(VG, ID, 'b-', VG[:np.argmax(gm)], fitID,'r--')
 
     ax2.plot(VG[1:], gm, 'r-')
-    ax1.set_xlabel('V_GS')
+    ax1.set_xlabel('$V_{GS}$')
     ax1.set_xlim(np.min(VG), np.max(VG))
-    ax1.set_ylabel('I_D', color='b')
+    ax1.set_ylabel('$I_D$', color='b')
     
     if(np.abs(np.min(ID))>np.abs(np.max(ID))):
         ax1.set_ylim(1.1*np.min(ID), -0.05*np.min(ID))
     else:
         ax1.set_ylim(-0.05*np.max(ID), 1.1*np.max(ID))
         
-    ax2.set_ylabel('g_m', color='r')
+    ax2.set_ylabel('$g_m$', color='r')
     ax2.set_ylim(-0.05*np.max(gm), 1.1*np.max(gm))
     
     if not os.path.isdir(path.rsplit('/',1)[0]+'/fig/'):
@@ -196,14 +196,59 @@ def PlotVgs(path,draw=False):
         plt.draw()
         plt.pause(0.001)
     #plt.close()
-    return save_path
+    return np.around(VTO, 3)
 
-def PlotVds(path,draw=False):
+def PlotSubVt(path):
+
+    try: df=pd.read_csv(path, header=[0, 1])
+    except: print("Error opening VGS\n")
+    if df.columns.levels[1][0] != 'None':
+        df.columns.levels[1][0] != ''
+        
+    VG=df['VG'][df.columns.levels[1][0]].to_numpy()
+    ID=np.clip(df['ID'][df.columns.levels[1][0]].to_numpy(), 1e-15, 1)
+
+    median=int(len(VG)/2)
+    th=5
+    
+    VGfit=VG[median-th:median+th]    
+    IDfit=ID[median-th:median+th]
+
+    p = np.polyfit(VGfit, np.log10(IDfit), 1)
+
+    # IDfit=m*VGfit+b
+    
+    fig, ax1 = plt.subplots()
+
+    print(np.polyval(p, VGfit))
+    
+    ax1.plot(VG, ID)
+    ax1.plot(VGfit, 10**np.polyval(p, VGfit), '--r')
+    
+    ax1.grid(True, which='both')
+    ax1.axhline(y=0, color='k', linewidth=.5)
+
+    ax1.set_xlabel('$V_{GS}$')
+    ax1.set_ylabel('$I_D$', color='b')
+
+    ax1.set_yscale('log')
+    
+    if not os.path.isdir(path.rsplit('/',1)[0]+'/fig/'):
+        os.mkdir(path.rsplit('/',1)[0]+'/fig/')
+    save_path=path.rsplit('/',1)[0]+'/fig/'+path.rsplit('/',1)[1].rsplit('.',1)[0]+'.png'
+    
+    plt.savefig(save_path)    
+
+    return np.around((1/p[0])*1000, 0)
+
+def PlotVds(path):
     try: df = pd.read_csv (path)
     except: print("Error opening Vds\n")
+        
     VG=df['VG']
     VD=df['VD']
     ID=df['ID']
+    
     VG=VG.to_numpy()
     VD=VD.to_numpy()
     ID=ID.to_numpy()
@@ -333,7 +378,7 @@ def PlotAll(no,path='.',save=".",diode=False,draw=False):
         PlotVgs(i,path,save,draw)
         PlotVds(i,path,save,draw)
 
-def Ex_Ib(path, ptype=False, draw=False):
+def CalcEx_Ib(path, ptype=False, draw=False):
     df = pd.read_csv (path)
     VS=df['VS']
     #VG=df['VG']
@@ -405,6 +450,43 @@ def Early():
 
     print(Early)
     print(EarlyAvg)
+
+def ETF(value):
+    try: return float(value)
+    except:
+        pass
+    exp=value[len(value)-1]
+    try: value=np.around(float(value[:len(value)-1]), 1)
+    except:
+        return "Invalid mantissa"
+
+    match exp:
+        case 'P':
+            return str(value)+'e15'
+        case 'T':
+            return str(value)+'e12'
+        case 'G':
+            return str(value)+'e9'
+        case 'M':
+            return str(value)+'e6'
+        case 'k':
+            return str(value)+'e3'
+        
+        #0#
+        
+        case 'm':
+            return str(value)+'e-3'
+        case 'u':
+            return str(value)+'e-6'
+        case 'n':
+            return str(value)+'e-9'
+        case 'p':
+            return str(value)+'e-12'
+        case 'f':
+            return str(value)+'e-15'
+        
+    return "Invalid expoent"
+
 
 
 def GetConc(x, dop):

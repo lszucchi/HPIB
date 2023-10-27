@@ -57,20 +57,19 @@ class HP4155(HP):
 
             return 0
 
-    def PollDR(self, state, delay=10, maxpoll=100):
+    def PollDR(self, state, delay=1, maxpoll=2):
         if self.debug:
-            time.sleep(2)
+            time.sleep(2*delay)
             print("Debug DR")
             return 0
-        
-        for i in range(maxpoll):
+            
+        for i in range(60*maxpoll):
             if self.StopFlag:
                 return 1
-            
             if int(self.ask("*ESR?"))&1==state:
                 return 0
-                time.sleep(delay/1000)
-            
+            time.sleep(delay) 
+            if i%10==0: print("Still alive")
         return 1
 
     def save_list(self, trace_list):
@@ -155,7 +154,7 @@ class HP4155(HP):
             time.sleep(0.1)
 
             return 0
-
+        
         return 1
         
     def SetSMU(self, SMUno, VNAME, INAME, Mode="COMM", Func="CONS", Comp="1e-3", SRES="0OHM", Value=0):
@@ -178,6 +177,8 @@ class HP4155(HP):
         self.write(f":PAGE:CHAN:{SMUno}:INAME \'{INAME}\'")
         self.write(f":PAGE:CHAN:{SMUno}:MODE {Mode}")
         self.write(f":PAGE:CHAN:{SMUno}:FUNC {Func}")
+       
+        self.beep()
         
         if Mode == "COMM": return 0
         
@@ -189,7 +190,7 @@ class HP4155(HP):
             return 0
             
         if Func == "CONS":
-            self.write(f":PAGE:MEAS:CONS:{SMUno} {Value}")
+            self.write(f":PAGE:MEAS:CONS:{SMUno} {ETF(Value)}")
             self.write(f":PAGE:MEAS:CONS:{SMUno}:COMP {Comp}")
 
             return 0
@@ -218,7 +219,7 @@ class HP4155(HP):
 
         if VARno=='VAR2' and Step:
             self.Var2=np.arange(Start, Stop+Step, Step)
-            Points=1+(Stop-Start)/Step 
+            Points=1+(Stop-Start)/Step
             self.write(f":PAGE:MEAS:{VARno}:STAR {Start}")
             self.write(f":PAGE:MEAS:{VARno}:STEP {Step}")
             self.write(f":PAGE:MEAS:{VARno}:POINTS {Points}")
