@@ -1,11 +1,9 @@
 import pyvisa
 import time
 import string
-import numpy as np
-import pandas as pd
-import os
 import datetime
-import matplotlib.pyplot as plt
+from IPython.display import clear_output
+from HPIB_plot import *
 
 #from INOSerial import *
 
@@ -83,71 +81,40 @@ class HP:
         try:
             _, ext = os.path.splitext(path)
             if ext != ".csv":
-                path = path +'/'+ self.term + '-' + datetime.datetime.now().strftime("%y%m%d %H%M%S") + ".csv"
+                path = f"{path}/self.term-{datetime.datetime.now().strftime('%y%m%d %H%M%S')}.csv"
         except:
             return "Invalid Path"
-        try: df.to_csv(path, index=False)
+        try: df.to_csv(path)
         except: return "Unable to write CSV"
         
         return path
+
+    ##### Poll DataReady == state, a cada delay em ms, no máximo de maxpoll ciclos. Retorna 1 se chegar ao máximo de ciclos.
+    def PollDR(self, state, delay=1, maxpoll=2):
+        if self.debug:
+            time.sleep(2*delay)
+            print("Debug DR")
+            return 0
+
+        progress=''
+        
+        for i in range(60*maxpoll):
+            if self.StopFlag:
+                return 1
+            if self.GetDR()==state:
+                return 0
+            
+            time.sleep(delay)
+            # clear_output(wait=True)
+            progress+="+"
+            if len(progress)>60: 
+                progress="+"
+                print("HP Blink 60s")
     
-    def SetCap(self, VStart, VStop, VStep, Compliance):
-        self.DisableAll()
-        
-        self.SetSMU('SMU1', 'V', 'I', 'V', Func='VAR1')
-        self.SetVSMU('VMU1', 'C')
-        self.SetVar('VAR1', 'V', VStart, VStop, VStep, Comp=ETF(Compliance))
-        
-
-        self.SetAxis('X', 'V', 'LIN', VStart, VStop)
-        self.SetAxis('Y1', 'C', 'LIN', 0, 2)
-        self.SetAxis('Y2', 'I', 'LIN', 0, 1e-3)
-
-        self.save_list(['V', 'C', 'I'])
-        self.beep()
-
-        self.term='CV'
-        
-        print("Set " + self.term)
-        return 0
-
-    def SetVDS(self, dict):
-        self.SetVds(dict['VDstart'], dict['VDstop'], dict['VDstep'], dict['VGstart'], dict['VGstop'], dict['VGstep'], dict['Compliance'])
+        return 1
     
-    def SetVds(self, VdStart, VdStop, VdStep, VgStart, VgStop, VgStep, Comp=1e-3, ptype=False):
-        
-        if ptype:
-                VdStart=-VdStart
-                VdStop=-VdStop
-                VdStep=-VdStep
-                VgStart=-VgStart
-                VgStop=-VgStop
-                VgStep=-VgStep
-
-        print(VdStart, VdStop, VdStep, VgStart, VgStop, VgStep)
-
-        self.DisableAll()
-        
-        self.SetSMU('SMU1', 'VS', 'IS', 'COMM', 'CONS')
-        self.SetSMU('SMU2', 'VD', 'ID', 'V', 'VAR1', Comp=Comp)
-        self.SetSMU('SMU3', 'VG', 'IG', 'V', 'VAR2', Comp=Comp)
-        self.SetSMU('SMU4', 'VB', 'IB', 'COMM', 'CONS')
-        self.SetVar('VAR1', 'V', VdStart, VdStop, VdStep)
-        self.SetVar('VAR2', 'V', VgStart, VgStop, VgStep)
-        time.sleep(0.5)
-        self.SetAxis('X', 'VD', 'LIN', VdStart, VdStop)
-        self.SetAxis('Y1', 'ID', 'LIN', 0, 1e-3)
-
-        self.save_list(['VD', 'ID'])
-        self.beep()
-        
-        self.term='IdxVds'
-        
-        print("Set " + self.term)
-        return 0
-
-    def SetVGS(self, dict):
-        self.SetVgs(dict['VGstart'], dict['VGstop'], dict['VGstep'], dict['VD'], dict['Compliance'])
+    def SetVGS(self, dict, ptype):
+        self.SetVgs(dict['VGstart'], dict['VGstop'], dict['VGstep'], ETF(dict['VD']), ETF(dict['Compliance']), ptype=ptype)
 
     def SetVgs(self, VgStart, VgStop, VgStep, VdValue=0.1, Comp=1e-3, VdSweep=False, ptype=False, sat=False):
         
@@ -156,7 +123,6 @@ class HP:
                     VgStart=-VgStart
                     VgStop=-VgStop
                     VgStep=-VgStep
-        print(VgStart, VgStop, VgStep, VdValue, Comp)
 
         self.DisableAll()
         
@@ -170,6 +136,7 @@ class HP:
         else:
             self.SetSMU('SMU2', 'VD', 'ID', 'V', 'CONS', Value=VdValue, Comp=Comp)
             self.Var2=[f"{VdValue}"]
+            self.Var2Name="VDS"
 
         self.SetVar('VAR1', 'V', VgStart, VgStop, VgStep, 1e-3)
 
@@ -179,39 +146,74 @@ class HP:
         self.save_list(['VG', 'ID'])
         self.beep()
         
-        if sat:
+        if sat or (np.abs(VgStop)-np.abs(VdValue)<0.5):
                     self.term='IdxVgs Sat'
         else:
                     self.term='IdxVgs'
                     
         print("Set " + self.term)
+        print(f" Vg=({VgStart}, {VgStop}, {VgStep}), Vd={VdValue}, Ilim={Comp}")
         
         return 0
-
-    def SetVP(self, dict):
-        self.SetVp(dict['Ib'], dict['VGstart'], dict['VGstop'], dict['VGstep'], dict['Compliance'])
-        
-    def SetVp(self, Ib, VgStart, VgStop, VgStep, Comp=1.5, ptype=False):
-        Ib=ETF(Ib)
-        Comp=ETF(Comp)
+    
+    def SetVDS(self, dict, ptype):
+        self.SetVds(dict['VDstart'], dict['VDstop'], dict['VDstep'], dict['VGstart'], dict['VGstop'], dict['VGstep'], ETF(dict['Compliance']), ptype)
+    
+    def SetVds(self, VdStart, VdStop, VdStep, VgStart, VgStop, VgStep, Comp=1e-3, ptype=False):
         
         if ptype:
+                VdStart=-VdStart
+                VdStop=-VdStop
+                VdStep=-VdStep
                 VgStart=-VgStart
                 VgStop=-VgStop
                 VgStep=-VgStep
-                
-        print(Ib, VgStart, VgStop, VgStep)
 
         self.DisableAll()
         
-        self.SetSMU('SMU1', 'VS', 'IS', 'I', 'CONS', Comp=Comp, Value=Ib)
-        self.SetSMU('SMU2', 'VD', 'ID', 'V', 'VARD')
+        self.SetSMU('SMU1', 'VS', 'IS', 'COMM', 'CONS')
+        self.SetSMU('SMU2', 'VD', 'ID', 'V', 'VAR1', Comp=Comp)
+        self.SetSMU('SMU3', 'VG', 'IG', 'V', 'VAR2', Comp=Comp)
+        self.SetSMU('SMU4', 'VB', 'IB', 'COMM', 'CONS')
+        self.SetVar('VAR1', 'V', VdStart, VdStop, VdStep)
+        self.SetVar('VAR2', 'V', VgStart, VgStop, VgStep)
+        time.sleep(0.5)
+        self.SetAxis('X', 'VD', 'LIN', VdStart, VdStop)
+        self.SetAxis('Y1', 'ID', 'LIN', 0, 1e-3)
+        self.Var2Name="VGS"
+
+        self.save_list(['VD', 'ID'])
+        self.beep()
+        
+        self.term='IdxVds'
+        
+        print("Set " + self.term)
+        print(f"Vd=({VdStart}, {VdStop}, {VdStep}), Vg=({VgStart}, {VgStop}, {VgStep}), Ilim={Comp}")
+        
+        return 0
+
+    def SetVP(self, dict, ptype):
+        self.SetVp(dict['Ib'], dict['VGstart'], dict['VGstop'], dict['VGstep'], dict['Compliance'], ptype)
+        
+    def SetVp(self, Ib, VgStart, VgStop, VgStep, Comp=1.5, ptype=False):       
+        
+        if ptype:
+                Is=-Is
+                VgStart=-VgStart
+                VgStop=-VgStop
+                VgStep=-VgStep
+            
+        self.DisableAll()
+        
         self.SetSMU('SMU3', 'VG', 'IG', 'V', 'VAR1')
+        self.SetSMU('SMU1', 'VS', 'IS', 'I', 'CONS', Comp=Comp, Value=format(Is, '.2e'))
+        self.SetSMU('SMU2', 'VD', 'ID', 'V', 'VARD')
         self.SetSMU('SMU4', 'VB', 'IB')
         
         self.SetVar('VAR1', 'V', VgStart, VgStop, VgStep)
         self.SetVar('VARD', 'V', 1, 0)
-        self.Var2=Ib
+        self.Var2=Is
+        self.Var2Name='Is'
 
         self.SetAxis('X', 'VD', 'LIN', VgStart, VgStop)
         self.SetAxis('Y1', 'VS', 'LIN', 0, 1)
@@ -222,25 +224,27 @@ class HP:
         self.term='VpxVgs'
         
         print("Set " + self.term)
+        print(f"Ib={Ib}, Vg=({VgStart}, {VgStop}, {VgStep}), Vlim={Comp}")
+        
         return 0
 
-    def SetEXIB(self, dict):
-        self.SetEx_Ib(dict['VSstart'], dict['VSstop'], dict['VSstep'], dict['VGstart'], dict['VGstop'], dict['VGstep'],  dict['Compliance'])
+    def SetEXIB(self, dict, ptype):
+        self.SetEx_Ib(dict['VSstart'], dict['VSstop'], dict['VSstep'], dict['VGstart'], dict['VGstop'], dict['VGstep'],  dict['Compliance'], ptype)
     
     def SetEx_Ib(self, VsStart, VsStop, VsStep, VgStart, VgStop, VgStep, Comp=1e-3, ptype=False):
-        Comp=ETF(Comp)
         
         if ptype:
                 VsStart=-VsStart
                 VsStop=-VsStop
                 VsStep=-VsStep
-
-        print(VsStart, VsStop, VsStep)
+                VgStart=-VgStart
+                VgStop=-VgStop
+                VgStep=-VgStep
 
         self.DisableAll()
         
         self.SetSMU('SMU1', 'VS', 'IS', 'V', 'VAR1', Comp=Comp)
-        self.SetSMU('SMU2', 'VD', 'ID', 'V', 'CONS', Value=VsStop)
+        self.SetSMU('SMU2', 'VD', 'ID', 'V', 'CONS', Value=VsStop, Comp=Comp)
         self.SetSMU('SMU3', 'VG', 'IG', 'V', 'VAR2', Comp=Comp)
         self.SetSMU('SMU4', 'VB', 'IB', 'COMM')
 
@@ -252,14 +256,20 @@ class HP:
         self.SetAxis('Y1', 'ID', 'LIN', 0, 1)
 
         self.save_list(['VS', 'ID'])
+        
         self.beep()
 
         self.term='Ex_Ib'
         
         print("Set " + self.term)
+        print(f" Vs=({VsStart}, {VsStop}, {VsStep}), Vg=({VgStart}, {VgStop}, {VgStep})")
+        
         return 0
 
     def SetDiode(self, VfStart, VfStop, VfStep):
+        VfStart=-VfStart
+        VfStop=-VfStop
+        VfStep=-VfStep
         
         self.DisableAll()
         
@@ -278,14 +288,35 @@ class HP:
         self.beep()
 
         self.term="Diode"
+        
         print("Set " + self.term)
+        print(f"Vf=({VfStart}, {VfStop})")
 
         return 0
 
-    def Set4P(self, IStart, IStop, Points):
-
-        print(IStart, IStop, Points)
+    def SetCap(self, VStart, VStop, VStep, Comp):
+        self.DisableAll()
         
+        self.SetSMU('SMU1', 'V', 'I', 'V', Func='VAR1')
+        self.SetVSMU('VMU1', 'C')
+        self.SetVar('VAR1', 'V', VStart, VStop, VStep, Comp=ETF(Comp))
+        
+
+        self.SetAxis('X', 'V', 'LIN', VStart, VStop)
+        self.SetAxis('Y1', 'C', 'LIN', 0, 2)
+        self.SetAxis('Y2', 'I', 'LIN', 0, 1e-3)
+
+        self.save_list(['V', 'C', 'I'])
+        self.beep()
+
+        self.term='CV'
+        
+        print("Set " + self.term)
+        print(f"V=({VStart}, {VStop}, {VStep}), Ilim={Comp})")
+        
+        return 0
+
+    def Set4P(self, IStart, IStop, Points):        
         self.DisableAll()
         
         self.SetSMU('SMU1', 'V1', 'I1')
@@ -304,44 +335,32 @@ class HP:
         self.term="4P"
         
         print("Set " + self.term)
+        print(f"I=({IStart}, {IStop}), {Points} Points")
 
         return 0
 
-def ETF(value):
-    try: return float(value)
-    except:
-        pass
-    exp=value[len(value)-1]
-    try: value=np.around(float(value[:len(value)-1]), 1)
-    except:
-        return "Invalid mantissa"
+    def Set4PV(self, VStart, VStop, Points):
+        self.DisableAll()
+        
+        self.SetSMU('SMU1', 'V1', 'I1')
+        self.SetSMU('SMU2', 'V2', 'I2', 'V', 'VAR1')
+        self.SetVSMU('VMU1', 'V3')
+        self.SetVSMU('VMU2', 'V4')
+        self.SetVar('VAR1', 'I', VStart, VStop, (VStop-VStart)/(Points-1))
+        self.UFUNC('V=VMU2-VMU1')
 
-    match exp:
-        case 'P':
-            return str(value)+'e15'
-        case 'T':
-            return str(value)+'e12'
-        case 'G':
-            return str(value)+'e9'
-        case 'M':
-            return str(value)+'e6'
-        case 'k':
-            return str(value)+'e3'
+        self.SetAxis('X', 'V')
+        self.SetAxis('Y1', 'I1')
         
-        #0#
+        self.save_list(['I2', 'V'])
+        self.beep()
         
-        case 'm':
-            return str(value)+'e-3'
-        case 'u':
-            return str(value)+'e-6'
-        case 'n':
-            return str(value)+'e-9'
-        case 'p':
-            return str(value)+'e-12'
-        case 'f':
-            return str(value)+'e-15'
+        self.term="4PV"
         
-    return "Invalid expoent"
+        print("Set " + self.term)
+        print(f"Vsource=({VStart}, {VStop}), {Points} Points")
+        
+        return 0
 
 def DebugOut(inst, varlist, Var2):
     inst.Var2=Var2

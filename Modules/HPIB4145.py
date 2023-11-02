@@ -62,20 +62,8 @@ class HP4145(HP):
         return 0
 
     ##### Lê Data Ready (OPC)
-    def ReadDR(self):
+    def GetDR(self):
         return int(self.inst.read_stb()&0b1)
-
-    ##### Poll DataReady == state, a cada delay em ms, no máximo de maxpoll ciclos. Retorna 1 se chegar ao máximo de ciclos.
-    def PollDR(self, state, delay=10, maxpoll=100):
-        if self.debug:
-            time.sleep(2)
-            print("Debug DR")
-            return 0
-        for i in range(maxpoll):
-            if self.ReadDR() == state:
-                return 0
-            time.sleep(delay/1000)
-        return 1
 
     ##### Medida, padrão single  >>>> self.measure() <<<<<
     def measure(self, meas='Single', maxpoll=60):

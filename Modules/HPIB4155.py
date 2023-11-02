@@ -44,6 +44,9 @@ class HP4155(HP):
 
         return 0
 
+    def GetDR(self):
+        return int(self.ask("*ESR?"))&1
+    
     def measure(self, period="INF", points=100):
             if self.analyzer_mode == "SWEEP":
                 self.write(":PAGE:GLIS")
@@ -56,21 +59,6 @@ class HP4155(HP):
                 self.write(":PAGE:SCON:MEAS:SING; *OPC?")
 
             return 0
-
-    def PollDR(self, state, delay=1, maxpoll=2):
-        if self.debug:
-            time.sleep(2*delay)
-            print("Debug DR")
-            return 0
-            
-        for i in range(60*maxpoll):
-            if self.StopFlag:
-                return 1
-            if int(self.ask("*ESR?"))&1==state:
-                return 0
-            time.sleep(delay) 
-            if i%10==0: print("Still alive")
-        return 1
 
     def save_list(self, trace_list):
         self.data_variables=trace_list
@@ -118,7 +106,7 @@ class HP4155(HP):
                                     [f"{str(x)}" for x in self.Var2]],
                                     names=["Trace", f"{self.Var2Name}"])
         
-        df = pd.DataFrame(data=lastdata, columns=header, index=None)
+        df = pd.DataFrame(data=lastdata, columns=header)
         self.write(":PAGE:DISP:MODE GRAP")
         
         return df
@@ -158,7 +146,7 @@ class HP4155(HP):
         return 1
         
     def SetSMU(self, SMUno, VNAME, INAME, Mode="COMM", Func="CONS", Comp="1e-3", SRES="0OHM", Value=0):
- 
+
         SMUno=SMUno.upper()
         if SMUno not in ['SMU1', 'SMU2','SMU3','SMU4']:
             raise Exception(f"Invalid SMU: <{SMUno}>")
@@ -182,7 +170,7 @@ class HP4155(HP):
         
         if Mode == "COMM": return 0
         
-        self.write(f":PAGE:CHAN:{SMUno}:SRES {SRES}")
+        # self.write(f":PAGE:CHAN:{SMUno}:SRES {SRES}")
         if Func[3] in ['1', '2', 'D']:
             try: self.VarComp[int(Func[len(Func)-1])]=Comp
             except: self.VarComp[0]=Comp
@@ -190,7 +178,10 @@ class HP4155(HP):
             return 0
             
         if Func == "CONS":
-            self.write(f":PAGE:MEAS:CONS:{SMUno} {ETF(Value)}")
+            # print(f"{Value}, {Comp}")
+            # self.write(f":PAGE:MEAS")
+            # time.sleep(3)
+            self.write(f":PAGE:MEAS:CONS:{SMUno} {Value}")
             self.write(f":PAGE:MEAS:CONS:{SMUno}:COMP {Comp}")
 
             return 0
@@ -218,7 +209,7 @@ class HP4155(HP):
             return 0
 
         if VARno=='VAR2' and Step:
-            self.Var2=np.arange(Start, Stop+Step, Step)
+            self.Var2=frange(Start, Stop, Step)
             Points=1+(Stop-Start)/Step
             self.write(f":PAGE:MEAS:{VARno}:STAR {Start}")
             self.write(f":PAGE:MEAS:{VARno}:STEP {Step}")

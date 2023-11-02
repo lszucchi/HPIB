@@ -19,23 +19,11 @@ font = {'family': 'serif',
         'size': 16,
         }
 
-path=".\\231024\\IdxVgs-231024 163936.csv"
+def Plot(df, X, Y):
 
-
-def CheckMultilevel(path):
-    with open(path, newline='') as f:
-      reader = csv.reader(f)
-      row1 = next(reader)
-    return row1[0]==row1[1]
-
-def ReadDF(path):
-    if CheckMultilevel(path):
-        return pd.read_csv(path, header=[0, 1])
-    return pd.read_csv(path)
-
-def Plot(path, X, Y):
-    
-    df=pd.read_csv(path, header=[0, 1])
+    if isinstance(df, str):
+        path=df
+        df=pd.read_csv(df, header=[0, 1])
     
     if not isinstance(Y, list):
         Y=[Y]
@@ -43,35 +31,73 @@ def Plot(path, X, Y):
     if len(Y)>2:
         return "Too many traces to plot"
     
-    fig, ax1=plt.subplots(dpi=85)
+    fig, ax1=plt.subplots()
+    plt.autoscale(tight=True)
+    plt.subplots_adjust(left = 0.125,  # the left side of the subplots of the figure
+                            right = 0.95,  # the right side of the subplots of the figure
+                            bottom = 0.1,  # the bottom of the subplots of the figure
+                            top = 0.9)     # the top of the subplots of the figure)
+    
     j, i=PlotMatrix(ax1, df, X, Y[0])
-    
-    if Y[0][0]=='I': unit='A'
-    else: unit='V'
-    
-    ax1.set_ylabel(f"{Y[0]} ({prefix[i]}{unit})")
-    if df.columns.levels[1][0] != 'None':
-        ax1.legend([np.around(float(ETF(x)), 2) for x in df.columns.levels[1]])
 
     if X[0]=='I': unit='A'
     else: unit='V'
-    ax1.set_xlabel(f"{X} ({prefix[j]}{unit})")
+    
+    ax1.set_xlabel(f"${X[0]}_"+'{'+X[1:]+'}$'+f" ({prefix[j]}{unit})")
 
+    if Y[0][0]=='I': unit='A'
+    else: unit='V'
+    
+    ax1.set_ylabel(f"${Y[0][0]}_"+'{'+Y[0][1:]+'}$'+f" ({prefix[i]}{unit})", color='r')
+
+    ax1.set_title(f"${Y[0][0]}_"+'{'+Y[0][1:]+'}$' + ' vs ' + f"${X[0]}_"+'{'+X[1:]+'}$')
+    
     if len(Y)==2:
         ax2=ax1.twinx()
         j, i=PlotMatrix(ax2, df, X, Y[1])
         plt.setp(ax2.get_lines()[0], linestyle="--", color='r')
-        if Y[1][0]=='I': unit='A'
-        else: unit='V'
-        ax2.set_ylabel(f"{Y[1]} ({prefix[i]}{unit})", color='r')
-
-    
         
-    name, _=path.rsplit('.',1)
-    name=name+'.png'
-    fig.show()
-    plt.savefig(name)
-    return name
+        if Y[1][0]=='I': unit='A'
+        elif Y[1][0]=='g': unit='S'
+        else: unit='V'
+            
+        ax2.set_ylabel(f"${Y[1][0]}_"+'{'+Y[1][1:]+'}$'+f" ({prefix[i]}{unit})", color='r')
+        plt.subplots_adjust(right = 0.875)
+        ax1.set_title(f"${Y[0][0]}_"+'{'+Y[0][1:]+'}$, ' + f"${Y[1][0]}_"+'{'+Y[1][1:]+'}$' + ' vs ' + f"${X[0]}_"+'{'+X[1:]+'}$')
+
+
+    #################################### Legend ######################################
+    if df.columns.levels[1][0] != 'None':
+        title=df.columns[0][1]
+    
+        if title=='I': unit='A'
+        else: unit='V'
+        
+        title=f"${title[0]}_"+'{'+title[1:]+'}$' + f" ({unit})"
+        try:
+            lege=[np.around(float(ETF(x)), 3) 
+                for x in df.columns.levels[1][:-1]]
+        except:
+            lege=[np.around(float(ETF(x)), 3) 
+                for x in df.columns.levels[1][1:]]
+            
+        ax1.legend(lege,
+            title=title,
+            loc='upper left', bbox_to_anchor=(0, 1)) 
+            # fancybox=True, shadow=True)    
+    try:
+        name, _=path.rsplit('.',1)
+        name=f"{name}.png"
+        
+        if '/csv/' in name:
+            name=name.replace('csv/', '')
+            
+        plt.savefig(name)
+        
+        return name
+    except:
+        pass
+        
 
 def PlotMatrix(ax, df, X, Y):
     X=df[X]
@@ -80,40 +106,30 @@ def PlotMatrix(ax, df, X, Y):
     i=5
     j=5
 
-    while np.max(Y) > 100:
+    while np.max(np.abs(Y)) > 300:
         i+=1
         Y=Y*1e-3
-    while np.max(Y) < 0.1:
+    while np.max(np.abs(Y)) < 0.3:
         i-=1
         Y=Y*1e3
 
-    while np.max(X) > 100:
+    while np.max(np.abs(X)) > 300:
         j+=1
         X=X*1e-3
-    while np.max(Y) < 0.1:
+    while np.max(np.abs(X)) < 0.3:
         j-=1
         X=X*1e3
     
     ax.plot(X, Y)
+    
     return (j, i)
 
 def PlotDiode(path,draw=False):
     df = pd.read_csv(path)
-    VD=df['Vf']
-    ID=df['If']
-    if (path[len(path)-11] == 'D'):
-        path=path[:len(p)-11]+"S"+path[len(p)-10:]
-    elif (path[len(path)-11] == 'S'):
-        path=path[:len(p)-11]+"D"+path[len(p)-10:]
-    df = pd.read_csv (path)
-    VS=df['Vf']
-    IS=df['If']
-    VD=VD.to_numpy()
-    ID=ID.to_numpy()
-    VS=VS.to_numpy()
-    IS=IS.to_numpy()
+    VS=df['VF']
+    IS=df['IS']
+    ID=df['ID']
     
-
     fig, ax1 = plt.subplots()
     ax2 = ax1.twinx()
     ax1.grid(True, which='both')
@@ -126,28 +142,22 @@ def PlotDiode(path,draw=False):
     ax1.set_xlim(np.min(VD), np.max(VD))
     ax1.set_ylabel('I_D', color='b')
 
-    
-    
-##    if(np.abs(np.min(ID))>np.abs(np.max(ID))):
-##        ax1.set_ylim(1.1*np.min(ID), -0.05*np.min(ID))
-##    else:
-##        ax1.set_ylim(-0.05*np.max(ID), 1.1*np.max(ID))
+    if(np.abs(np.min(ID))>np.abs(np.max(ID))):
+       ax1.set_ylim(1.1*np.min(ID), -0.05*np.min(ID))
+    else:
+       ax1.set_ylim(-0.05*np.max(ID), 1.1*np.max(ID))
         
     ax2.set_ylabel('IS', color='r')
     
-##    if(np.abs(np.min(IS))>np.abs(np.max(IS))):
-##        ax1.set_ylim(1.1*np.min(IS), -0.05*np.min(IS))
-##    else:
-##        ax1.set_ylim(-0.05*np.max(IS), 1.1*np.max(IS))
-    if not os.path.isdir(path.rsplit('/',1)[0]+'/fig/'):
-        os.mkdir(path.rsplit('/',1)[0]+'/fig/')
-    save_path=path.rsplit('/',1)[0]+'/fig/'+path.rsplit('/',1)[1].strip(".csv")+'.png'
-    plt.savefig(save_path)
+    if(np.abs(np.min(IS))>np.abs(np.max(IS))):
+       ax1.set_ylim(1.1*np.min(IS), -0.05*np.min(IS))
+    else:
+       ax1.set_ylim(-0.05*np.max(IS), 1.1*np.max(IS))
     
     if(draw):
         plt.draw()
         plt.pause(0.001)
-    #plt.close()
+
     return save_path
 
 def PlotVgs(path,draw=False):
@@ -198,6 +208,8 @@ def PlotVgs(path,draw=False):
     #plt.close()
     return np.around(VTO, 3)
 
+
+
 def PlotSubVt(path):
 
     try: df=pd.read_csv(path, header=[0, 1])
@@ -241,63 +253,7 @@ def PlotSubVt(path):
 
     return np.around((1/p[0])*1000, 0)
 
-def PlotVds(path):
-    try: df = pd.read_csv (path)
-    except: print("Error opening Vds\n")
-        
-    VG=df['VG']
-    VD=df['VD']
-    ID=df['ID']
-    
-    VG=VG.to_numpy()
-    VD=VD.to_numpy()
-    ID=ID.to_numpy()
-
-    for i in range(len(VD)):
-        if(abs(Thr*VD[i+1])<abs(VD[i])):
-            IDS=np.split(ID, len(ID)/(i+1))
-            VDS=VD[:i+1]
-            VGS=np.empty(int(len(VG)/(i+1)))
-            for j in range(int(len(VG)/(i+1))):
-                VGS[j]=VG[(i+1)*j]
-            break
-
-    if np.max(IDS) < 1e-3:
-        IDS=np.multiply(IDS, 1e6)
-        ILabel=ILabel="$I_D$ (uA)"
-    elif np.max(IDS) < 1:
-        IDS=np.multiply(IDS, 1e3)
-        ILabel="$I_D$ (mA)"
-    else:
-        ILabel="$I_D$ (A)"
-
-    fig2, ax1 = plt.subplots()
-    for i in range(len(VGS)):
-        plt.plot(VDS,IDS[i])
-    
-    plt.grid(True, which='both')
-
-    plt.xlabel("$V_D$ (V)", fontdict=font)
-    plt.ylabel(ILabel, fontdict=font)
-    
-    if(np.abs(np.min(ID))>np.abs(np.max(ID))):
-        plt.ylim(1.1*np.min(IDS), -0.05*np.min(IDS))
-    else:
-        plt.ylim(-0.05*np.max(IDS), 1.1*np.max(IDS))
-    plt.xlim(np.min(VD), np.max(VD))
-    
-    if not os.path.isdir(path.rsplit('/',1)[0]+'/fig/'):
-        os.mkdir(path.rsplit('/',1)[0]+'/fig/')
-    save_path=path.rsplit('/',1)[0]+'/fig/'+path.rsplit('/',1)[1].rsplit('.',1)[0]+'.png'
-    plt.savefig(save_path)    
-    
-    if(draw):
-        plt.draw()
-        plt.pause(0.001)
-    #plt.close()
-    return save_path
-
-def Plot4P(path,dop,draw=False):
+def PlotSi4P(path,dop,draw=False):
     df = pd.read_csv(path)
     X=df['V']
     Y=df['I1']
@@ -343,81 +299,6 @@ def Plot4P(path,dop,draw=False):
     #plt.close()
     return save_path
 
-def PlotArb(nameX,nameY,path,draw=False,params="k"):
-    df = pd.read_csv(path)
-    X=df[nameX]
-    Y=df[nameY]
-    X=X.to_numpy()
-    Y=Y.to_numpy()
-
-    plt.grid(True, which='both')
-    plt.xlabel(nameX)
-    plt.ylabel(nameY)
-    plt.ylim(np.min(Y), np.max(Y))
-    plt.xlim(np.min(X), np.max(X))
-
-    plt.plot(X,Y,params)
-
-    if not os.path.isdir(path.rsplit('/',1)[0]+'/fig/'):
-        os.mkdir(path.rsplit('/',1)[0]+'/fig/')
-    save_path=path.rsplit('/',1)[0]+'/fig/'+path.rsplit('/',1)[1].rsplit('.',1)[0]+'.png'
-    plt.savefig(save_path)    
-    
-    if(draw):
-        plt.draw()
-        plt.pause(0.001)
-    #plt.close()
-    return save_path
-    
-
-def PlotAll(no,path='.',save=".",diode=False,draw=False):
-
-    for i in range(1, 7):
-        if(diode):
-            PlotDiode(i,path,save, draw)
-        PlotVgs(i,path,save,draw)
-        PlotVds(i,path,save,draw)
-
-def CalcEx_Ib(path, ptype=False, draw=False):
-    df = pd.read_csv (path)
-    VS=df['VS']
-    #VG=df['VG']
-    ID=df['ID']
-    print(df[''])
-    VS=VS.to_numpy()
-    ID=ID.to_numpy()
-    if ptype:
-        VS=-VS
-        ID=-ID
-    i=1
-    while VS[i-1] < VS[i]:
-        i=i+1
-    
-    X=np.split(VS,len(VS)/i)
-    Y=np.split(ID,len(ID)/i)
-
-
-    m=np.empty(2)
-    for i, x in enumerate(X):
-        
-        plt.plot(x, Y[i])
-        if i==2:
-            break
-        y=Y[i]
-        y=y[y>max(y)/1.5]
-        x=x[:len(y)]
-        plt.plot(x, y, '--')
-        m[i], b= np.polyfit(x, y, 1)
-        plt.plot(X[i], np.polyval([m[i], b], X[i]))
-    print(m)
-    if draw:
-        plt.draw()
-        plt.pause(0.001)
-
-    Is=(np.average(m)*2*Ut)**2
-
-    return Is
-
 def Early():
     fig2 = plt.figure()
     Early=np.empty(len(VGS))
@@ -451,39 +332,89 @@ def Early():
     print(Early)
     print(EarlyAvg)
 
+def CalcIs(path, ptype=False):
+    df = pd.read_csv(path, header=[0, 1])
+    try: VG=[np.around(float(x), 2) for x in df.columns.levels[1][1:]]
+    except: VG=[np.around(float(x), 2) for x in df.columns.levels[1][:-1]]
+        
+    VS=df['VS'].to_numpy().T[1]
+    ID=df['ID'].to_numpy()
+    
+    if ptype:
+        VS=-VS
+        ID=-ID
+        
+    ID=np.sqrt(np.clip(ID, 0, 1))
+
+    slope=[]
+
+    fig, ax=plt.subplots()
+    
+    for n, Y in enumerate(ID.T[-3:]):
+
+        ax.plot(VS, Y, label=VG[n])
+        
+        y=Y
+        y=y[y>np.max(y)/(2+0.5*n)]
+        x=VS[:len(y)]
+        
+        ax.plot(x, y, '--')
+        m, b= np.polyfit(x, y, 1)
+        # ax.plot(VS[:len(x)], np.polyval([m, b], VS[:len(x)]))
+        slope+=[m]
+
+    plt.legend(title='$V_{G}$', loc='upper right')
+    ax.set_ylabel("$\sqrt{I_D}$  ($\sqrt{A}$)")
+    ax.set_xlabel("$V_S$  (V)")
+    ax.set_title("$\sqrt{I_D}$ vs $V_S$")
+
+    Is=(np.array(slope)*2*Ut)**2
+    if not ptype: Is=-Is
+    print(Is)
+    
+    print(f"Is={format(np.average(Is), '.2e')}   AbsDev: {np.sum(np.abs((Is-np.average(Is))))}")
+    fig.savefig(os.path.splitext(path)[0])
+    
+    return np.average(Is)
+
+def frange(start, stop, step, eps=1e-5):
+    out=np.arange(start, stop+step, step)
+    if abs(out[-1]-stop)<eps: return out
+    else: return out[:-1]
+
 def ETF(value):
     try: return float(value)
     except:
         pass
     exp=value[len(value)-1]
-    try: value=np.around(float(value[:len(value)-1]), 1)
+    try: value=np.around(float(value[:-1]), 1)
     except:
         return "Invalid mantissa"
 
     match exp:
         case 'P':
-            return str(value)+'e15'
+            return float(str(value)+'e15')
         case 'T':
-            return str(value)+'e12'
+            return float(str(value)+'e12')
         case 'G':
-            return str(value)+'e9'
+            return float(str(value)+'e9')
         case 'M':
-            return str(value)+'e6'
+            return float(str(value)+'e6')
         case 'k':
-            return str(value)+'e3'
+            return float(str(value)+'e3')
         
         #0#
         
         case 'm':
-            return str(value)+'e-3'
+            return float(str(value)+'e-3')
         case 'u':
-            return str(value)+'e-6'
+            return float(str(value)+'e-6')
         case 'n':
-            return str(value)+'e-9'
+            return float(str(value)+'e-9')
         case 'p':
-            return str(value)+'e-12'
+            return float(str(value)+'e-12')
         case 'f':
-            return str(value)+'e-15'
+            return float(str(value)+'e-15')
         
     return "Invalid expoent"
 
