@@ -87,7 +87,7 @@ def Plot(df, X, Y):
             # fancybox=True, shadow=True)    
     try:
         name, _=path.rsplit('.',1)
-        name=f"{name}.png"
+        name+=".png"
         
         if '/csv/' in name:
             name=name.replace('csv/', '')
@@ -164,48 +164,49 @@ def PlotVgs(path,draw=False):
 
     try: df=pd.read_csv(path, header=[0, 1])
     except: print("Error opening VGS\n")
+        
     if df.columns.levels[1][0] != 'None':
         df.columns.levels[1][0] != ''
-    VG=df['VG'][df.columns.levels[1][0]].to_numpy()
-    ID=df['ID'][df.columns.levels[1][0]].to_numpy()
+
+    VG=getpd(df, 'VG')
+    ID=getpd(df, 'ID')
     
-    gm=np.diff(ID)/np.diff(VG)
-
-    VGfit=VG[np.argmax(gm)-1:np.argmax(gm)+1]
-    IDfit=ID[np.argmax(gm)-1:np.argmax(gm)+1]
-
-    m, b= np.polyfit(VGfit, IDfit, 1)
-    VTO=-b/m
-    fitID=m*VG[:np.argmax(gm)]+b
-
-    fig, ax1 = plt.subplots()
-    ax2 = ax1.twinx()
-    ax1.grid(True, which='both')
-    ax1.axhline(y=0, color='k', linewidth=.5)
-    ax1.plot(VG, ID, 'b-', VG[:np.argmax(gm)], fitID,'r--')
-
-    ax2.plot(VG[1:], gm, 'r-')
-    ax1.set_xlabel('$V_{GS}$')
-    ax1.set_xlim(np.min(VG), np.max(VG))
-    ax1.set_ylabel('$I_D$', color='b')
+    if 'gm' not in df.columns:
+        gm=(np.diff(getpd(df,'ID').T)/np.diff(getpd(df,'VG').T)).T
+        gm=np.append([gm[0]], gm)
     
-    if(np.abs(np.min(ID))>np.abs(np.max(ID))):
-        ax1.set_ylim(1.1*np.min(ID), -0.05*np.min(ID))
+        header=pd.MultiIndex.from_product([['gm'],
+                                    df['VG'].columns])
+    
+        df2=pd.DataFrame(data=gm, columns=header)
+        df=pd.concat((df, df2), axis=1)
+    
+        df.to_csv(path, index=False)
     else:
-        ax1.set_ylim(-0.05*np.max(ID), 1.1*np.max(ID))
-        
-    ax2.set_ylabel('$g_m$', color='r')
-    ax2.set_ylim(-0.05*np.max(gm), 1.1*np.max(gm))
+        gm=getpd(df, 'gm')
     
-    if not os.path.isdir(path.rsplit('/',1)[0]+'/fig/'):
-        os.mkdir(path.rsplit('/',1)[0]+'/fig/')
-    save_path=path.rsplit('/',1)[0]+'/fig/'+path.rsplit('/',1)[1].rsplit('.',1)[0]+'.png'
-    plt.savefig(save_path)    
-
-    if(draw):
-        plt.draw()
-        plt.pause(0.001)
-    #plt.close()
+    if 'dgm' not in df.columns:
+        dgm=(np.diff(getpd(df,'gm').T)/np.diff(getpd(df,'VG').T)).T
+        dgm=np.append(dgm, [dgm[-1]])
+    
+        header=pd.MultiIndex.from_product([['dgm'],
+                                    df['VG'].columns])
+    
+        df2=pd.DataFrame(data=dgm, columns=header)
+        df=pd.concat((df, df2), axis=1)
+    
+        df.to_csv(path, index=False)
+    else:
+        dgm=getpd(df, 'dgm')
+    
+    VGfit=VG[np.argmax(gm)-2:np.argmax(gm)+3]
+    IDfit=ID[np.argmax(gm)-2:np.argmax(gm)+3]
+    
+    m, b= np.polyfit(VGfit, IDfit, 1)
+    Vth=-b/m
+    fitID=m*VG[:np.argmax(gm)]+b
+    
+    Plot(path, 'VG', ['ID', 'gm']) 
     return np.around(VTO, 3)
 
 
