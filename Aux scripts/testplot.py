@@ -3,6 +3,7 @@ sys.path.append("../Modules")
 
 from HPIB_plot import*
 
+
 def getpd(df, trace):
     return df[trace][df[trace].columns[0]].to_numpy()
 
@@ -10,6 +11,7 @@ path="C:/Users/Zucchi-Note/Dropbox/Cryochip/Medidas/TN2/231026/IdxVgs-231026 200
 path2="C:/Users/Zucchi/Documents/Medidas/teste/231028/csv/IdxVds-231028 144521.csv"
 
 df=pd.read_csv(path, header=[0, 1])
+
 
 VG=getpd(df, 'VG')
 ID=getpd(df, 'ID')
