@@ -3,7 +3,7 @@ sys.path.append("../Modules")
 
 from HPIB_plot import*
 
-path="C:/Users/Zucchi/Documents/Medidas/TN2/231031/Ex_Ib-231031 121402.csv"
+path="C:/Users/Zucchi/Documents/Medidas/Rampup/231106 17-28/csv/TN2-Ex_Ib-231106 172820.csv"
 path2="C:/Users/Zucchi/Documents/Medidas/teste/231028/csv/IdxVds-231028 144521.csv"
 
 df=pd.read_csv(path, header=[0, 1])
@@ -21,7 +21,7 @@ df=pd.read_csv(path, header=[0, 1])
 ##df4.to_csv('a.csv', index=False)
 ##
 ##Plot("a.csv", 'VG', ['ID', 'gm'])
-CalcIb(path, False)
+CalcIs(path, False)
 
 ##Plot(path, 'VF', ['ID', 'IS'])
 plt.show()

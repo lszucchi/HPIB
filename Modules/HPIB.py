@@ -195,7 +195,7 @@ class HP:
     def SetVP(self, dict, ptype):
         self.SetVp(dict['Ib'], dict['VGstart'], dict['VGstop'], dict['VGstep'], dict['Compliance'], ptype)
         
-    def SetVp(self, Ib, VgStart, VgStop, VgStep, Comp=1.5, ptype=False):       
+    def SetVp(self, Is, VgStart, VgStop, VgStep, Comp=1.5, ptype=False):       
         
         if ptype:
                 Is=-Is
@@ -224,7 +224,7 @@ class HP:
         self.term='VpxVgs'
         
         print("Set " + self.term)
-        print(f"Ib={Ib}, Vg=({VgStart}, {VgStop}, {VgStep}), Vlim={Comp}")
+        print(f"Is={Is}, Vg=({VgStart}, {VgStop}, {VgStep}), Vlim={Comp}")
         
         return 0
 

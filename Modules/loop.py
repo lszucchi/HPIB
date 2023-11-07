@@ -42,7 +42,7 @@ def loop(prefix, ptype, time):
     # ptype=False
     
     VGS = {
-        'enable' : True,
+        'enable' : False,
         'VGstart' : 0, 'VGstop' : 1.5, 'VGstep' : 0.01,
         'VD' : '25m', 'Compliance' : '1.5m'
         }
@@ -54,27 +54,27 @@ def loop(prefix, ptype, time):
     #     }
         
     VGS_sat = {
-        'enable' : True,
+        'enable' : False,
         'VGstart' : 0, 'VGstop' : 1.5, 'VGstep' : 0.01,
         'VD' : 1.5, 'Compliance' : '1.5m'
         }
     
     VDS = {
-        'enable' : True,
+        'enable' : False,
         'VDstart' : 0, 'VDstop' : 1.5, 'VDstep' : 0.01,
         'VGstart' : 0.6, 'VGstop' : 1.5, 'VGstep' : 0.15,
         'Compliance' : '1.5m'
         }
     
     Ex_Ib = {
-        'enable' : False,
+        'enable' : True,
         'VSstart' : 0, 'VSstop' : 1.5, 'VSstep' : 0.01,
         'VGstart' : 1.3, 'VGstop' : 1.6, 'VGstep' : 0.1,
         'Compliance' : '1.5m'
         }
     
     VP = {
-        'enable' : False,
+        'enable' : True,
         'VGstart' : -1.5, 'VGstop' : 1.5, 'VGstep' : 0.01,
         'Ib' : '1e-6', 'Compliance' : 1.5
         }
@@ -179,7 +179,7 @@ def loop(prefix, ptype, time):
        
         HP.SingleSave(plotp, timeout*60*7)
         ibcalc=plotp
-        VP['Ib']=-CalcIb(ibcalc, ptype)
+        VP['Ib']=-CalcIs(ibcalc, ptype)
         if not ptype: VP['Ib']=-VP['Ib']
         plt.close()
     
