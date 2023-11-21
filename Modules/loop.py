@@ -42,7 +42,7 @@ def loop(prefix, ptype, time):
     # ptype=False
     
     VGS = {
-        'enable' : False,
+        'enable' : True,
         'VGstart' : 0, 'VGstop' : 1.5, 'VGstep' : 0.01,
         'VD' : '25m', 'Compliance' : '1.5m'
         }
@@ -54,7 +54,7 @@ def loop(prefix, ptype, time):
     #     }
         
     VGS_sat = {
-        'enable' : False,
+        'enable' : True,
         'VGstart' : 0, 'VGstop' : 1.5, 'VGstep' : 0.01,
         'VD' : 1.5, 'Compliance' : '1.5m'
         }
@@ -67,14 +67,14 @@ def loop(prefix, ptype, time):
         }
     
     Ex_Ib = {
-        'enable' : True,
+        'enable' : False,
         'VSstart' : 0, 'VSstop' : 1.5, 'VSstep' : 0.01,
         'VGstart' : 1.3, 'VGstop' : 1.6, 'VGstep' : 0.1,
         'Compliance' : '1.5m'
         }
     
     VP = {
-        'enable' : True,
+        'enable' : False,
         'VGstart' : -1.5, 'VGstop' : 1.5, 'VGstep' : 0.01,
         'Ib' : '1e-6', 'Compliance' : 1.5
         }
@@ -100,7 +100,7 @@ def loop(prefix, ptype, time):
     else: 
         path="C:/Users/Zucchi-Note/Dropbox/Cryochip/Medidas/Rampup"
     
-    path+=f"/{time}/csv/"
+    path+=f"/{time}/"
     
     os.makedirs(path, exist_ok=True)
     

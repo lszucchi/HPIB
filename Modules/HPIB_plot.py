@@ -10,6 +10,7 @@ PointsDer=4
 EarlyLimitDraw=-200
 
 Ut=25e-3
+Ut4=25e-3*3.1/300
 
 prefix=['f','p','n','u','m','','k','M','G','T','P']
 
@@ -18,6 +19,9 @@ font = {'family': 'serif',
         'weight': 'normal',
         'size': 16,
         }
+
+def getpd(df, trace):
+    return df[trace][df[trace].columns[0]].to_numpy()
 
 def Plot(df, X, Y):
 
@@ -206,10 +210,9 @@ def PlotVgs(path,draw=False):
     Vth=-b/m
     fitID=m*VG[:np.argmax(gm)]+b
     
-    Plot(path, 'VG', ['ID', 'gm']) 
-    return np.around(VTO, 3)
-
-
+    Plot(path, 'VG', ['ID', 'gm'])
+    
+    return np.around(Vth, 3)
 
 def PlotSubVt(path):
 
@@ -253,6 +256,19 @@ def PlotSubVt(path):
     plt.savefig(save_path)    
 
     return np.around((1/p[0])*1000, 0)
+
+def Plot2P(path):
+    try: df=pd.read_csv(path, header=[0, 1])
+    except: print("Error opening CSV\n")
+
+    V=df['V2'][df.columns.levels[1][0]].to_numpy()
+    I=df['I2'][df.columns.levels[1][0]].to_numpy()
+
+    m, b = np.polyfit(I, V, 1)
+
+    Plot(path, "V2", "I2")
+    
+    return m
 
 def PlotSi4P(path,dop,draw=False):
     df = pd.read_csv(path)
@@ -333,12 +349,13 @@ def Early():
     print(Early)
     print(EarlyAvg)
 
-def CalcIs(path, ptype=False):
+def CalcIs(path, temp, ptype=False):
+    
     df = pd.read_csv(path, header=[0, 1])
     try: VG=[np.around(float(x), 2) for x in df.columns.levels[1][1:]]
     except: VG=[np.around(float(x), 2) for x in df.columns.levels[1][:-1]]
         
-    VS=df['VS'].to_numpy().T[1]
+    VS=df['VS'][df['VS'].columns[0]].to_numpy()
     ID=df['ID'].to_numpy()
     
     if ptype:
@@ -369,7 +386,7 @@ def CalcIs(path, ptype=False):
     ax.set_xlabel("$V_S$  (V)")
     ax.set_title("$\sqrt{I_D}$ vs $V_S$")
 
-    Is=(np.array(slope)*2*Ut)**2
+    Is=(np.array(slope)*2*Ut*temp/300)**2
     if not ptype: Is=-Is
     print(Is)
     

@@ -143,7 +143,7 @@ class HP:
         self.SetAxis('X', 'VG', 'LIN', VgStart, VgStop)
         self.SetAxis('Y1', 'ID', 'LIN', 0, 1e-3)
 
-        self.save_list(['VG', 'ID'])
+        self.save_list(['VG', 'IG', 'ID', 'IS'])
         self.beep()
         
         if sat or (np.abs(VgStop)-np.abs(VdValue)<0.5):
@@ -182,7 +182,7 @@ class HP:
         self.SetAxis('Y1', 'ID', 'LIN', 0, 1e-3)
         self.Var2Name="VGS"
 
-        self.save_list(['VD', 'ID'])
+        self.save_list(['VD', 'ID', 'IG', 'IS'])
         self.beep()
         
         self.term='IdxVds'
@@ -193,7 +193,7 @@ class HP:
         return 0
 
     def SetVP(self, dict, ptype):
-        self.SetVp(dict['Ib'], dict['VGstart'], dict['VGstop'], dict['VGstep'], dict['Compliance'], ptype)
+        self.SetVp(dict['Is'], dict['VGstart'], dict['VGstop'], dict['VGstep'], dict['Compliance'], ptype)
         
     def SetVp(self, Is, VgStart, VgStop, VgStep, Comp=1.5, ptype=False):       
         
@@ -218,7 +218,7 @@ class HP:
         self.SetAxis('X', 'VD', 'LIN', VgStart, VgStop)
         self.SetAxis('Y1', 'VS', 'LIN', 0, 1)
 
-        self.save_list(['VG', 'VS'])
+        self.save_list(['VG', 'IG', 'VS', 'ID'])
         self.beep()
 
         self.term='VpxVgs'
@@ -228,23 +228,24 @@ class HP:
         
         return 0
 
-    def SetEXIB(self, dict, ptype):
-        self.SetEx_Ib(dict['VSstart'], dict['VSstop'], dict['VSstep'], dict['VGstart'], dict['VGstop'], dict['VGstep'],  dict['Compliance'], ptype)
+    def SetEXIS(self, dict, ptype):
+        self.SetEx_Is(dict['VSstart'], dict['VSstop'], dict['VSstep'], dict['VGstart'], dict['VGstop'], dict['VGstep'], dict['VDvalue'], dict['Compliance'], ptype)
     
-    def SetEx_Ib(self, VsStart, VsStop, VsStep, VgStart, VgStop, VgStep, Comp=1e-3, ptype=False):
+    def SetEx_Is(self, VsStart, VsStop, VsStep, VgStart, VgStop, VgStep, VdValue, Comp=1e-3, ptype=False):
         
         if ptype:
-                VsStart=-VsStart
-                VsStop=-VsStop
-                VsStep=-VsStep
-                VgStart=-VgStart
-                VgStop=-VgStop
-                VgStep=-VgStep
+            VsStart=-VsStart
+            VsStop=-VsStop
+            VsStep=-VsStep
+            VgStart=-VgStart
+            VgStop=-VgStop
+            VgStep=-VgStep
+            VdValue=-VdValue
 
         self.DisableAll()
         
         self.SetSMU('SMU1', 'VS', 'IS', 'V', 'VAR1', Comp=Comp)
-        self.SetSMU('SMU2', 'VD', 'ID', 'V', 'CONS', Value=VsStop, Comp=Comp)
+        self.SetSMU('SMU2', 'VD', 'ID', 'V', 'CONS', Value=VdValue, Comp=Comp)
         self.SetSMU('SMU3', 'VG', 'IG', 'V', 'VAR2', Comp=Comp)
         self.SetSMU('SMU4', 'VB', 'IB', 'COMM')
 
@@ -255,14 +256,14 @@ class HP:
         self.SetAxis('X', 'VS', 'LIN', VsStart, VsStop)
         self.SetAxis('Y1', 'ID', 'LIN', 0, 1)
 
-        self.save_list(['VS', 'ID'])
+        self.save_list(['VS', 'ID', 'IG'])
         
         self.beep()
 
-        self.term='Ex_Ib'
+        self.term='Ex_Is'
         
         print("Set " + self.term)
-        print(f" Vs=({VsStart}, {VsStop}, {VsStep}), Vg=({VgStart}, {VgStop}, {VgStep})")
+        print(f" Vs=({VsStart}, {VsStop}, {VsStep}), Vg=({VgStart}, {VgStop}, {VgStep}), Vd={VdValue}")
         
         return 0
 
@@ -316,6 +317,26 @@ class HP:
         
         return 0
 
+    def Set2P(self, IStart, IStop, Points):
+        self.DisableAll()
+        
+        self.SetSMU('SMU4', 'V1', 'I1')
+        self.SetSMU('SMU2', 'V2', 'I2', 'I', 'VAR1')
+        self.SetVar('VAR1', 'I', IStart, IStop, (IStop-IStart)/(Points-1), 1)
+        
+        self.UFUNC('V=-V1')
+        
+        self.SetAxis('Y1', 'I2')
+        self.SetAxis('X', 'V2')
+
+        self.save_list(['V2', 'I2'])
+        self.beep()
+        
+        self.term="2P"
+        
+        print("Set " + self.term)
+        print(f"I=({IStart}, {IStop}), {Points} Points")
+    
     def Set4P(self, IStart, IStop, Points):        
         self.DisableAll()
         

@@ -12,7 +12,6 @@ path2="C:/Users/Zucchi/Documents/Medidas/teste/231028/csv/IdxVds-231028 144521.c
 
 df=pd.read_csv(path, header=[0, 1])
 
-
 VG=getpd(df, 'VG')
 ID=getpd(df, 'ID')
 
