@@ -17,7 +17,7 @@ class HP4145(HP):
             raise Exception("Invalid axis: <{AXIS}>")
         self.write("SM")
         self.write("DM1")
-        time.sleep(0.5)
+        sleep(0.5)
         if AXIS=='X':
             AXIS='XN'        
         elif AXIS[0].upper()=='Y':
@@ -31,10 +31,10 @@ class HP4145(HP):
         self.write("DE")
         for i in range(1, 7):
             self.write(f"CH{i}")
-            time.sleep(0.01)
+            sleep(0.01)
         for i in range(1, 3):
             self.write(f"VS{i}")
-            time.sleep(0.01)
+            sleep(0.01)
             
         return 0
     
@@ -154,7 +154,7 @@ class HP4145(HP):
         
         if Func=='CONS':
             self.write("SS")
-            time.sleep(0.05)
+            sleep(0.05)
             self.write(f"SC{no},{Value}")
 
             return 0
@@ -188,7 +188,7 @@ class HP4145(HP):
 
         if Func=='CONS':
             self.write("SS")
-            time.sleep(0.05)
+            sleep(0.05)
             self.write(f"{Mode}C{no},{Value},{Comp}")
 
             return 0

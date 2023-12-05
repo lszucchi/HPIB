@@ -139,7 +139,7 @@ class HP4155(HP):
         if Func=='CONS':
             self.write(f":PAGE:MEAS:CONS:{SMUno} {Value}")
             self.write(f":PAGE:MEAS:CONS:{SMUno}:COMP {Comp}")
-            time.sleep(0.1)
+            sleep(0.1)
 
             return 0
         
@@ -180,7 +180,7 @@ class HP4155(HP):
         if Func == "CONS":
             # print(f"{Value}, {Comp}")
             # self.write(f":PAGE:MEAS")
-            # time.sleep(3)
+            # sleep(3)
             self.write(f":PAGE:MEAS:CONS:{SMUno} {Value}")
             self.write(f":PAGE:MEAS:CONS:{SMUno}:COMP {Comp}")
 
@@ -204,7 +204,7 @@ class HP4155(HP):
             self.write(f":PAGE:MEAS:{VARno}:STOP {Stop}")
             self.write(f":PAGE:MEAS:{VARno}:STEP {Step}")
             self.write(f":PAGE:MEAS:{VARno}:COMP {Comp}")
-            time.sleep(0.1)
+            sleep(0.1)
             
             return 0
 
@@ -215,7 +215,7 @@ class HP4155(HP):
             self.write(f":PAGE:MEAS:{VARno}:STEP {Step}")
             self.write(f":PAGE:MEAS:{VARno}:POINTS {Points}")
             self.write(f":PAGE:MEAS:{VARno}:COMP {Comp}")
-            time.sleep(0.1)
+            sleep(0.1)
 
             return 0
 
@@ -223,7 +223,7 @@ class HP4155(HP):
             """ Start = Ratio, Stop=Offset"""
             self.write(f":PAGE:MEAS:VARD:RAT {Start}")
             self.write(f":PAGE:MEAS:VARD:OFFS {Stop}")
-            time.sleep(0.1)
+            sleep(0.1)
 
             return 0
         

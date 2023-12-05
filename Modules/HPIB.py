@@ -1,11 +1,10 @@
 import pyvisa
-import time
 import string
 import datetime
-from IPython.display import clear_output
-from HPIB_plot import *
 
-#from INOSerial import *
+from IPython.display import clear_output, display
+from HPIB_plot import *
+from time import sleep
 
 ########## Tabelas para intruções HPIB ###########
 
@@ -92,25 +91,29 @@ class HP:
     ##### Poll DataReady == state, a cada delay em ms, no máximo de maxpoll ciclos. Retorna 1 se chegar ao máximo de ciclos.
     def PollDR(self, state, delay=1, maxpoll=2):
         if self.debug:
-            time.sleep(2*delay)
+            sleep(2*delay)
             print("Debug DR")
             return 0
 
-        progress=''
+        progress='Start'
+        prog_bar=display(progress, display_id=True)
         
         for i in range(60*maxpoll):
+            
+            print('.', end='')
+            progress+='+'
+            if len(progress)>=30: 
+                progress="+"
+                print("HP blink 30s")
+            prog_bar.update(progress)
+            
+            sleep(delay)
+        
             if self.StopFlag:
                 return 1
             if self.GetDR()==state:
                 return 0
-            
-            time.sleep(delay)
-            # clear_output(wait=True)
-            progress+="+"
-            if len(progress)>60: 
-                progress="+"
-                print("HP Blink 60s")
-    
+
         return 1
     
     def SetVGS(self, dict, ptype):
@@ -141,7 +144,7 @@ class HP:
         self.SetVar('VAR1', 'V', VgStart, VgStop, VgStep, 1e-3)
 
         self.SetAxis('X', 'VG', 'LIN', VgStart, VgStop)
-        self.SetAxis('Y1', 'ID', 'LIN', 0, 1e-3)
+        self.SetAxis('Y1', 'ID', 'LIN', 0, VgStop*1e-3)
 
         self.save_list(['VG', 'IG', 'ID', 'IS'])
         self.beep()
@@ -177,7 +180,7 @@ class HP:
         self.SetSMU('SMU4', 'VB', 'IB', 'COMM', 'CONS')
         self.SetVar('VAR1', 'V', VdStart, VdStop, VdStep)
         self.SetVar('VAR2', 'V', VgStart, VgStop, VgStep)
-        time.sleep(0.5)
+        sleep(0.5)
         self.SetAxis('X', 'VD', 'LIN', VdStart, VdStop)
         self.SetAxis('Y1', 'ID', 'LIN', 0, 1e-3)
         self.Var2Name="VGS"
@@ -274,16 +277,16 @@ class HP:
         
         self.DisableAll()
         
-        self.SetSMU('SMU4', 'VB', 'IF', 'V', 'VAR1', Comp=2e-3)
-        self.SetSMU('SMU1', 'VS', 'IS', 'V', 'CONS', Comp=1e-3)
-        self.SetSMU('SMU2', 'VD', 'ID', 'V', 'CONS', Comp=1e-3)
+        self.SetSMU('SMU4', 'VB', 'IF', 'V', 'VAR1', Comp=2.4e-3)
+        self.SetSMU('SMU1', 'VS', 'IS', 'V', 'CONS', Comp=1.2e-3)
+        self.SetSMU('SMU2', 'VD', 'ID', 'V', 'CONS', Comp=1.2e-3)
 
         self.SetVar('VAR1', 'V', VfStart, VfStop, VfStep)
         self.UFUNC("VF=-VB")
         
         self.SetAxis('X', 'VF', 'LIN', VfStart, VfStop)
-        self.SetAxis('Y1', 'IS', 'LIN', 0, 1e-4)
-        self.SetAxis('Y2', 'ID', 'LIN', 0, 1e-4)
+        self.SetAxis('Y1', 'IS', 'LIN', -1e-3, 1e-3)
+        self.SetAxis('Y2', 'ID', 'LIN', -1e-3, 1e-3)
 
         self.save_list(['VF', 'IS', 'ID'])
         self.beep()
