@@ -344,7 +344,7 @@ class General(GenericTab):
         
         self.HP.SetAxis("Y1", self.YAxis[0], scale, ETF(self.Y1Min.GetValue()), ETF(self.Y1Max.GetValue()))
 
-         data_variables=[self.X1.GetValue()] + self.YAxis
+        data_variables=[self.X1.GetValue()] + self.YAxis
         
         if self.Y2.GetValue():
             self.YAxis+=[self.Y2.GetValue()]
@@ -394,7 +394,7 @@ class General(GenericTab):
         
         if os.path.isfile(ReturnFlag):
             self.img_path.SetLabel(ReturnFlag)
-            self.RefreshImg(Plot(self, ReturnFlag, self.X1.GetValue(), self.YAxis))
+            self.RefreshImg(Plot(ReturnFlag, self.X1.GetValue(), self.YAxis))
             return ReturnFlag
         
         if self.ShowMessage(f'Error: {ReturnFlag}', True): raise Exception(ReturnFlag)
