@@ -343,6 +343,8 @@ class General(GenericTab):
             self.YAxis[0]=YAxis[0].split('log')[1].strip('( )')
         
         self.HP.SetAxis("Y1", self.YAxis[0], scale, ETF(self.Y1Min.GetValue()), ETF(self.Y1Max.GetValue()))
+
+         data_variables=[self.X1.GetValue()] + self.YAxis
         
         if self.Y2.GetValue():
             self.YAxis+=[self.Y2.GetValue()]
@@ -357,8 +359,6 @@ class General(GenericTab):
             
             self.HP.SetAxis("Y2", self.YAxis[1], scale, ETF(self.Y2Min.GetValue()), ETF(self.Y2Max.GetValue()))
             data_variables=data_variables+[self.Y2.GetValue()]
-        
-        data_variables=[self.X1.GetValue()] + self.YAxis
         
         if self.Traces.GetValue() and 'Unavailable' not in self.Traces.GetValue():
             for trace in self.Traces.GetValue().split(','):

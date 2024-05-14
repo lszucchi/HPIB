@@ -80,7 +80,7 @@ class HP:
         try:
             _, ext = os.path.splitext(path)
             if ext != ".csv":
-                path = f"{path}/self.term-{datetime.datetime.now().strftime('%y%m%d %H%M%S')}.csv"
+                path = f"{path}/{self.term}-{datetime.datetime.now().strftime('%y%m%d %H%M%S')}.csv"
         except:
             return "Invalid Path"
         try: df.to_csv(path)
@@ -94,17 +94,18 @@ class HP:
             sleep(2*delay)
             print("Debug DR")
             return 0
-
-        progress='Start'
+        minute=False
+        progress=''
         prog_bar=display(progress, display_id=True)
         
         for i in range(60*maxpoll):
-            
-            print('.', end='')
             progress+='+'
-            if len(progress)>=30: 
+            if len(progress)>=30:
                 progress="+"
-                print("HP blink 30s")
+                print("30s", end=' ')
+                if minute:
+                    print("|", end=' ')
+                minute=not minute
             prog_bar.update(progress)
             
             sleep(delay)
@@ -282,13 +283,35 @@ class HP:
         self.SetSMU('SMU2', 'VD', 'ID', 'V', 'CONS', Comp=1.2e-3)
 
         self.SetVar('VAR1', 'V', VfStart, VfStop, VfStep)
-        self.UFUNC("VF=-VB")
+        self.UFUNC("V=-VB")
         
-        self.SetAxis('X', 'VF', 'LIN', VfStart, VfStop)
+        self.SetAxis('X', 'V', 'LIN', VfStart, VfStop)
         self.SetAxis('Y1', 'IS', 'LIN', -1e-3, 1e-3)
         self.SetAxis('Y2', 'ID', 'LIN', -1e-3, 1e-3)
 
-        self.save_list(['VF', 'IS', 'ID'])
+        self.save_list(['V', 'IS', 'ID'])
+        self.beep()
+
+        self.term="Diode"
+        
+        print("Set " + self.term)
+        print(f"Vf=({VfStart}, {VfStop})")
+
+        return 0
+
+    def SingleDiode(self, VfStart, VfStop, VfStep, SMUP='SMU2', SMUN='SMU4'):
+        
+        self.DisableAll()
+        
+        self.SetSMU(SMUN, 'VB', 'IB', 'V', Comp=2e-3)
+        self.SetSMU(SMUP, 'VF', 'IF', 'V', 'VAR1', Comp=2e-3)
+
+        self.SetVar('VAR1', 'V', VfStart, VfStop, VfStep)
+        
+        self.SetAxis('X', 'VF', 'LIN', VfStart, VfStop)
+        self.SetAxis('Y1', 'IF', 'LIN', -2e-3, 2e-3)
+
+        self.save_list(['VF', 'IF'])
         self.beep()
 
         self.term="Diode"
@@ -324,7 +347,7 @@ class HP:
         self.DisableAll()
         
         self.SetSMU('SMU4', 'V1', 'I1')
-        self.SetSMU('SMU2', 'V2', 'I2', 'I', 'VAR1')
+        self.SetSMU('SMU1', 'V2', 'I2', 'I', 'VAR1')
         self.SetVar('VAR1', 'I', IStart, IStop, (IStop-IStart)/(Points-1), 1)
         
         self.UFUNC('V=-V1')
@@ -339,6 +362,26 @@ class HP:
         
         print("Set " + self.term)
         print(f"I=({IStart}, {IStop}), {Points} Points")
+
+    def Set2PD(self, VStart, VStop, Points):
+        self.DisableAll()
+        
+        self.SetSMU('SMU4', 'V1', 'I1')
+        self.SetSMU('SMU2', 'V2', 'I2', 'V', 'VAR1')
+        self.SetVar('VAR1', 'V', VStart, VStop, (VStop-VStart)/(Points-1), 1.5e-3)
+        
+        self.UFUNC('V=-V1')
+        
+        self.SetAxis('Y1', 'I2', 0, 1e-3)
+        self.SetAxis('X', 'V2')
+
+        self.save_list(['V2', 'I2'])
+        self.beep()
+        
+        self.term="2PD"
+        
+        print("Set " + self.term)
+        print(f"I=({VStart}, {VStop}), {Points} Points")
     
     def Set4P(self, IStart, IStop, Points):        
         self.DisableAll()

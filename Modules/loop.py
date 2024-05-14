@@ -6,17 +6,16 @@ from HPIB4155 import *
 from HPIB_plot import*
 from IPython.display import clear_output, display
 
+if os.path.isdir('C:/Users/Zucchi/Documents/Medidas'):
+    path='C:/Users/Zucchi/Documents/Medidas/Warmup'
+else: 
+    path="C:/Users/Zucchi-Note/Dropbox/Cryochip/Medidas/Warmup"
+
 def printf(msg, start, output=False):
 
-    if os.path.isdir('C:/Users/Zucchi/Documents/Medidas'):
-        path='C:/Users/Zucchi/Documents/Medidas/Rampup'
-    else: 
-        path="C:/Users/Zucchi-Note/Dropbox/Cryochip/Medidas/Rampup"
-
-    path+=f"/{start}"
     os.makedirs(path, exist_ok=True)
 
-    path+=f"/log - {start}.txt"
+    path+=f"/log.txt"
     
     with open(path, 'a') as the_file:
         the_file.write(f'{msg}\n')
@@ -77,29 +76,8 @@ def loop(HP, prefix, ptype, start):
     # prefix=input()
     
     now=datetime.datetime.now().strftime('%y%m%d')
-    if os.path.isdir('C:/Users/Zucchi/Documents/Medidas'):
-        path='C:/Users/Zucchi/Documents/Medidas/Rampup'
-    else: 
-        path="C:/Users/Zucchi-Note/Dropbox/Cryochip/Medidas/Rampup"
     
-    path+=f"/{start}/"
-    
-    os.makedirs(path, exist_ok=True)
-    
-    
-    # In[ ]:
-    
-    # if ptype:
-    #     HP.SetDiode(0, 1.5, 0.02)
-    # else:
-    #     HP.SetDiode(0, -1.5, 0.02)
-    # HP.SetIntTime("SHOR")
-    
-    # now=datetime.datetime.now().strftime("%y%m%d %H%M%S")
-    # plotp=f"{path}{prefix}-{HP.term}-{now}.csv"
-
-    # HP.SingleSave(plotp, timeout)
-    # Plot(plotp, "VF", ["ID", "IS"])
+    os.makedirs(path, exist_ok=True) 
         
     HP.SetIntTime("LONG")
     HP.ask(":PAGE:MEAS:MSET:ITIM?")
@@ -181,6 +159,18 @@ def loop(HP, prefix, ptype, start):
         HP.SingleSave(plotp, timeout*60)
         Plot(plotp, 'VG', 'VS')
         plt.close()
+
+    if ptype:
+        HP.SetDiode(0, 1.5, 0.02)
+    else:
+        HP.SetDiode(0, -1.5, 0.02)
+    HP.SetIntTime("SHOR")
+    
+    now=datetime.datetime.now().strftime("%y%m%d %H%M%S")
+    plotp=f"{path}{prefix}-{HP.term}-{now}.csv"
+
+    HP.SingleSave(plotp, timeout)
+    Plot(plotp, "V", ["ID", "IS"])
 
 
 
