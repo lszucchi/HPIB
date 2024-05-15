@@ -68,6 +68,7 @@ class HP:
     def SingleSave(self, path=".", timeout=2):
         if self.term=="0": return "Parameters not set"
         
+        print(self.term)
         self.measure()
         
         Poll=self.PollDR(1, 1, timeout)
@@ -96,7 +97,7 @@ class HP:
             return 0
         minute=False
         progress=''
-        prog_bar=display(progress, display_id=True)
+        #prog_bar=display(progress, display_id=True)
         
         for i in range(60*maxpoll):
             progress+='+'
@@ -106,11 +107,11 @@ class HP:
                 if minute:
                     print("|", end=' ')
                 minute=not minute
-            prog_bar.update(progress)
+            #prog_bar.update(progress)
             
             sleep(delay)
         
-            if self.StopFlag:
+            if self.Stop_flag:
                 return 1
             if self.GetDR()==state:
                 return 0

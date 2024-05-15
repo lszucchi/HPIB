@@ -13,12 +13,12 @@ class HP4155(HP):
         self.write(f":PAGE:DISP:GRAP:{AXIS}:SCAL {SCALE}")
         self.write(f":PAGE:DISP:GRAP:{AXIS}:MIN {MIN}")
         self.write(f":PAGE:DISP:GRAP:{AXIS}:MAX {MAX}")
-        
+        self.beep()
         return 0
         
     def DisableAll(self):
         self.write(":PAGE:CHAN:ALL:DIS")
-        
+        self.beep()
         return 0
 
     def SetIntTime(self, IntTime="MEDium"):
@@ -28,7 +28,7 @@ class HP4155(HP):
             self.write(f":PAGE:MEAS:MSET:ITIM {IntTime}")
 
             return 0
-        
+        self.beep()
         return 'Invalid Integration Time'
 
     def UFUNC(self, ufunc):
@@ -41,6 +41,7 @@ class HP4155(HP):
         (NAME, UNIT, EXPRESSION) = (ufunc.split('=')[0], mode, ufunc.split('=')[1])
         
         self.write(f":PAGE:CHAN:UFUN:DEF '{NAME}', '{UNIT}', '{EXPRESSION}'")
+        self.beep()
 
         return 0
 
@@ -73,6 +74,7 @@ class HP4155(HP):
         else:
             raise TypeError('Invalid trace list')
         self.write(":PAGE:DISP:MODE GRAP")
+        self.beep()
 
     def DataOutput(self, trace):
         if self.debug:
@@ -111,24 +113,25 @@ class HP4155(HP):
         
         return df
 
-    def SetVSMU(self, SMUno, VNAME, Func='CONS', Value=0, Comp='1e-3'):
-
+    def SetVSMU(self, SMUno, VNAME, Func='CONS', Comp='1e-3'):
         SMUno=SMUno.upper()
         if SMUno not in ['VMU1', 'VMU2','VSU1','VSU2']:
 
-            raise Exception("Invalid VS or VM: <{SMUno}>")
+            raise Exception("Invalid VSU or VMU: <{SMUno}>")
+            
+        self.write(f":PAGE:CHAN:{SMUno}:VNAME \'{VNAME}\'")
+        self.write(f":PAGE:CHAN:{SMUno}:MODE V")
         
         Func=Func.upper()
         if Func not in ['CONS', 'VAR1', 'VAR2', 'VARD']:
 
             raise Exception(f"Invalid Mode in {SMUno}: <{Mode}>")
-        
-        if SMUno[1]=='M':
-            self.write(f":PAGE:CHAN:{SMUno}:VNAME \'{VNAME}\'")
-            self.write(f":PAGE:CHAN:{SMUno}:MODE V")
 
-            return 0
+        self.beep()
         
+        if "VMU" in SMUno:
+            return 0
+            
         self.write(f":PAGE:CHAN:{SMUno}:FUNC {Func}")
         if Func[len(Func)-1] in ['1', '2', 'D']:
             try: self.VarComp[int(Func[len(Func)-1])]=Comp
@@ -137,9 +140,9 @@ class HP4155(HP):
             return 0
         
         if Func=='CONS':
-            self.write(f":PAGE:MEAS:CONS:{SMUno} {Value}")
-            self.write(f":PAGE:MEAS:CONS:{SMUno}:COMP {Comp}")
-            sleep(0.1)
+        #    self.write(f":PAGE:MEAS:CONS:{SMUno} {Value}")
+        #    self.write(f":PAGE:MEAS:CONS:{SMUno}:COMP {Comp}")
+        #    sleep(0.1)
 
             return 0
         
@@ -165,7 +168,7 @@ class HP4155(HP):
         self.write(f":PAGE:CHAN:{SMUno}:INAME \'{INAME}\'")
         self.write(f":PAGE:CHAN:{SMUno}:MODE {Mode}")
         self.write(f":PAGE:CHAN:{SMUno}:FUNC {Func}")
-       
+
         self.beep()
         
         if Mode == "COMM": return 0
@@ -176,14 +179,13 @@ class HP4155(HP):
             except: self.VarComp[0]=Comp
 
             return 0
-            
+        
         if Func == "CONS":
             # print(f"{Value}, {Comp}")
             # self.write(f":PAGE:MEAS")
             # sleep(3)
             self.write(f":PAGE:MEAS:CONS:{SMUno} {Value}")
             self.write(f":PAGE:MEAS:CONS:{SMUno}:COMP {Comp}")
-
             return 0
         
         return 1
@@ -205,6 +207,7 @@ class HP4155(HP):
             self.write(f":PAGE:MEAS:{VARno}:STEP {Step}")
             self.write(f":PAGE:MEAS:{VARno}:COMP {Comp}")
             sleep(0.1)
+            self.beep()
             
             return 0
 
@@ -216,6 +219,7 @@ class HP4155(HP):
             self.write(f":PAGE:MEAS:{VARno}:POINTS {Points}")
             self.write(f":PAGE:MEAS:{VARno}:COMP {Comp}")
             sleep(0.1)
+            self.beep()
 
             return 0
 
@@ -224,6 +228,7 @@ class HP4155(HP):
             self.write(f":PAGE:MEAS:VARD:RAT {Start}")
             self.write(f":PAGE:MEAS:VARD:OFFS {Stop}")
             sleep(0.1)
+            self.beep()
 
             return 0
         

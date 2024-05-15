@@ -20,18 +20,20 @@ class CVTab(GenericTab):
         self.Bx1a=wx.StaticBox(self,label='SMU Config', pos=(X, Y),size=(self.Box1a[1][0], self.Box1a[1][1]))
         self.Sizer1a=wx.StaticBoxSizer(self.Bx1a)
 
-        self.DBoxTx = wx.StaticText(self, label='V:', pos=(X+1*Margin, Y+2*Margin+3))
-        self.DBox  = wx.ComboBox(self, value='SMU1', pos=(X+3*Margin+5, Y+2*Margin), size=(60,40), choices=['SMU1','SMU2','SMU3','SMU4'])
-        self.Sizer1a.Add(self.DBox)
+        self.VBoxTx = wx.StaticText(self, label='V:', pos=(X+1*Margin, Y+2*Margin+3))
+        self.VBox  = wx.ComboBox(self, value='VSU1', pos=(X+3*Margin+5, Y+2*Margin), size=(60,40), choices=['SMU1','SMU2','SMU3','SMU4', 'VSU1', 'VSU2'])
+        self.Sizer1a.Add(self.VBox)
 
+        self.CompTx = wx.StaticText(self, label='Imax:', pos=(X+1*Margin+SMU_MarginX, Y+2*Margin+3))
+        self.Comp  = wx.ComboBox(self, value='10m', pos=(X+4*Margin+5+SMU_MarginX, Y+2*Margin), size=(60,40))
 
-        self.BBoxTx = wx.StaticText(self, label='C:', pos=(X+1*Margin, Y+2*Margin+3+SMU_MarginY))
-        self.BBox = wx.ComboBox(self, value='VMU1', pos=(X+3*Margin+5, Y+2*Margin+SMU_MarginY), size=(60,40), choices=['SMU1','SMU2','SMU3','SMU4'])
-        self.Sizer1a.Add(self.BBox)
+        self.CBoxTx = wx.StaticText(self, label='C:', pos=(X+1*Margin, Y+2*Margin+3+SMU_MarginY))
+        self.CBox = wx.ComboBox(self, value='VMU1', pos=(X+3*Margin+5, Y+2*Margin+SMU_MarginY), size=(60,40), choices=['SMU1','SMU2','SMU3','SMU4', 'VMU1', 'VMU2'])
+        self.Sizer1a.Add(self.CBox)
 
-        self.GBoxTx = wx.StaticText(self, label='S:', pos=(X+2*Margin+SMU_MarginX,  Y+2*Margin+3+SMU_MarginY))
-        self.GBox = wx.ComboBox(self, value='VMU2', pos=(X+4*Margin+5+SMU_MarginX, Y+2*Margin+SMU_MarginY), size=(60,40), choices=['SMU1','SMU2','SMU3','SMU4'])
-        self.Sizer1a.Add(self.GBox)
+        self.SBoxTx = wx.StaticText(self, label='S:', pos=(X+2*Margin+SMU_MarginX,  Y+2*Margin+3+SMU_MarginY))
+        self.SBox = wx.ComboBox(self, value='VMU2', pos=(X+4*Margin+5+SMU_MarginX, Y+2*Margin+SMU_MarginY), size=(60,40), choices=['SMU1','SMU2','SMU3','SMU4', 'VMU1', 'VMU2'])
+        self.Sizer1a.Add(self.SBox)
 
         ######################## V Config ###########################
 
@@ -77,33 +79,52 @@ class CVTab(GenericTab):
         self.img_path = wx.StaticText(self, label="No measurements to show", pos=(385,10),size=(400,20))
 
     def Measure(self):
-        self.OpenHP()
+        try:
+            self.HP.SetIntTime(self.IntTimeBox.GetValue())
+            print(self.SaveFilePath.GetValue())
+            ReturnFlag = self.HP.SingleSave(self.SaveFilePath.GetValue(), timeout=1800)
+        except:
+            #ReturnFlag="No instrument\nSend config to open connection"
+            if self.ShowMessage(f'Error: {ReturnFlag}', True): raise Exception(ReturnFlag)
         
-        self.HP.SMU=[self.SBox.GetValue(), self.DBox.GetValue(),self.GBox.GetValue(),self.BBox.GetValue()]
-
-        self.HP.reset()
+        if os.path.isfile(ReturnFlag):
+            self.img_path.SetLabel(ReturnFlag)
+            self.RefreshImg(Plot(ReturnFlag, "Vf", ["C", 'S']))
+            return ReturnFlag
         
-        ChSelect=[self.cb1.GetValue(),self.cb2.GetValue(),self.cb3.GetValue(),self.cb4.GetValue(),self.cb5.GetValue(),self.cb6.GetValue()]
-        
-        #print('Opening Arduino on: '+ self.COM.GetValue())
-        #INO=pyfirmata.Arduino(self.COM.GetValue())
-        
-        self.Progress.SetValue('Arduino Opened on: '+ self.COM.GetValue()+'\n')
-
-        for Chn in range(6):      
-            if ChSelect[Chn]:
-                self.Progress.AppendText('Channel: ' +str(Chn+1) + ' Measurements:\n')
-                #opench(Chn-1)
-                self.Progress.AppendText(str('ChnOpen')+ '  ')
-
-                self.Progress.AppendText(str('C-V')+ '  ')
-                self.HP.SetCap(self.VStart.GetValue(),self.VStop.GetValue(),self.VStep.GetValue())
-                last_path=self.HP.SingleSave(Chn+1,self.SaveFilePath.GetValue(), IntTime=self.IntTimeBox.GetValue())
-                self.RefreshImg(PlotVgs(last_path))
-                    
-        self.Progress.AppendText('End!\n')
-        return 0                                       
+        if self.ShowMessage(f'Error: {ReturnFlag}', True): raise Exception(ReturnFlag)
     
+    def Configure(self):
+        self.OpenHP(self.GPIBCH.GetValue(), self.Inst.GetValue())
+        time.sleep(0.5)
+        self.HP.DisableAll()
+
+        if  "SMU" in self.VBox.GetValue():
+            self.HP.SetSMU("SMU1", "Vf", "If", "V", "VAR1")
+            data_variables=["Vf", "If", "C", "S"]
+
+        elif  "VSU" in self.VBox.GetValue():
+            self.HP.SetVSMU("VSU1", "Vf", "VAR1")
+            data_variables=["Vf", "C", "S"]
+
+        else: return "Invalid Bias Port"
+
+        self.HP.SetVSMU("VMU1", "C")
+        self.HP.SetVSMU("VMU2", "S")
+        time.sleep(0.5)
+
+        self.HP.SetVar("Var1", "V", self.VStart.GetValue(), self.VStop.GetValue(), self.VStep.GetValue(), self.Comp.GetValue())
+
+        self.HP.SetAxis("X", "Vf", 'LIN', ETF(self.VStart.GetValue()), ETF(self.VStop.GetValue()))
+        self.HP.SetAxis("Y1", "C", 0, 2)
+        self.HP.SetAxis("Y2", "S", 0, 2)
+
+        self.HP.save_list(data_variables)
+
+        self.HP.term='CV'
+
+        return 0
+
     def Stop(self, event):
             self.timer.Stop()
             self.Btn_Start.Enable()
@@ -112,30 +133,6 @@ class CVTab(GenericTab):
             global Stop_flag
             Stop_flag = True
             print("Stop")
-
-    def OnButton(self, event):
-        global Stop_flag
-        Stop_flag = False
-        self.testThread = Thread(target=test1)
-        self.testThread.start()
-        self.Btn_Start.SetLabel("Running\n.")
-        self.Btn_Start.Disable()
-        self.ToggleAll(False)
-        self.Bind(wx.EVT_TIMER, self.PollThread)
-        self.timer.Start(20, oneShot=True)
-        event.Skip()
-
-    def PollThread(self, event):
-            if self.testThread.is_alive():
-                    self.Bind(wx.EVT_TIMER, self.PollThread)
-                    self.timer.Start(200, oneShot=True)
-                    self.Btn_Start.SetLabel(self.Btn_Start.GetLabel() + ".")
-                    if(len(self.Btn_Start.GetLabel())>25):
-                            self.Btn_Start.SetLabel("Running\n.")
-            else:
-                    self.Btn_Start.Enable()
-                    self.ToggleAll(True)
-                    self.Btn_Start.SetLabel("Start")
 
     def ToggleSizer(self, Sizer, State):
         children = Sizer.GetChildren()
