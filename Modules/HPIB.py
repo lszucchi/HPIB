@@ -1,11 +1,10 @@
 import pyvisa
-import time
 import string
 import datetime
-from IPython.display import clear_output
-from HPIB_plot import *
 
-#from INOSerial import *
+from IPython.display import clear_output, display
+from HPIB_plot import *
+from time import sleep
 
 ########## Tabelas para intruções HPIB ###########
 
@@ -69,6 +68,7 @@ class HP:
     def SingleSave(self, path=".", timeout=2):
         if self.term=="0": return "Parameters not set"
         
+        print(self.term)
         self.measure()
         
         Poll=self.PollDR(1, 1, timeout)
@@ -81,7 +81,7 @@ class HP:
         try:
             _, ext = os.path.splitext(path)
             if ext != ".csv":
-                path = f"{path}/self.term-{datetime.datetime.now().strftime('%y%m%d %H%M%S')}.csv"
+                path = f"{path}/{self.term}-{datetime.datetime.now().strftime('%y%m%d %H%M%S')}.csv"
         except:
             return "Invalid Path"
         try: df.to_csv(path)
@@ -92,25 +92,30 @@ class HP:
     ##### Poll DataReady == state, a cada delay em ms, no máximo de maxpoll ciclos. Retorna 1 se chegar ao máximo de ciclos.
     def PollDR(self, state, delay=1, maxpoll=2):
         if self.debug:
-            time.sleep(2*delay)
+            sleep(2*delay)
             print("Debug DR")
             return 0
-
+        minute=False
         progress=''
+        #prog_bar=display(progress, display_id=True)
         
         for i in range(60*maxpoll):
-            if self.StopFlag:
+            progress+='+'
+            if len(progress)>=30:
+                progress="+"
+                print("30s", end=' ')
+                if minute:
+                    print("|", end=' ')
+                minute=not minute
+            #prog_bar.update(progress)
+            
+            sleep(delay)
+        
+            if self.Stop_flag:
                 return 1
             if self.GetDR()==state:
                 return 0
-            
-            time.sleep(delay)
-            # clear_output(wait=True)
-            progress+="+"
-            if len(progress)>60: 
-                progress="+"
-                print("HP Blink 60s")
-    
+
         return 1
     
     def SetVGS(self, dict, ptype):
@@ -141,9 +146,9 @@ class HP:
         self.SetVar('VAR1', 'V', VgStart, VgStop, VgStep, 1e-3)
 
         self.SetAxis('X', 'VG', 'LIN', VgStart, VgStop)
-        self.SetAxis('Y1', 'ID', 'LIN', 0, 1e-3)
+        self.SetAxis('Y1', 'ID', 'LIN', 0, VgStop*1e-3)
 
-        self.save_list(['VG', 'ID'])
+        self.save_list(['VG', 'IG', 'ID', 'IS'])
         self.beep()
         
         if sat or (np.abs(VgStop)-np.abs(VdValue)<0.5):
@@ -177,12 +182,12 @@ class HP:
         self.SetSMU('SMU4', 'VB', 'IB', 'COMM', 'CONS')
         self.SetVar('VAR1', 'V', VdStart, VdStop, VdStep)
         self.SetVar('VAR2', 'V', VgStart, VgStop, VgStep)
-        time.sleep(0.5)
+        sleep(0.5)
         self.SetAxis('X', 'VD', 'LIN', VdStart, VdStop)
         self.SetAxis('Y1', 'ID', 'LIN', 0, 1e-3)
         self.Var2Name="VGS"
 
-        self.save_list(['VD', 'ID'])
+        self.save_list(['VD', 'ID', 'IG', 'IS'])
         self.beep()
         
         self.term='IdxVds'
@@ -193,7 +198,7 @@ class HP:
         return 0
 
     def SetVP(self, dict, ptype):
-        self.SetVp(dict['Ib'], dict['VGstart'], dict['VGstop'], dict['VGstep'], dict['Compliance'], ptype)
+        self.SetVp(dict['Is'], dict['VGstart'], dict['VGstop'], dict['VGstep'], dict['Compliance'], ptype)
         
     def SetVp(self, Is, VgStart, VgStop, VgStep, Comp=1.5, ptype=False):       
         
@@ -218,7 +223,7 @@ class HP:
         self.SetAxis('X', 'VD', 'LIN', VgStart, VgStop)
         self.SetAxis('Y1', 'VS', 'LIN', 0, 1)
 
-        self.save_list(['VG', 'VS'])
+        self.save_list(['VG', 'IG', 'VS', 'ID'])
         self.beep()
 
         self.term='VpxVgs'
@@ -228,23 +233,24 @@ class HP:
         
         return 0
 
-    def SetEXIB(self, dict, ptype):
-        self.SetEx_Ib(dict['VSstart'], dict['VSstop'], dict['VSstep'], dict['VGstart'], dict['VGstop'], dict['VGstep'],  dict['Compliance'], ptype)
+    def SetEXIS(self, dict, ptype):
+        self.SetEx_Is(dict['VSstart'], dict['VSstop'], dict['VSstep'], dict['VGstart'], dict['VGstop'], dict['VGstep'], dict['VDvalue'], dict['Compliance'], ptype)
     
-    def SetEx_Ib(self, VsStart, VsStop, VsStep, VgStart, VgStop, VgStep, Comp=1e-3, ptype=False):
+    def SetEx_Is(self, VsStart, VsStop, VsStep, VgStart, VgStop, VgStep, VdValue, Comp=1e-3, ptype=False):
         
         if ptype:
-                VsStart=-VsStart
-                VsStop=-VsStop
-                VsStep=-VsStep
-                VgStart=-VgStart
-                VgStop=-VgStop
-                VgStep=-VgStep
+            VsStart=-VsStart
+            VsStop=-VsStop
+            VsStep=-VsStep
+            VgStart=-VgStart
+            VgStop=-VgStop
+            VgStep=-VgStep
+            VdValue=-VdValue
 
         self.DisableAll()
         
         self.SetSMU('SMU1', 'VS', 'IS', 'V', 'VAR1', Comp=Comp)
-        self.SetSMU('SMU2', 'VD', 'ID', 'V', 'CONS', Value=VsStop, Comp=Comp)
+        self.SetSMU('SMU2', 'VD', 'ID', 'V', 'CONS', Value=VdValue, Comp=Comp)
         self.SetSMU('SMU3', 'VG', 'IG', 'V', 'VAR2', Comp=Comp)
         self.SetSMU('SMU4', 'VB', 'IB', 'COMM')
 
@@ -255,14 +261,14 @@ class HP:
         self.SetAxis('X', 'VS', 'LIN', VsStart, VsStop)
         self.SetAxis('Y1', 'ID', 'LIN', 0, 1)
 
-        self.save_list(['VS', 'ID'])
+        self.save_list(['VS', 'ID', 'IG'])
         
         self.beep()
 
-        self.term='Ex_Ib'
+        self.term='Ex_Is'
         
         print("Set " + self.term)
-        print(f" Vs=({VsStart}, {VsStop}, {VsStep}), Vg=({VgStart}, {VgStop}, {VgStep})")
+        print(f" Vs=({VsStart}, {VsStop}, {VsStep}), Vg=({VgStart}, {VgStop}, {VgStep}), Vd={VdValue}")
         
         return 0
 
@@ -273,18 +279,40 @@ class HP:
         
         self.DisableAll()
         
-        self.SetSMU('SMU4', 'VB', 'IF', 'V', 'VAR1', Comp=2e-3)
-        self.SetSMU('SMU1', 'VS', 'IS', 'V', 'CONS', Comp=1e-3)
-        self.SetSMU('SMU2', 'VD', 'ID', 'V', 'CONS', Comp=1e-3)
+        self.SetSMU('SMU4', 'VB', 'IF', 'V', 'VAR1', Comp=2.4e-3)
+        self.SetSMU('SMU1', 'VS', 'IS', 'V', 'CONS', Comp=1.2e-3)
+        self.SetSMU('SMU2', 'VD', 'ID', 'V', 'CONS', Comp=1.2e-3)
 
         self.SetVar('VAR1', 'V', VfStart, VfStop, VfStep)
-        self.UFUNC("VF=-VB")
+        self.UFUNC("V=-VB")
+        
+        self.SetAxis('X', 'V', 'LIN', VfStart, VfStop)
+        self.SetAxis('Y1', 'IS', 'LIN', -1e-3, 1e-3)
+        self.SetAxis('Y2', 'ID', 'LIN', -1e-3, 1e-3)
+
+        self.save_list(['V', 'IS', 'ID'])
+        self.beep()
+
+        self.term="Diode"
+        
+        print("Set " + self.term)
+        print(f"Vf=({VfStart}, {VfStop})")
+
+        return 0
+
+    def SingleDiode(self, VfStart, VfStop, VfStep, SMUP='SMU2', SMUN='SMU4'):
+        
+        self.DisableAll()
+        
+        self.SetSMU(SMUN, 'VB', 'IB', 'V', Comp=2e-3)
+        self.SetSMU(SMUP, 'VF', 'IF', 'V', 'VAR1', Comp=2e-3)
+
+        self.SetVar('VAR1', 'V', VfStart, VfStop, VfStep)
         
         self.SetAxis('X', 'VF', 'LIN', VfStart, VfStop)
-        self.SetAxis('Y1', 'IS', 'LIN', 0, 1e-4)
-        self.SetAxis('Y2', 'ID', 'LIN', 0, 1e-4)
+        self.SetAxis('Y1', 'IF', 'LIN', -2e-3, 2e-3)
 
-        self.save_list(['VF', 'IS', 'ID'])
+        self.save_list(['VF', 'IF'])
         self.beep()
 
         self.term="Diode"
@@ -316,6 +344,46 @@ class HP:
         
         return 0
 
+    def Set2P(self, IStart, IStop, Points):
+        self.DisableAll()
+        
+        self.SetSMU('SMU4', 'V1', 'I1')
+        self.SetSMU('SMU1', 'V2', 'I2', 'I', 'VAR1')
+        self.SetVar('VAR1', 'I', IStart, IStop, (IStop-IStart)/(Points-1), 1)
+        
+        self.UFUNC('V=-V1')
+        
+        self.SetAxis('Y1', 'I2')
+        self.SetAxis('X', 'V2')
+
+        self.save_list(['V2', 'I2'])
+        self.beep()
+        
+        self.term="2P"
+        
+        print("Set " + self.term)
+        print(f"I=({IStart}, {IStop}), {Points} Points")
+
+    def Set2PD(self, VStart, VStop, Points):
+        self.DisableAll()
+        
+        self.SetSMU('SMU4', 'V1', 'I1')
+        self.SetSMU('SMU2', 'V2', 'I2', 'V', 'VAR1')
+        self.SetVar('VAR1', 'V', VStart, VStop, (VStop-VStart)/(Points-1), 1.5e-3)
+        
+        self.UFUNC('V=-V1')
+        
+        self.SetAxis('Y1', 'I2', 0, 1e-3)
+        self.SetAxis('X', 'V2')
+
+        self.save_list(['V2', 'I2'])
+        self.beep()
+        
+        self.term="2PD"
+        
+        print("Set " + self.term)
+        print(f"I=({VStart}, {VStop}), {Points} Points")
+    
     def Set4P(self, IStart, IStop, Points):        
         self.DisableAll()
         

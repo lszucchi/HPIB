@@ -133,11 +133,11 @@ class General(GenericTab):
 
         ########################## VS1 ##########################
         self.SizerVS1=wx.BoxSizer()
-        self.VS1Tx = wx.StaticText(self, label='VS1', pos=(self.Box2[0][0]+Margin, self.Box2[0][1]+5*SpacingRow+4))
+        self.VS1Tx = wx.StaticText(self, label='VSU1', pos=(self.Box2[0][0]+Margin, self.Box2[0][1]+5*SpacingRow+4))
         
 
         ### Draw VS1 Names
-        self.VS1V = wx.TextCtrl(self, value='VS1', pos=(self.Box2[0][0]+Margin+SizeSMUcol, self.Box2[0][1]+5*SpacingRow), size=(SizeIVcol,SizeRow))
+        self.VS1V = wx.TextCtrl(self, value='VSU1', pos=(self.Box2[0][0]+Margin+SizeSMUcol, self.Box2[0][1]+5*SpacingRow), size=(SizeIVcol,SizeRow))
         self.SizerVS1.Add(self.VS1V)
         self.VS1I = wx.TextCtrl(self, value='', pos=(self.Box2[0][0]+2*Margin+SizeSMUcol+SizeIVcol, self.Box2[0][1]+5*SpacingRow), size=(SizeIVcol,SizeRow))
         self.SizerVS1.Add(self.VS1I)
@@ -160,11 +160,11 @@ class General(GenericTab):
 
         ########################## VS2 ##########################
         self.SizerVS2=wx.BoxSizer()
-        self.VS2Tx = wx.StaticText(self, label='VS2', pos=(self.Box2[0][0]+Margin, self.Box2[0][1]+6*SpacingRow+4))
+        self.VS2Tx = wx.StaticText(self, label='VSU2', pos=(self.Box2[0][0]+Margin, self.Box2[0][1]+6*SpacingRow+4))
         
 
         ### Draw VS2 Names
-        self.VS2V = wx.TextCtrl(self, value='VS2', pos=(self.Box2[0][0]+Margin+SizeSMUcol, self.Box2[0][1]+6*SpacingRow), size=(SizeIVcol,SizeRow))
+        self.VS2V = wx.TextCtrl(self, value='VSU2', pos=(self.Box2[0][0]+Margin+SizeSMUcol, self.Box2[0][1]+6*SpacingRow), size=(SizeIVcol,SizeRow))
         self.SizerVS2.Add(self.VS2V)
         self.VS2I = wx.TextCtrl(self, value='', pos=(self.Box2[0][0]+2*Margin+SizeSMUcol+SizeIVcol, self.Box2[0][1]+6*SpacingRow), size=(SizeIVcol,SizeRow))
         self.SizerVS2.Add(self.VS2I)
@@ -312,8 +312,8 @@ class General(GenericTab):
         if self.EnableSMU2.GetValue(): self.HP.SetSMU("SMU2", self.SMU2V.GetValue(), self.SMU2I.GetValue(), self.SMU2M.GetValue(), self.SMU2F.GetValue(), self.SMU2C.GetValue())
         if self.EnableSMU3.GetValue(): self.HP.SetSMU("SMU3", self.SMU3V.GetValue(), self.SMU3I.GetValue(), self.SMU3M.GetValue(), self.SMU3F.GetValue(), self.SMU3C.GetValue())
         if self.EnableSMU4.GetValue(): self.HP.SetSMU("SMU4", self.SMU4V.GetValue(), self.SMU4I.GetValue(), self.SMU4M.GetValue(), self.SMU4F.GetValue(), self.SMU4C.GetValue())
-        if self.EnableVS1.GetValue(): self.HP.SetVSMU("VSU1", self.VS1V.GetValue(), self.VS1I.GetValue(), self.VS1M.GetValue(), self.VS1F.GetValue(), self.VS1C.GetValue())
-        if self.EnableVS2.GetValue(): self.HP.SetVSMU("VSU2", self.VS2V.GetValue(), self.VS2I.GetValue(), self.VS2M.GetValue(), self.VS2F.GetValue(), self.VS2C.GetValue())
+        if self.EnableVS1.GetValue(): self.HP.SetVSMU("VSU1", self.VS1V.GetValue(), self.VS1F.GetValue(), self.VS1C.GetValue())
+        if self.EnableVS2.GetValue(): self.HP.SetVSMU("VSU2", self.VS2V.GetValue(), self.VS2F.GetValue(), self.VS2C.GetValue())
         self.HP.SetVSMU("VMU1", "VMU1")
         self.HP.SetVSMU("VMU2", "VMU2")
         time.sleep(0.5)
@@ -343,6 +343,8 @@ class General(GenericTab):
             self.YAxis[0]=YAxis[0].split('log')[1].strip('( )')
         
         self.HP.SetAxis("Y1", self.YAxis[0], scale, ETF(self.Y1Min.GetValue()), ETF(self.Y1Max.GetValue()))
+
+        data_variables=[self.X1.GetValue()] + self.YAxis
         
         if self.Y2.GetValue():
             self.YAxis+=[self.Y2.GetValue()]
@@ -357,8 +359,6 @@ class General(GenericTab):
             
             self.HP.SetAxis("Y2", self.YAxis[1], scale, ETF(self.Y2Min.GetValue()), ETF(self.Y2Max.GetValue()))
             data_variables=data_variables+[self.Y2.GetValue()]
-        
-        data_variables=[self.X1.GetValue()] + self.YAxis
         
         if self.Traces.GetValue() and 'Unavailable' not in self.Traces.GetValue():
             for trace in self.Traces.GetValue().split(','):
@@ -385,16 +385,17 @@ class General(GenericTab):
         self.Progress.AppendText('\nMeasurement started!\n...')
         try:
             self.HP.SetIntTime(self.IntTimeBox.GetValue())
+            print(self.SaveFilePath.GetValue())
             ReturnFlag = self.HP.SingleSave(self.SaveFilePath.GetValue(), timeout=1800)
         except:
-            ReturnFlag="No instrument\nSend config to open connection"
+            #ReturnFlag="No instrument\nSend config to open connection"
             if self.ShowMessage(f'Error: {ReturnFlag}', True): raise Exception(ReturnFlag)
 
         self.Progress.AppendText('\nMeasurement Done!')
         
         if os.path.isfile(ReturnFlag):
             self.img_path.SetLabel(ReturnFlag)
-            self.RefreshImg(Plot(self, ReturnFlag, self.X1.GetValue(), self.YAxis))
+            self.RefreshImg(Plot(ReturnFlag, self.X1.GetValue(), self.YAxis))
             return ReturnFlag
         
         if self.ShowMessage(f'Error: {ReturnFlag}', True): raise Exception(ReturnFlag)

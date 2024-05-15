@@ -1,48 +1,31 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[1]:
-
-def printf(msg, time, output=False):
-
-    if os.path.isdir('C:/Users/Zucchi/Documents/Medidas'):
-        path='C:/Users/Zucchi/Documents/Medidas/Rampup'
-    else: 
-        path="C:/Users/Zucchi-Note/Dropbox/Cryochip/Medidas/Rampup"
-
-    path+=f"/{time}"
-    os.makedirs(path, exist_ok=True)
-
-    path+=f"/log - {time}.txt"
-    
-    with open(path, 'a') as the_file:
-        the_file.write(f'{msg}\n')
-    if output:
-        print(msg)
-
-debug=False
-
-# In[2]:
-
-
-# import os, time, datetime
-
 import sys
 sys.path.append("Modules")
 
 from INOSerial import *
 from HPIB4155 import *
 from HPIB_plot import*
+from IPython.display import clear_output, display
 
-def loop(prefix, ptype, time):
-    GPIBch='GPIB0::17'
+if os.path.isdir('C:/Users/Zucchi/Documents/Medidas'):
+    path='C:/Users/Zucchi/Documents/Medidas/Warmup'
+else: 
+    path="C:/Users/Zucchi-Note/Dropbox/Cryochip/Medidas/Warmup"
+
+def printf(msg, start, output=False):
+
+    os.makedirs(path, exist_ok=True)
+
+    path+=f"/log.txt"
     
-    timeout=30
-    
-    # ptype=False
-    
+    with open(path, 'a') as the_file:
+        the_file.write(f'{msg}\n')
+    if output:
+        print(msg)
+
+def loop(HP, prefix, ptype, start):    
+    timeout=10  
     VGS = {
-        'enable' : False,
+        'enable' : True,
         'VGstart' : 0, 'VGstop' : 1.5, 'VGstep' : 0.01,
         'VD' : '25m', 'Compliance' : '1.5m'
         }
@@ -67,14 +50,14 @@ def loop(prefix, ptype, time):
         }
     
     Ex_Ib = {
-        'enable' : True,
+        'enable' : False,
         'VSstart' : 0, 'VSstop' : 1.5, 'VSstep' : 0.01,
         'VGstart' : 1.3, 'VGstop' : 1.6, 'VGstep' : 0.1,
         'Compliance' : '1.5m'
         }
     
     VP = {
-        'enable' : True,
+        'enable' : False,
         'VGstart' : -1.5, 'VGstop' : 1.5, 'VGstep' : 0.01,
         'Ib' : '1e-6', 'Compliance' : 1.5
         }
@@ -82,8 +65,6 @@ def loop(prefix, ptype, time):
     
     # In[3]:
     
-    
-    HP=HP4155(GPIBch, debug=debug)
     HP.StopFlag=False
     
     HP.reset()
@@ -95,29 +76,8 @@ def loop(prefix, ptype, time):
     # prefix=input()
     
     now=datetime.datetime.now().strftime('%y%m%d')
-    if os.path.isdir('C:/Users/Zucchi/Documents/Medidas'):
-        path='C:/Users/Zucchi/Documents/Medidas/Rampup'
-    else: 
-        path="C:/Users/Zucchi-Note/Dropbox/Cryochip/Medidas/Rampup"
     
-    path+=f"/{time}/csv/"
-    
-    os.makedirs(path, exist_ok=True)
-    
-    
-    # In[ ]:
-    
-    if ptype:
-        HP.SetDiode(0, 1.5, 0.02)
-    else:
-        HP.SetDiode(0, -1.5, 0.02)
-    HP.SetIntTime("SHOR")
-    
-    now=datetime.datetime.now().strftime("%y%m%d %H%M%S")
-    plotp=f"{path}{prefix}-{HP.term}-{now}.csv"
-
-    HP.SingleSave(plotp, timeout)
-    Plot(plotp, "VF", ["ID", "IS"])
+    os.makedirs(path, exist_ok=True) 
         
     HP.SetIntTime("LONG")
     HP.ask(":PAGE:MEAS:MSET:ITIM?")
@@ -131,13 +91,13 @@ def loop(prefix, ptype, time):
         plotp=f"{path}{prefix}-{HP.term}-{now}.csv"
         
         now=datetime.datetime.now().strftime("%H%M")
-        printf(f"{now} : Parameters VGS\n{VGS}\n", time)
+        printf(f"{now} : Parameters VGS\n{VGS}\n", start)
     
         HP.SingleSave(plotp, timeout)
         Vth=PlotVgs(plotp)
         plt.close()
         
-        printf(f"Vth={Vth}\n", time, True)
+        printf(f"Vth={Vth}\n", start, True)
     
     if VGS_sat['enable']:
         HP.SetVGS(VGS_sat, ptype)
@@ -146,7 +106,7 @@ def loop(prefix, ptype, time):
         plotp=f"{path}{prefix}-{HP.term}-{now}.csv"
 
         now=datetime.datetime.now().strftime("%H%M")
-        printf(f"{now} : Parameters VGS_sat \n{VGS_sat}\n", time)
+        printf(f"{now} : Parameters VGS_sat \n{VGS_sat}\n", start)
         
         HP.SingleSave(plotp, timeout*60)
         PlotVgs(plotp)
@@ -162,7 +122,7 @@ def loop(prefix, ptype, time):
         plotp=f"{path}{prefix}-{HP.term}-{now}.csv"
 
         now=datetime.datetime.now().strftime("%H%M")
-        printf(f"{now} : Parameters VDS\n{VDS}\n", time)
+        printf(f"{now} : Parameters VDS\n{VDS}\n", start)
     
         HP.SingleSave(plotp, timeout*60*7)
         Plot(plotp, 'VD', 'ID')
@@ -175,7 +135,7 @@ def loop(prefix, ptype, time):
         plotp=f"{path}{prefix}-{HP.term}-{now}.csv"
 
         now=datetime.datetime.now().strftime("%H%M")
-        printf(f"{now} : Parameters Is\n{Ex_Ib}\n", time)
+        printf(f"{now} : Parameters Is\n{Ex_Ib}\n", start)
        
         HP.SingleSave(plotp, timeout*60*7)
         ibcalc=plotp
@@ -194,11 +154,23 @@ def loop(prefix, ptype, time):
         plotp=f"{path}{prefix}-{HP.term}-{now}.csv"
 
         now=datetime.datetime.now().strftime("%H%M")
-        printf(f"{now} : Parameters VP\n{VP}\n", time)
+        printf(f"{now} : Parameters VP\n{VP}\n", start)
         
         HP.SingleSave(plotp, timeout*60)
         Plot(plotp, 'VG', 'VS')
         plt.close()
+
+    if ptype:
+        HP.SetDiode(0, 1.5, 0.02)
+    else:
+        HP.SetDiode(0, -1.5, 0.02)
+    HP.SetIntTime("SHOR")
+    
+    now=datetime.datetime.now().strftime("%y%m%d %H%M%S")
+    plotp=f"{path}{prefix}-{HP.term}-{now}.csv"
+
+    HP.SingleSave(plotp, timeout)
+    Plot(plotp, "V", ["ID", "IS"])
 
 
 

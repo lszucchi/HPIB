@@ -13,7 +13,6 @@ from defaults import *
 class GenericTab(wx.Panel):
 
     def OpenHP(self, addr, inst):
-        self.Progress.AppendText('\nOpening HP')
         self.debug=False
         
         if inst[len(inst)-1].lower()=='d':
@@ -39,7 +38,7 @@ class GenericTab(wx.Panel):
         else:
             if self.ShowMessage('Input error:\nInvalid Instrument', True): raise RuntimeError('Invalid Instrument')
             return 1
-            
+        if "4155" in self.HP.ask("*IDN?"): print("ID: HP4155A")
         self.HP.reset()
         
     def DrawSaveBox(self, X, Y, length):
@@ -62,7 +61,7 @@ class GenericTab(wx.Panel):
 
         #Instr Select
         self.InstTx = wx.StaticText(self, label='Instrument', pos=(self.Box1[0][0]+Margin+5, self.Box1[0][1]+2*Margin))
-        self.Inst = wx.ComboBox(self, value='HP4155d', pos=(self.Box1[0][0]+Margin+5, self.Box1[0][1]+4*Margin), choices=['HP4145','HP4155'])
+        self.Inst = wx.ComboBox(self, value='HP4155', pos=(self.Box1[0][0]+Margin+5, self.Box1[0][1]+4*Margin), choices=['HP4145','HP4155'])
 ##        self.Inst.Bind(wx.EVT_TEXT, self.EnableTraces)
 
         #GPIB address selection box
@@ -151,6 +150,7 @@ class GenericTab(wx.Panel):
         
     def Measure(self):
         self.Progress.AppendText('\nMeasurement started!\n...')
+        print("a")
         try:
             self.HP.SetIntTime(self.IntTimeBox.GetValue())
             ReturnFlag = self.HP.SingleSave(self.SaveFilePath.GetValue(), timeout=180)
@@ -170,7 +170,7 @@ class GenericTab(wx.Panel):
     def Stop(self, event):
         self.Stop_flag = True
         self.HP.stop()
-
+    
     def OnConfig(self, event):
         self.Config_Btn.Disable()
         self.Config_Btn.SetLabel("Sending\nconfig")
