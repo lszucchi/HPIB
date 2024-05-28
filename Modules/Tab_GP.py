@@ -35,22 +35,22 @@ class General(GenericTab):
         
 
         ### Draw SMU1 Names
-        self.SMU1V = wx.TextCtrl(self, value='V1', pos=(self.Box2[0][0]+Margin+SizeSMUcol, self.Box2[0][1]+SpacingRow), size=(SizeIVcol,SizeRow))
+        self.SMU1V = wx.TextCtrl(self, value='V1', pos=(self.Box2[0][0]+Margin+SizeSMUcol, self.Box2[0][1]+SpacingRow), size=(SizeIVcol,SizeRow), name='sv_SMU1V')
         self.SizerSMU1.Add(self.SMU1V)
-        self.SMU1I = wx.TextCtrl(self, value='I1', pos=(self.Box2[0][0]+2*Margin+SizeSMUcol+SizeIVcol, self.Box2[0][1]+SpacingRow), size=(SizeIVcol,SizeRow))
+        self.SMU1I = wx.TextCtrl(self, value='I1', pos=(self.Box2[0][0]+2*Margin+SizeSMUcol+SizeIVcol, self.Box2[0][1]+SpacingRow), size=(SizeIVcol,SizeRow), name='sv_SMU1I')
         self.SizerSMU1.Add(self.SMU1I)
         
         ### Draw SMU1 Mode/Func/Comp
-        self.SMU1M = wx.ComboBox(self, value='COMM', pos=(self.Box2[0][0]+3*Margin+SizeSMUcol+2*SizeIVcol, self.Box2[0][1]+SpacingRow), size=(SizeFMcol,SpacingRow),choices=['COMM','V','I'])
+        self.SMU1M = wx.ComboBox(self, value='COMM', pos=(self.Box2[0][0]+3*Margin+SizeSMUcol+2*SizeIVcol, self.Box2[0][1]+SpacingRow), size=(SizeFMcol,SpacingRow),choices=['COMM','V','I'], name='sv_SMU1M')
         self.SizerSMU1.Add(self.SMU1M)
-        self.SMU1F = wx.ComboBox(self, value='CONS', pos=(self.Box2[0][0]+4*Margin+SizeSMUcol+2*SizeIVcol+SizeFMcol, self.Box2[0][1]+SpacingRow), size=(SizeFMcol,SizeRow), choices=['CONS','VAR1','VAR2','VARD'])
-        
+        self.SMU1F = wx.ComboBox(self, value='CONS', pos=(self.Box2[0][0]+4*Margin+SizeSMUcol+2*SizeIVcol+SizeFMcol, self.Box2[0][1]+SpacingRow), size=(SizeFMcol,SizeRow), choices=['CONS','VAR1','VAR2','VARD'], name='sv_SMU1F')
+    
         self.SizerSMU1.Add(self.SMU1F)
-        self.SMU1C = wx.TextCtrl(self, value='1e-3', pos=(self.Box2[0][0]+5*Margin+SizeSMUcol+2*SizeIVcol+2*SizeFMcol, self.Box2[0][1]+SpacingRow), size=(SizeSMUcol,SizeRow))
+        self.SMU1C = wx.TextCtrl(self, value='1e-3', pos=(self.Box2[0][0]+5*Margin+SizeSMUcol+2*SizeIVcol+2*SizeFMcol, self.Box2[0][1]+SpacingRow), size=(SizeSMUcol,SizeRow), name='sv_SMU1C')
         self.SizerSMU1.Add(self.SMU1C)
 
         ## Enable
-        self.EnableSMU1 = wx.CheckBox(self, label='', pos=(self.Box2[0][0]+6*Margin+2*SizeSMUcol+2*SizeIVcol+2*SizeFMcol+2*Margin, self.Box2[0][1]+SpacingRow+4))
+        self.EnableSMU1 = wx.CheckBox(self, label='', pos=(self.Box2[0][0]+6*Margin+2*SizeSMUcol+2*SizeIVcol+2*SizeFMcol+2*Margin, self.Box2[0][1]+SpacingRow+4), name='sv_EnableSMU1')
         self.EnableSMU1.SetValue(True)
         self.SizerSMU1.Add(self.EnableSMU1)
         self.EnableSMU1.Bind(wx.EVT_CHECKBOX, self.SetSizers)     
@@ -62,21 +62,21 @@ class General(GenericTab):
         
 
         ### Draw SMU2 Names
-        self.SMU2V = wx.TextCtrl(self, value='V2', pos=(self.Box2[0][0]+Margin+SizeSMUcol, self.Box2[0][1]+2*SpacingRow), size=(SizeIVcol,SizeRow))
+        self.SMU2V = wx.TextCtrl(self, value='V2', pos=(self.Box2[0][0]+Margin+SizeSMUcol, self.Box2[0][1]+2*SpacingRow), size=(SizeIVcol,SizeRow), name='sv_SMU2V')
         self.SizerSMU2.Add(self.SMU2V)
-        self.SMU2I = wx.TextCtrl(self, value='I2', pos=(self.Box2[0][0]+2*Margin+SizeSMUcol+SizeIVcol, self.Box2[0][1]+2*SpacingRow), size=(SizeIVcol,SizeRow))
+        self.SMU2I = wx.TextCtrl(self, value='I2', pos=(self.Box2[0][0]+2*Margin+SizeSMUcol+SizeIVcol, self.Box2[0][1]+2*SpacingRow), size=(SizeIVcol,SizeRow), name='sv_SMU2I')
         self.SizerSMU2.Add(self.SMU2I)
         
         ### Draw SMU2 Mode/Func/Comp
-        self.SMU2M = wx.ComboBox(self, value='V', pos=(self.Box2[0][0]+3*Margin+SizeSMUcol+2*SizeIVcol, self.Box2[0][1]+2*SpacingRow), size=(SizeFMcol,SpacingRow),choices=['COMM','V','I'])
+        self.SMU2M = wx.ComboBox(self, value='V', pos=(self.Box2[0][0]+3*Margin+SizeSMUcol+2*SizeIVcol, self.Box2[0][1]+2*SpacingRow), size=(SizeFMcol,SpacingRow),choices=['COMM','V','I'], name='sv_SMU2M')
         self.SizerSMU2.Add(self.SMU2M)
-        self.SMU2F = wx.ComboBox(self, value='VAR1', pos=(self.Box2[0][0]+4*Margin+SizeSMUcol+2*SizeIVcol+SizeFMcol, self.Box2[0][1]+2*SpacingRow), size=(SizeFMcol,SizeRow), choices=['CONS','VAR1','VAR2','VARD'])
+        self.SMU2F = wx.ComboBox(self, value='VAR1', pos=(self.Box2[0][0]+4*Margin+SizeSMUcol+2*SizeIVcol+SizeFMcol, self.Box2[0][1]+2*SpacingRow), size=(SizeFMcol,SizeRow), choices=['CONS','VAR1','VAR2','VARD'], name='sv_SMU2F')
         self.SizerSMU2.Add(self.SMU2F)
-        self.SMU2C = wx.TextCtrl(self, value='1e-3', pos=(self.Box2[0][0]+5*Margin+SizeSMUcol+2*SizeIVcol+2*SizeFMcol, self.Box2[0][1]+2*SpacingRow), size=(SizeSMUcol,SizeRow))
+        self.SMU2C = wx.TextCtrl(self, value='1e-3', pos=(self.Box2[0][0]+5*Margin+SizeSMUcol+2*SizeIVcol+2*SizeFMcol, self.Box2[0][1]+2*SpacingRow), size=(SizeSMUcol,SizeRow), name='sv_SMU2C')
         self.SizerSMU2.Add(self.SMU2C)
 
         ## Enable
-        self.EnableSMU2 = wx.CheckBox(self, label='', pos=(self.Box2[0][0]+6*Margin+2*SizeSMUcol+2*SizeIVcol+2*SizeFMcol+2*Margin, self.Box2[0][1]+2*SpacingRow+4))
+        self.EnableSMU2 = wx.CheckBox(self, label='', pos=(self.Box2[0][0]+6*Margin+2*SizeSMUcol+2*SizeIVcol+2*SizeFMcol+2*Margin, self.Box2[0][1]+2*SpacingRow+4), name='sv_EnableSMU2')
         self.EnableSMU2.SetValue(True)
         self.SizerSMU2.Add(self.EnableSMU2)        
         self.EnableSMU2.Bind(wx.EVT_CHECKBOX, self.SetSizers)
@@ -87,21 +87,21 @@ class General(GenericTab):
         
 
         ### Draw SMU3 Names
-        self.SMU3V = wx.TextCtrl(self, value='V3', pos=(self.Box2[0][0]+Margin+SizeSMUcol, self.Box2[0][1]+3*SpacingRow), size=(SizeIVcol,SizeRow))
+        self.SMU3V = wx.TextCtrl(self, value='V3', pos=(self.Box2[0][0]+Margin+SizeSMUcol, self.Box2[0][1]+3*SpacingRow), size=(SizeIVcol,SizeRow), name='sv_SMU3V')
         self.SizerSMU3.Add(self.SMU3V)
-        self.SMU3I = wx.TextCtrl(self, value='I3', pos=(self.Box2[0][0]+2*Margin+SizeSMUcol+SizeIVcol, self.Box2[0][1]+3*SpacingRow), size=(SizeIVcol,SizeRow))
+        self.SMU3I = wx.TextCtrl(self, value='I3', pos=(self.Box2[0][0]+2*Margin+SizeSMUcol+SizeIVcol, self.Box2[0][1]+3*SpacingRow), size=(SizeIVcol,SizeRow), name='sv_SMU3I')
         self.SizerSMU3.Add(self.SMU3I)
         
         ### Draw SMU3 Mode/Func/Comp
-        self.SMU3M = wx.ComboBox(self, value='V', pos=(self.Box2[0][0]+3*Margin+SizeSMUcol+2*SizeIVcol, self.Box2[0][1]+3*SpacingRow), size=(SizeFMcol,SpacingRow),choices=['COMM','V','I'])
+        self.SMU3M = wx.ComboBox(self, value='V', pos=(self.Box2[0][0]+3*Margin+SizeSMUcol+2*SizeIVcol, self.Box2[0][1]+3*SpacingRow), size=(SizeFMcol,SpacingRow),choices=['COMM','V','I'], name='sv_SMU3M')
         self.SizerSMU3.Add(self.SMU3M)
-        self.SMU3F = wx.ComboBox(self, value='VAR2', pos=(self.Box2[0][0]+4*Margin+SizeSMUcol+2*SizeIVcol+SizeFMcol, self.Box2[0][1]+3*SpacingRow), size=(SizeFMcol,SizeRow), choices=['CONS','VAR1','VAR2','VARD'])
+        self.SMU3F = wx.ComboBox(self, value='VAR2', pos=(self.Box2[0][0]+4*Margin+SizeSMUcol+2*SizeIVcol+SizeFMcol, self.Box2[0][1]+3*SpacingRow), size=(SizeFMcol,SizeRow), choices=['CONS','VAR1','VAR2','VARD'], name='sv_SMU3F')
         self.SizerSMU3.Add(self.SMU3F)
-        self.SMU3C = wx.TextCtrl(self, value='1e-3', pos=(self.Box2[0][0]+5*Margin+SizeSMUcol+2*SizeIVcol+2*SizeFMcol, self.Box2[0][1]+3*SpacingRow), size=(SizeSMUcol,SizeRow))
+        self.SMU3C = wx.TextCtrl(self, value='1e-3', pos=(self.Box2[0][0]+5*Margin+SizeSMUcol+2*SizeIVcol+2*SizeFMcol, self.Box2[0][1]+3*SpacingRow), size=(SizeSMUcol,SizeRow), name='sv_SMU3C')
         self.SizerSMU3.Add(self.SMU3C)
 
         ## Enable
-        self.EnableSMU3 = wx.CheckBox(self, label='', pos=(self.Box2[0][0]+6*Margin+2*SizeSMUcol+2*SizeIVcol+2*SizeFMcol+2*Margin, self.Box2[0][1]+3*SpacingRow+4))
+        self.EnableSMU3 = wx.CheckBox(self, label='', pos=(self.Box2[0][0]+6*Margin+2*SizeSMUcol+2*SizeIVcol+2*SizeFMcol+2*Margin, self.Box2[0][1]+3*SpacingRow+4), name='sv_EnableSMU3')
         self.EnableSMU3.SetValue(True)
         self.SizerSMU3.Add(self.EnableSMU3)            
         self.EnableSMU3.Bind(wx.EVT_CHECKBOX, self.SetSizers)
@@ -112,21 +112,21 @@ class General(GenericTab):
         
 
         ### Draw SMU4 Names
-        self.SMU4V = wx.TextCtrl(self, value='V4', pos=(self.Box2[0][0]+Margin+SizeSMUcol, self.Box2[0][1]+4*SpacingRow), size=(SizeIVcol,SizeRow))
+        self.SMU4V = wx.TextCtrl(self, value='V4', pos=(self.Box2[0][0]+Margin+SizeSMUcol, self.Box2[0][1]+4*SpacingRow), size=(SizeIVcol,SizeRow), name='sv_SMU4V')
         self.SizerSMU4.Add(self.SMU4V)
-        self.SMU4I = wx.TextCtrl(self, value='I4', pos=(self.Box2[0][0]+2*Margin+SizeSMUcol+SizeIVcol, self.Box2[0][1]+4*SpacingRow), size=(SizeIVcol,SizeRow))
+        self.SMU4I = wx.TextCtrl(self, value='I4', pos=(self.Box2[0][0]+2*Margin+SizeSMUcol+SizeIVcol, self.Box2[0][1]+4*SpacingRow), size=(SizeIVcol,SizeRow), name='sv_SMU4I')
         self.SizerSMU4.Add(self.SMU4I)
         
         ### Draw SMU4 Mode/Func/Comp
-        self.SMU4M = wx.ComboBox(self, value='COMM', pos=(self.Box2[0][0]+3*Margin+SizeSMUcol+2*SizeIVcol, self.Box2[0][1]+4*SpacingRow), size=(SizeFMcol,SpacingRow),choices=['COMM','V','I'])
+        self.SMU4M = wx.ComboBox(self, value='COMM', pos=(self.Box2[0][0]+3*Margin+SizeSMUcol+2*SizeIVcol, self.Box2[0][1]+4*SpacingRow), size=(SizeFMcol,SpacingRow),choices=['COMM','V','I'], name='sv_SMU4I')
         self.SizerSMU4.Add(self.SMU4M)
-        self.SMU4F = wx.ComboBox(self, value='CONS', pos=(self.Box2[0][0]+4*Margin+SizeSMUcol+2*SizeIVcol+SizeFMcol, self.Box2[0][1]+4*SpacingRow), size=(SizeFMcol,SizeRow), choices=['CONS','VAR1','VAR2','VARD'])
+        self.SMU4F = wx.ComboBox(self, value='CONS', pos=(self.Box2[0][0]+4*Margin+SizeSMUcol+2*SizeIVcol+SizeFMcol, self.Box2[0][1]+4*SpacingRow), size=(SizeFMcol,SizeRow), choices=['CONS','VAR1','VAR2','VARD'], name='sv_SMU4M')
         self.SizerSMU4.Add(self.SMU4F)
-        self.SMU4C = wx.TextCtrl(self, value='1e-3', pos=(self.Box2[0][0]+5*Margin+SizeSMUcol+2*SizeIVcol+2*SizeFMcol, self.Box2[0][1]+4*SpacingRow), size=(SizeSMUcol,SizeRow))
+        self.SMU4C = wx.TextCtrl(self, value='1e-3', pos=(self.Box2[0][0]+5*Margin+SizeSMUcol+2*SizeIVcol+2*SizeFMcol, self.Box2[0][1]+4*SpacingRow), size=(SizeSMUcol,SizeRow), name='sv_SMU4F')
         self.SizerSMU4.Add(self.SMU4C)
 
         ## Enable
-        self.EnableSMU4 = wx.CheckBox(self, label='', pos=(self.Box2[0][0]+6*Margin+2*SizeSMUcol+2*SizeIVcol+2*SizeFMcol+2*Margin, self.Box2[0][1]+4*SpacingRow+4))
+        self.EnableSMU4 = wx.CheckBox(self, label='', pos=(self.Box2[0][0]+6*Margin+2*SizeSMUcol+2*SizeIVcol+2*SizeFMcol+2*Margin, self.Box2[0][1]+4*SpacingRow+4), name='sv_EnableSMU4')
         self.EnableSMU4.SetValue(True)
         self.SizerSMU4.Add(self.EnableSMU4)        
         self.EnableSMU4.Bind(wx.EVT_CHECKBOX, self.SetSizers)
@@ -137,7 +137,7 @@ class General(GenericTab):
         
 
         ### Draw VS1 Names
-        self.VS1V = wx.TextCtrl(self, value='VSU1', pos=(self.Box2[0][0]+Margin+SizeSMUcol, self.Box2[0][1]+5*SpacingRow), size=(SizeIVcol,SizeRow))
+        self.VS1V = wx.TextCtrl(self, value='VSU1', pos=(self.Box2[0][0]+Margin+SizeSMUcol, self.Box2[0][1]+5*SpacingRow), size=(SizeIVcol,SizeRow), name='sv_VS1V')
         self.SizerVS1.Add(self.VS1V)
         self.VS1I = wx.TextCtrl(self, value='', pos=(self.Box2[0][0]+2*Margin+SizeSMUcol+SizeIVcol, self.Box2[0][1]+5*SpacingRow), size=(SizeIVcol,SizeRow))
         self.SizerVS1.Add(self.VS1I)
@@ -147,13 +147,13 @@ class General(GenericTab):
         self.VS1M = wx.ComboBox(self, value='V', pos=(self.Box2[0][0]+3*Margin+SizeSMUcol+2*SizeIVcol, self.Box2[0][1]+5*SpacingRow), size=(SizeFMcol,SpacingRow),choices=['COMM','V','I'])
         self.SizerVS1.Add(self.VS1M)
         self.VS1M.Disable()
-        self.VS1F = wx.ComboBox(self, value='CONS', pos=(self.Box2[0][0]+4*Margin+SizeSMUcol+2*SizeIVcol+SizeFMcol, self.Box2[0][1]+5*SpacingRow), size=(SizeFMcol,SizeRow), choices=['CONS','VAR1','VAR2','VARD'])
+        self.VS1F = wx.ComboBox(self, value='CONS', pos=(self.Box2[0][0]+4*Margin+SizeSMUcol+2*SizeIVcol+SizeFMcol, self.Box2[0][1]+5*SpacingRow), size=(SizeFMcol,SizeRow), choices=['CONS','VAR1','VAR2','VARD'], name='sv_VS1F')
         self.SizerVS1.Add(self.VS1F)
-        self.VS1C = wx.TextCtrl(self, value='1e-3', pos=(self.Box2[0][0]+5*Margin+SizeSMUcol+2*SizeIVcol+2*SizeFMcol, self.Box2[0][1]+5*SpacingRow), size=(SizeSMUcol,SizeRow))
+        self.VS1C = wx.TextCtrl(self, value='1e-3', pos=(self.Box2[0][0]+5*Margin+SizeSMUcol+2*SizeIVcol+2*SizeFMcol, self.Box2[0][1]+5*SpacingRow), size=(SizeSMUcol,SizeRow), name='sv_VS1C')
         self.SizerVS1.Add(self.VS1C)
 
         ## Enable
-        self.EnableVS1 = wx.CheckBox(self, label='', pos=(self.Box2[0][0]+6*Margin+2*SizeSMUcol+2*SizeIVcol+2*SizeFMcol+2*Margin, self.Box2[0][1]+5*SpacingRow+4))
+        self.EnableVS1 = wx.CheckBox(self, label='', pos=(self.Box2[0][0]+6*Margin+2*SizeSMUcol+2*SizeIVcol+2*SizeFMcol+2*Margin, self.Box2[0][1]+5*SpacingRow+4), name='sv_EnableVS1')
         self.EnableVS1.SetValue(False)
         self.SizerVS1.Add(self.EnableVS1)       
         self.EnableVS1.Bind(wx.EVT_CHECKBOX, self.SetSizers)
@@ -164,7 +164,7 @@ class General(GenericTab):
         
 
         ### Draw VS2 Names
-        self.VS2V = wx.TextCtrl(self, value='VSU2', pos=(self.Box2[0][0]+Margin+SizeSMUcol, self.Box2[0][1]+6*SpacingRow), size=(SizeIVcol,SizeRow))
+        self.VS2V = wx.TextCtrl(self, value='VSU2', pos=(self.Box2[0][0]+Margin+SizeSMUcol, self.Box2[0][1]+6*SpacingRow), size=(SizeIVcol,SizeRow), name='sv_VS2V')
         self.SizerVS2.Add(self.VS2V)
         self.VS2I = wx.TextCtrl(self, value='', pos=(self.Box2[0][0]+2*Margin+SizeSMUcol+SizeIVcol, self.Box2[0][1]+6*SpacingRow), size=(SizeIVcol,SizeRow))
         self.SizerVS2.Add(self.VS2I)
@@ -174,13 +174,13 @@ class General(GenericTab):
         self.VS2M = wx.ComboBox(self, value='V', pos=(self.Box2[0][0]+3*Margin+SizeSMUcol+2*SizeIVcol, self.Box2[0][1]+6*SpacingRow), size=(SizeFMcol,SpacingRow),choices=['COMM','V','I'])
         self.SizerVS2.Add(self.VS2M)
         self.VS2M.Disable()
-        self.VS2F = wx.ComboBox(self, value='CONS', pos=(self.Box2[0][0]+4*Margin+SizeSMUcol+2*SizeIVcol+SizeFMcol, self.Box2[0][1]+6*SpacingRow), size=(SizeFMcol,SizeRow), choices=['CONS','VAR1','VAR2','VARD'])
+        self.VS2F = wx.ComboBox(self, value='CONS', pos=(self.Box2[0][0]+4*Margin+SizeSMUcol+2*SizeIVcol+SizeFMcol, self.Box2[0][1]+6*SpacingRow), size=(SizeFMcol,SizeRow), choices=['CONS','VAR1','VAR2','VARD'], name='sv_VS2F')
         self.SizerVS2.Add(self.VS2F)
-        self.VS2C = wx.TextCtrl(self, value='1e-3', pos=(self.Box2[0][0]+5*Margin+SizeSMUcol+2*SizeIVcol+2*SizeFMcol, self.Box2[0][1]+6*SpacingRow), size=(SizeSMUcol,SizeRow))
+        self.VS2C = wx.TextCtrl(self, value='1e-3', pos=(self.Box2[0][0]+5*Margin+SizeSMUcol+2*SizeIVcol+2*SizeFMcol, self.Box2[0][1]+6*SpacingRow), size=(SizeSMUcol,SizeRow), name='sv_VS2C')
         self.SizerVS2.Add(self.VS2C)
 
         ## Enable
-        self.EnableVS2 = wx.CheckBox(self, label='', pos=(self.Box2[0][0]+6*Margin+2*SizeSMUcol+2*SizeIVcol+2*SizeFMcol+2*Margin, self.Box2[0][1]+6*SpacingRow+4))
+        self.EnableVS2 = wx.CheckBox(self, label='', pos=(self.Box2[0][0]+6*Margin+2*SizeSMUcol+2*SizeIVcol+2*SizeFMcol+2*Margin, self.Box2[0][1]+6*SpacingRow+4), name='sv_EnableVS2')
         self.EnableVS2.SetValue(False)
         self.SizerVS2.Add(self.EnableVS2)           
         self.EnableVS2.Bind(wx.EVT_CHECKBOX, self.SetSizers)
@@ -207,24 +207,24 @@ class General(GenericTab):
         self.SizerVAR1=wx.BoxSizer()
         self.VAR1Tx = wx.StaticText(self, label='VAR1', pos=(Box3[0][0]+Margin, Box3[0][1]+SpacingRow+4))
         
-        self.VAR1Start = wx.TextCtrl(self, value='0', pos=(Box3[0][0]+Margin+SizeSMUcol, Box3[0][1]+SpacingRow), size=(SizeIVcol,SizeRow))
+        self.VAR1Start = wx.TextCtrl(self, value='0', pos=(Box3[0][0]+Margin+SizeSMUcol, Box3[0][1]+SpacingRow), size=(SizeIVcol,SizeRow), name='sv_VAR1Start')
         self.VAR1Start.Bind(wx.EVT_TEXT, self.AxisSet)
         self.SizerVAR1.Add(self.VAR1Start)
-        self.VAR1Stop = wx.TextCtrl(self, value='1', pos=(Box3[0][0]+2*Margin+SizeSMUcol+SizeIVcol, Box3[0][1]+SpacingRow), size=(SizeIVcol,SizeRow))
+        self.VAR1Stop = wx.TextCtrl(self, value='1', pos=(Box3[0][0]+2*Margin+SizeSMUcol+SizeIVcol, Box3[0][1]+SpacingRow), size=(SizeIVcol,SizeRow), name='sv_VAR1Stop')
         self.VAR1Stop.Bind(wx.EVT_TEXT, self.AxisSet)
         self.SizerVAR1.Add(self.VAR1Stop)
-        self.VAR1Step = wx.TextCtrl(self, value='0.01', pos=(Box3[0][0]+3*Margin+SizeSMUcol+2*SizeIVcol, Box3[0][1]+SpacingRow), size=(SizeIVcol,SizeRow))
+        self.VAR1Step = wx.TextCtrl(self, value='0.01', pos=(Box3[0][0]+3*Margin+SizeSMUcol+2*SizeIVcol, Box3[0][1]+SpacingRow), size=(SizeIVcol,SizeRow), name='sv_VAR1Step')
         self.SizerVAR1.Add(self.VAR1Step)
 
         ########################## VAR2 ##########################
         self.SizerVAR2=wx.BoxSizer()
         self.VAR2Tx = wx.StaticText(self, label='VAR2', pos=(Box3[0][0]+Margin, Box3[0][1]+2*SpacingRow+4))
         
-        self.VAR2Start = wx.TextCtrl(self, value='0', pos=(Box3[0][0]+Margin+SizeSMUcol, Box3[0][1]+2*SpacingRow), size=(SizeIVcol,SizeRow))
+        self.VAR2Start = wx.TextCtrl(self, value='0', pos=(Box3[0][0]+Margin+SizeSMUcol, Box3[0][1]+2*SpacingRow), size=(SizeIVcol,SizeRow), name='sv_VAR2Start')
         self.SizerVAR2.Add(self.VAR2Start)
-        self.VAR2Stop = wx.TextCtrl(self, value='1', pos=(Box3[0][0]+2*Margin+SizeSMUcol+SizeIVcol, Box3[0][1]+2*SpacingRow), size=(SizeIVcol,SizeRow))
+        self.VAR2Stop = wx.TextCtrl(self, value='1', pos=(Box3[0][0]+2*Margin+SizeSMUcol+SizeIVcol, Box3[0][1]+2*SpacingRow), size=(SizeIVcol,SizeRow), name='sv_VAR2Stop')
         self.SizerVAR2.Add(self.VAR2Stop)
-        self.VAR2Step = wx.TextCtrl(self, value='0.2', pos=(Box3[0][0]+3*Margin+SizeSMUcol+2*SizeIVcol, Box3[0][1]+2*SpacingRow), size=(SizeIVcol,SizeRow))
+        self.VAR2Step = wx.TextCtrl(self, value='0.2', pos=(Box3[0][0]+3*Margin+SizeSMUcol+2*SizeIVcol, Box3[0][1]+2*SpacingRow), size=(SizeIVcol,SizeRow), name='sv_VAR2Step')
         self.SizerVAR2.Add(self.VAR2Step)
 
         ########################## VARD ##########################
@@ -234,9 +234,9 @@ class General(GenericTab):
         self.VARDOffTx = wx.StaticText(self, label='Offset', pos=(Box3[0][0]+1*Margin+SizeSMUcol, Box3[0][1]+2*Margin+2*SpacingRow+2*Margin))
         self.VARDRatTx = wx.StaticText(self, label='Ratio', pos=(Box3[0][0]+2*Margin+SizeSMUcol+SizeIVcol, Box3[0][1]+2*Margin+2*SpacingRow+2*Margin))
         
-        self.VARDOff = wx.TextCtrl(self, value='0', pos=(Box3[0][0]+Margin+SizeSMUcol, Box3[0][1]+2*Margin+3*SpacingRow), size=(SizeIVcol,SizeRow))
+        self.VARDOff = wx.TextCtrl(self, value='0', pos=(Box3[0][0]+Margin+SizeSMUcol, Box3[0][1]+2*Margin+3*SpacingRow), size=(SizeIVcol,SizeRow), name='sv_VARDOff')
         self.SizerVARD.Add(self.VARDOff)
-        self.VARDRat = wx.TextCtrl(self, value='1', pos=(Box3[0][0]+2*Margin+SizeSMUcol+SizeIVcol, Box3[0][1]+2*Margin+3*SpacingRow), size=(SizeIVcol,SizeRow))
+        self.VARDRat = wx.TextCtrl(self, value='1', pos=(Box3[0][0]+2*Margin+SizeSMUcol+SizeIVcol, Box3[0][1]+2*Margin+3*SpacingRow), size=(SizeIVcol,SizeRow), name='sv_VARDRat')
         self.SizerVARD.Add(self.VARDRat)                     
 
 
@@ -250,34 +250,34 @@ class General(GenericTab):
         self.XTx = wx.StaticText(self, label='X (Var1)', pos=(Box4[0][0]+49, Box4[0][1]+2*Margin))       
         self.Y1Tx = wx.StaticText(self, label='Y1', pos=(Box4[0][0]+112+12, Box4[0][1]+2*Margin))
         self.Y2Tx = wx.StaticText(self, label='Y2', pos=(Box4[0][0]+175+12, Box4[0][1]+2*Margin))
-        self.X1 = wx.TextCtrl(self, value='V2', pos=(Box4[0][0]+49, Box4[0][1]+SpacingRow), size=(SizeIVcol,SizeRow), style=wx.TE_CENTRE)
+        self.X1 = wx.TextCtrl(self, value='V2', pos=(Box4[0][0]+49, Box4[0][1]+SpacingRow), size=(SizeIVcol,SizeRow), style=wx.TE_CENTRE, name='sv_X1')
         self.X1.Disable()
-        self.Y1 = wx.TextCtrl(self, value='I2', pos=(Box4[0][0]+112, Box4[0][1]+SpacingRow), size=(SizeIVcol,SizeRow), style=wx.TE_CENTRE)
-        self.Y2 = wx.TextCtrl(self, value='', pos=(Box4[0][0]+175, Box4[0][1]+SpacingRow), size=(SizeIVcol,SizeRow), style=wx.TE_CENTRE)
+        self.Y1 = wx.TextCtrl(self, value='I2', pos=(Box4[0][0]+112, Box4[0][1]+SpacingRow), size=(SizeIVcol,SizeRow), style=wx.TE_CENTRE, name='sv_Y1')
+        self.Y2 = wx.TextCtrl(self, value='', pos=(Box4[0][0]+175, Box4[0][1]+SpacingRow), size=(SizeIVcol,SizeRow), style=wx.TE_CENTRE, name='sv_Y2')
         self.SizerAxis.Add(self.X1)
 
         self.MinTx = wx.StaticText(self, label='Min', pos=(Box4[0][0]+Margin, Box4[0][1]+2*SpacingRow-5))
-        self.X1Min = wx.TextCtrl(self, value='0', pos=(Box4[0][0]+49, Box4[0][1]+2*SpacingRow-Margin), size=(SizeIVcol,SizeRow), style=wx.TE_CENTRE)
-        self.Y1Min = wx.TextCtrl(self, value='0', pos=(Box4[0][0]+112, Box4[0][1]+2*SpacingRow-Margin), size=(SizeIVcol,SizeRow), style=wx.TE_CENTRE)
-        self.Y2Min = wx.TextCtrl(self, value='', pos=(Box4[0][0]+175, Box4[0][1]+2*SpacingRow-Margin), size=(SizeIVcol,SizeRow), style=wx.TE_CENTRE)
+        self.X1Min = wx.TextCtrl(self, value='0', pos=(Box4[0][0]+49, Box4[0][1]+2*SpacingRow-Margin), size=(SizeIVcol,SizeRow), style=wx.TE_CENTRE, name='sv_X1Min')
+        self.Y1Min = wx.TextCtrl(self, value='0', pos=(Box4[0][0]+112, Box4[0][1]+2*SpacingRow-Margin), size=(SizeIVcol,SizeRow), style=wx.TE_CENTRE, name='sv_Y1Min')
+        self.Y2Min = wx.TextCtrl(self, value='', pos=(Box4[0][0]+175, Box4[0][1]+2*SpacingRow-Margin), size=(SizeIVcol,SizeRow), style=wx.TE_CENTRE, name='sv_Y2Min')
         self.X1Min.Disable()
 
         self.MaxTx = wx.StaticText(self, label='Max', pos=(Box4[0][0]+Margin, Box4[0][1]+3*SpacingRow-15))
-        self.X1Max = wx.TextCtrl(self, value='1', pos=(Box4[0][0]+49, Box4[0][1]+3*SpacingRow-2*Margin), size=(SizeIVcol,SizeRow), style=wx.TE_CENTRE)
-        self.Y1Max = wx.TextCtrl(self, value='1m', pos=(Box4[0][0]+112, Box4[0][1]+3*SpacingRow-2*Margin), size=(SizeIVcol,SizeRow), style=wx.TE_CENTRE)
-        self.Y2Max = wx.TextCtrl(self, value='', pos=(Box4[0][0]+175, Box4[0][1]+3*SpacingRow-2*Margin), size=(SizeIVcol,SizeRow), style=wx.TE_CENTRE)
+        self.X1Max = wx.TextCtrl(self, value='1', pos=(Box4[0][0]+49, Box4[0][1]+3*SpacingRow-2*Margin), size=(SizeIVcol,SizeRow), style=wx.TE_CENTRE, name='sv_X1Max')
+        self.Y1Max = wx.TextCtrl(self, value='1m', pos=(Box4[0][0]+112, Box4[0][1]+3*SpacingRow-2*Margin), size=(SizeIVcol,SizeRow), style=wx.TE_CENTRE, name='sv_Y1Max')
+        self.Y2Max = wx.TextCtrl(self, value='', pos=(Box4[0][0]+175, Box4[0][1]+3*SpacingRow-2*Margin), size=(SizeIVcol,SizeRow), style=wx.TE_CENTRE, name='sv_Y2Max')
         self.X1Max.Disable()
 
-        self.Traces = wx.TextCtrl(self, value='', pos=(Box4[0][0]+Margin, Box4[0][1]+4*SpacingRow-3*Margin+5), size=(Box4[1][0]-2*Margin,SizeRow))
-        self.ufunc = wx.TextCtrl(self, value='VM=VMU2-VMU1', pos=(Box4[0][0]+Margin, Box4[0][1]+5*SpacingRow-3*Margin+5), size=(Box4[1][0]-2*Margin,SizeRow))
+        self.Traces = wx.TextCtrl(self, value='', pos=(Box4[0][0]+Margin, Box4[0][1]+4*SpacingRow-3*Margin+5), size=(Box4[1][0]-2*Margin,SizeRow), name='sv_Traces')
+        self.ufunc = wx.TextCtrl(self, value='VM=VMU2-VMU1', pos=(Box4[0][0]+Margin, Box4[0][1]+5*SpacingRow-3*Margin+5), size=(Box4[1][0]-2*Margin,SizeRow), name='sv_ufunc')
 
         ## Misc Configs
         
         self.IntTimeTx = wx.StaticText(self, label='Integration Time:', pos=(self.Box1[0][0],self.Box2[0][1]+self.Box2[1][1]+Margin))
-        self.IntTimeBox = wx.ComboBox(self, value=DefaultIntTime, pos=(self.Box1[0][0],self.Box2[0][1]+self.Box2[1][1]+3*Margin), size=(80,40), choices=['SHORt','MEDium','LONG'])
+        self.IntTimeBox = wx.ComboBox(self, value=DefaultIntTime, pos=(self.Box1[0][0],self.Box2[0][1]+self.Box2[1][1]+3*Margin), size=(80,40), choices=['SHORt','MEDium','LONG'], name='sv_IntTimeBox')
 
         self.TimeoutTx = wx.StaticText(self, label='Timeout (min/trace):', pos=(self.Box1[0][0]+100,self.Box2[0][1]+self.Box2[1][1]+Margin))
-        self.Timeout = wx.TextCtrl(self, value='1', pos=(self.Box1[0][0]+100,self.Box2[0][1]+self.Box2[1][1]+3*Margin), size=(60,23))
+        self.Timeout = wx.TextCtrl(self, value='1', pos=(self.Box1[0][0]+100,self.Box2[0][1]+self.Box2[1][1]+3*Margin), size=(60,23), name='sv_Timeout')
 
         self.Progress=wx.TextCtrl(self, pos=(self.Box2[0][0],self.Box2[0][1]+self.Box2[1][1]+Margin), size=(self.Box2[1][0], 90),style=wx.TE_MULTILINE) 
         

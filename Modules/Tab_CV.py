@@ -43,23 +43,20 @@ class CVTab(GenericTab):
 
         self.VStartTx = wx.StaticText(self, label='V Start', pos=(BoxVgs[0][0]+2*Margin, BoxVgs[0][1]+30))
         self.VStartTx.SetFont(wx.Font(12, wx.DEFAULT, wx.NORMAL, wx.NORMAL, False))
-        self.VStart = wx.SpinCtrlDouble(self, value=str (0), pos=(BoxVgs[0][0]+2*Margin, BoxVgs[0][1]+50), size=(80,35),style=wx.SP_ARROW_KEYS|wx.TE_CENTRE)
+        self.VStart = wx.SpinCtrlDouble(self, value=str (-DefaultMax), pos=(BoxVgs[0][0]+2*Margin, BoxVgs[0][1]+50), size=(80,35), min=-100, max=100, inc=0.5, style=wx.SP_ARROW_KEYS|wx.TE_CENTRE)
         self.VStart.SetFont(wx.Font(17, wx.DEFAULT, wx.NORMAL, wx.NORMAL, False))
-        self.VStart.SetIncrement(0.1)
         self.Sizer2.Add(self.VStart)
 
         self.VStopTx = wx.StaticText(self, label='V Stop', pos=(BoxVgs[0][0]+2*Margin, BoxVgs[0][1]+30+70))
         self.VStopTx.SetFont(wx.Font(12, wx.DEFAULT, wx.NORMAL, wx.NORMAL, False))
-        self.VStop= wx.SpinCtrlDouble(self, value=str (DefaultMax), pos=(BoxVgs[0][0]+2*Margin, BoxVgs[0][1]+50+70), size=(80,35),style=wx.SP_ARROW_KEYS|wx.TE_CENTRE)
+        self.VStop= wx.SpinCtrlDouble(self, value=str (DefaultMax), pos=(BoxVgs[0][0]+2*Margin, BoxVgs[0][1]+50+70), size=(80,35), min=-100, max=100, inc=0.5,style=wx.SP_ARROW_KEYS|wx.TE_CENTRE)
         self.VStop.SetFont(wx.Font(17, wx.DEFAULT, wx.NORMAL, wx.NORMAL, False))
-        self.VStop.SetIncrement(0.1)
         self.Sizer2.Add(self.VStop)
 
-        self.VStepTx = wx.StaticText(self, label='V Step', pos=(BoxVgs[0][0]+2*Margin, BoxVgs[0][1]+30+140))
+        self.VStepTx = wx.StaticText(self, label='Points', pos=(BoxVgs[0][0]+2*Margin, BoxVgs[0][1]+30+140))
         self.VStepTx.SetFont(wx.Font(12, wx.DEFAULT, wx.NORMAL, wx.NORMAL, False))
-        self.VStep= wx.SpinCtrlDouble(self, value=str (DefaultStep/StepScale), pos=(BoxVgs[0][0]+2*Margin, BoxVgs[0][1]+50+140), size=(80,35),style=wx.SP_ARROW_KEYS|wx.TE_CENTRE)
+        self.VStep= wx.SpinCtrl(self, value=str (200), pos=(BoxVgs[0][0]+2*Margin, BoxVgs[0][1]+50+140), min=10, max=2000, size=(80,35),style=wx.SP_ARROW_KEYS|wx.TE_CENTRE)
         self.VStep.SetFont(wx.Font(17, wx.DEFAULT, wx.NORMAL, wx.NORMAL, False))
-        self.VStep.SetIncrement(0.01)
         self.Sizer2.Add(self.VStep)
 
         

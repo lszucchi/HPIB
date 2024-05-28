@@ -6,8 +6,7 @@ from Tab_IV import *
 from Tab_CV import *
 from Tab_4P import *
 
-from defaults import *   
-
+from defaults import *
                 
 ####### COMMIT TEST
                 
@@ -65,6 +64,34 @@ class DemoFrame(wx.Frame):
         self.Maximize(False)
  
         self.Show()
+
+        menubar = wx.MenuBar()
+        fileMenu = wx.Menu()
+        
+        menubar.Append(fileMenu, "Tools")
+        
+        self.SetDebug = fileMenu.AppendCheckItem(wx.NewIdRef(), 'Enable Debug')
+        self.Bind (wx.EVT_MENU, self.OnSetDebug, self.SetDebug)
+        reinit = fileMenu.Append(wx.NewIdRef(), 'REINIT')
+        self.Bind(wx.EVT_MENU, self.OnReinit, reinit)
+
+        self.SetMenuBar ( menubar )
+
+        
+    def OnSetDebug(self, event):
+        self.SetDebug.Check(self.SetDebug.IsChecked())
+        self.debug = self.SetDebug.IsChecked()
+        print(self.debug)
+            
+        return 0
+
+    def OnReinit(self, event):
+        for child in self.notebook.GetChildren()[0].GetChildren():
+            if 'sv_' in child.Name:
+                print(child.GetName())
+        print(self.notebook.GetPageText(0))
+        return 0
+		
 
     def OnPageChanged(self, event):
         match event.GetSelection():

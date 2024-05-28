@@ -10,17 +10,13 @@ from threading import Thread
 
 from defaults import *
 
+
 class GenericTab(wx.Panel):
 
     def OpenHP(self, addr, inst):
-        self.debug=False
+        self.debug=self.GetParent().GetParent().GetParent().debug
         
-        if inst[len(inst)-1].lower()=='d':
-            self.debug=True
-            inst=inst.strip('dD')
-            print(f"\n\n#####################    {inst}   #####################\n\n") 
-
-        if not addr[0]=='G':
+        if 'GPIB' not in addr:
             addr="GPIB0::"+str(addr)
         
         if inst=='HP4155':
@@ -46,8 +42,8 @@ class GenericTab(wx.Panel):
         Bx0.SetFont(wx.Font(15, wx.DEFAULT, wx.NORMAL, wx.NORMAL, False))
         self.Dir_Select = wx.Button(self, label='Save dir', pos=(X+10,Y+25),size=(80,30))
         self.Dir_Select.SetFont(wx.Font(12, wx.DEFAULT, wx.NORMAL, wx.NORMAL, False))
-        self.Dir_Select.Bind(wx.EVT_BUTTON, self.OnSaveButton)
-        self.SaveFilePath=wx.TextCtrl(self, pos=(X+100, Y+25), size=(length, 30),style=wx.TE_LEFT)
+        self.Dir_Select.Bind(wx.EVT_BUTTON, self.InitValues)
+        self.SaveFilePath=wx.TextCtrl(self, pos=(X+100, Y+25), size=(length, 30), style=wx.TE_LEFT, name='sv_SaveFilePath')
         
     
     def DrawConfigBox(self, X, Y):
@@ -61,31 +57,30 @@ class GenericTab(wx.Panel):
 
         #Instr Select
         self.InstTx = wx.StaticText(self, label='Instrument', pos=(self.Box1[0][0]+Margin+5, self.Box1[0][1]+2*Margin))
-        self.Inst = wx.ComboBox(self, value='HP4155', pos=(self.Box1[0][0]+Margin+5, self.Box1[0][1]+4*Margin), choices=['HP4145','HP4155'])
-##        self.Inst.Bind(wx.EVT_TEXT, self.EnableTraces)
+        self.Inst = wx.ComboBox(self, value=DefaultInst, pos=(self.Box1[0][0]+Margin+5, self.Box1[0][1]+4*Margin), choices=['HP4145','HP4155'], name='sv_Inst')
 
         #GPIB address selection box
         self.GPIBTXT = wx.StaticText(self, label='GBIP Address', pos=(self.Box1[0][0]+105, self.Box1[0][1]+2*Margin))
-        self.GPIBCH = wx.ComboBox(self, value='17', pos=(self.Box1[0][0]+105, self.Box1[0][1]+4*Margin), size=(40,40), choices=['15','16','17'])
+        self.GPIBCH = wx.ComboBox(self, value='17', pos=(self.Box1[0][0]+105, self.Box1[0][1]+4*Margin), size=(40,40), choices=['15','16','17'], name='sv_GPIBCH')
         self.Sizer2.Add(self.GPIBCH)
 
         
         #COM port selection box
-        self.COMEnable = wx.CheckBox(self, label='SM Port', pos=(self.Box1[0][0]+Margin+5, self.Box1[0][1]+2*Margin+50))
+        self.COMEnable = wx.CheckBox(self, label='SM Port', pos=(self.Box1[0][0]+Margin+5, self.Box1[0][1]+2*Margin+50), name='sv_COMEnable')
         self.COMEnable.SetValue(0)
-        self.COM = wx.ComboBox(self, value='COM3', pos=(self.Box1[0][0]+Margin+5, self.Box1[0][1]+4*Margin+50), choices=['COM3','COM4'])
+        self.COM = wx.ComboBox(self, value='COM3', pos=(self.Box1[0][0]+Margin+5, self.Box1[0][1]+4*Margin+50), choices=['COM3','COM4'], name='sv_COM')
         self.Sizer1.Add(self.COM)
 
 
 
         #Checkboxes
         cbpos=(self.Box1[0][0]+Margin, self.Box1[0][1]+125)
-        self.cb1 = wx.CheckBox(self, label='Channel 1', pos=(cbpos[0], cbpos[1]))
-        self.cb2 = wx.CheckBox(self, label='Channel 2', pos=(cbpos[0], cbpos[1]+25))
-        self.cb3 = wx.CheckBox(self, label='Channel 3', pos=(cbpos[0], cbpos[1]+50))
-        self.cb4 = wx.CheckBox(self, label='Channel 4', pos=(cbpos[0], cbpos[1]+75))
-        self.cb5 = wx.CheckBox(self, label='Channel 5', pos=(cbpos[0], cbpos[1]+100))
-        self.cb6 = wx.CheckBox(self, label='Channel 6', pos=(cbpos[0], cbpos[1]+125))
+        self.cb1 = wx.CheckBox(self, label='Channel 1', pos=(cbpos[0], cbpos[1]), name='sv_cb1')
+        self.cb2 = wx.CheckBox(self, label='Channel 2', pos=(cbpos[0], cbpos[1]+25), name='sv_cb2')
+        self.cb3 = wx.CheckBox(self, label='Channel 3', pos=(cbpos[0], cbpos[1]+50), name='sv_cb3')
+        self.cb4 = wx.CheckBox(self, label='Channel 4', pos=(cbpos[0], cbpos[1]+75), name='sv_cb4')
+        self.cb5 = wx.CheckBox(self, label='Channel 5', pos=(cbpos[0], cbpos[1]+100), name='sv_cb5')
+        self.cb6 = wx.CheckBox(self, label='Channel 6', pos=(cbpos[0], cbpos[1]+125), name='sv_cb6')
         self.cb1.SetValue(1)
         self.cb2.SetValue(1)
         self.cb3.SetValue(1)
@@ -98,7 +93,7 @@ class GenericTab(wx.Panel):
         self.Sizer1.Add(self.cb4)
         self.Sizer1.Add(self.cb5)
         self.Sizer1.Add(self.cb6)
-
+        
         def ToggleSizer(evt):
             children = self.Sizer1.GetChildren()
             for child in children:
@@ -146,7 +141,6 @@ class GenericTab(wx.Panel):
         self.GBoxTx = wx.StaticText(self, label='G:', pos=(X+2*Margin+SMU_MarginX,  Y+2*Margin+3+SMU_MarginY))
         self.GBox = wx.ComboBox(self, value='SMU3', pos=(X+4*Margin+5+SMU_MarginX, Y+2*Margin+SMU_MarginY), size=(60,40), choices=['SMU1','SMU2','SMU3','SMU4'])
         self.Sizer1a.Add(self.GBox)
-
         
     def Measure(self):
         self.Progress.AppendText('\nMeasurement started!\n...')
@@ -241,3 +235,34 @@ class GenericTab(wx.Panel):
                 img = img.Scale(int(NewW),int(NewH))
                 self.imageCtrl.SetBitmap(wx.Bitmap(img))
                 self.Refresh()
+
+    def UpdateCfg(self, event):
+        self.ChildList=[]
+        for child in self.GetChildren():
+            if child.__class__.__name__ not in ['StaticBox', 'Button', 'StaticText', 'StaticBitmap']:
+                self.ChildList+=[str(child.GetValue())]
+        with open('init.cfg', 'w') as file:
+            file.write(self.__class__.__name__)
+            file.write("\n")
+            for child in  self.ChildList:
+                file.write(str(child))
+                file.write("\n")
+        print(self.ChildList)
+        return 0
+
+    def InitValues(self, event):
+        with open('init.cfg', 'r') as file:
+            ChildList=file.readlines()
+        i=1
+        for child in self.GetChildren():
+            if child.__class__.__name__ not in ['StaticBox', 'Button', 'StaticText', 'StaticBitmap']:
+                print(child.GetValue(), ChildList[i])
+                if child.__class__.__name__=='CheckBox':
+                    ChildList[i]=ChildList[i]=='True\n'
+                child.SetValue(ChildList[i])
+                i+=1
+        self.GPIBCH.DeletePendingEvents()
+                
+        return 0
+        
+    
