@@ -59,7 +59,7 @@ class DemoFrame(wx.Frame):
 
         self.notebook.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.OnPageChanged)
         self.Layout()
-        self.SetSize(1535,555)
+        self.SetSize(1535,570)
         self.Move(wx.Point(-8,0))
         self.Maximize(False)
  
@@ -76,6 +76,7 @@ class DemoFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnReinit, reinit)
 
         self.SetMenuBar ( menubar )
+        self.debug=False
 
         
     def OnSetDebug(self, event):
@@ -96,16 +97,16 @@ class DemoFrame(wx.Frame):
     def OnPageChanged(self, event):
         match event.GetSelection():
             case 0:
-                self.SetSize(1535,555)
+                self.SetSize(1535,570)
             case 1:
                 self.Maximize(False)
-                self.SetSize(1570,555)
+                self.SetSize(1570,570)
                 self.Move(wx.Point(-8,0))
             case 2:
                 self.Maximize(False)
-                self.SetSize(980,555)
+                self.SetSize(980,570)
             case 3:
-                self.SetSize(980,555)
+                self.SetSize(980,570)
                 
         event.Skip()
  
