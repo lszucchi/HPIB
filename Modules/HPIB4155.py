@@ -31,6 +31,12 @@ class HP4155(HP):
         self.beep()
         return 'Invalid Integration Time'
 
+    def SetHoldTime(self, HoldTime=1):
+        if HoldTime < 0 or HoldTime > 650:
+            return 'Hold Time Outside of allowed range'
+        self.write(f":PAGE:MEAS:HTIM {HoldTime}")
+        return 0
+
     def UFUNC(self, ufunc):
     
         if ufunc[0]=='V':

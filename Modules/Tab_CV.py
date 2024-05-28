@@ -21,7 +21,7 @@ class CVTab(GenericTab):
         self.Sizer1a=wx.StaticBoxSizer(self.Bx1a)
 
         self.VBoxTx = wx.StaticText(self, label='V:', pos=(X+1*Margin, Y+2*Margin+3))
-        self.VBox  = wx.ComboBox(self, value='SMU1', pos=(X+3*Margin+5, Y+2*Margin), size=(60,40), choices=['SMU1','SMU2','SMU3','SMU4', 'VSU1', 'VSU2'])
+        self.VBox  = wx.ComboBox(self, value='VSU1', pos=(X+3*Margin+5, Y+2*Margin), size=(60,40), choices=['SMU1','SMU2','SMU3','SMU4', 'VSU1', 'VSU2'])
         self.Sizer1a.Add(self.VBox)
 
         self.CompTx = wx.StaticText(self, label='Imax:', pos=(X+1*Margin+SMU_MarginX, Y+2*Margin+3))
@@ -41,33 +41,31 @@ class CVTab(GenericTab):
         self.Bx2=wx.StaticBox(self,label='C - V Config', pos=(BoxVgs[0][0], BoxVgs[0][1]),size=(BoxVgs[1][0], BoxVgs[1][1]))
         self.Sizer2=wx.StaticBoxSizer(self.Bx2)
 
-        self.VStartTx = wx.StaticText(self, label='V Start', pos=(BoxVgs[0][0]+2*Margin, BoxVgs[0][1]+30+70))
-        self.VStartTx.SetFont(wx.Font(12, wx.DEFAULT, wx.NORMAL, wx.NORMAL, False))
-        self.VStart = wx.SpinCtrlDouble(self, value=str (-DefaultMax), pos=(BoxVgs[0][0]+2*Margin, BoxVgs[0][1]+50+70), size=(80,35), min=-100, max=100, inc=0.5, style=wx.SP_ARROW_KEYS|wx.TE_CENTRE)
-        self.VStart.SetFont(wx.Font(17, wx.DEFAULT, wx.NORMAL, wx.NORMAL, False))
-        self.Sizer2.Add(self.VStart)
-
         self.VStopTx = wx.StaticText(self, label='V Stop', pos=(BoxVgs[0][0]+2*Margin, BoxVgs[0][1]+30))
         self.VStopTx.SetFont(wx.Font(12, wx.DEFAULT, wx.NORMAL, wx.NORMAL, False))
         self.VStop= wx.SpinCtrlDouble(self, value=str (DefaultMax), pos=(BoxVgs[0][0]+2*Margin, BoxVgs[0][1]+50), size=(80,35), min=-100, max=100, inc=0.5,style=wx.SP_ARROW_KEYS|wx.TE_CENTRE)
         self.VStop.SetFont(wx.Font(17, wx.DEFAULT, wx.NORMAL, wx.NORMAL, False))
         self.Sizer2.Add(self.VStop)
 
+        self.VStartTx = wx.StaticText(self, label='V Start', pos=(BoxVgs[0][0]+2*Margin, BoxVgs[0][1]+30+70))
+        self.VStartTx.SetFont(wx.Font(12, wx.DEFAULT, wx.NORMAL, wx.NORMAL, False))
+        self.VStart = wx.SpinCtrlDouble(self, value=str (-DefaultMax), pos=(BoxVgs[0][0]+2*Margin, BoxVgs[0][1]+50+70), size=(80,35), min=-100, max=100, inc=0.5, style=wx.SP_ARROW_KEYS|wx.TE_CENTRE)
+        self.VStart.SetFont(wx.Font(17, wx.DEFAULT, wx.NORMAL, wx.NORMAL, False))
+        self.Sizer2.Add(self.VStart)
+
         self.VStepTx = wx.StaticText(self, label='V Points', pos=(BoxVgs[0][0]+2*Margin, BoxVgs[0][1]+30+140))
         self.VStepTx.SetFont(wx.Font(12, wx.DEFAULT, wx.NORMAL, wx.NORMAL, False))
-        self.VPoints= wx.SpinCtrl(self, value=str (200), pos=(BoxVgs[0][0]+2*Margin, BoxVgs[0][1]+50+140), min=10, max=2000, size=(80,35),style=wx.SP_ARROW_KEYS|wx.TE_CENTRE)
+        self.VPoints= wx.SpinCtrlDouble(self, value=str (200), pos=(BoxVgs[0][0]+2*Margin, BoxVgs[0][1]+50+140), min=10, max=2000, inc=10, size=(80,35), style=wx.SP_ARROW_KEYS|wx.TE_CENTRE)
         self.VPoints.SetFont(wx.Font(17, wx.DEFAULT, wx.NORMAL, wx.NORMAL, False))
         self.Sizer2.Add(self.VPoints)
 
         
         ############################# Progress #############################
-        
 
-        self.CurrentTx = wx.StaticText(self, label='Current Step:', pos=(BoxVgs[0][0],BoxVgs[0][1]+BoxVgs[1][1]+Margin+3))
-        self.Current = wx.TextCtrl(self, pos=(BoxVgs[0][0],BoxVgs[0][1]+BoxVgs[1][1]+Margin+23),size=(130,20))
-
-        self.IntTimeTx = wx.StaticText(self, label='Integration Time:', pos=(BoxVgs[0][0],BoxVgs[0][1]+BoxVgs[1][1]+Margin+53))
-        self.IntTimeBox = wx.ComboBox(self, value=DefaultIntTime, pos=(BoxVgs[0][0],BoxVgs[0][1]+BoxVgs[1][1]+Margin+73), size=(80,40), choices=['SHORt','MEDium','LONG'])
+        self.IntTimeTx = wx.StaticText(self, label='Integration Time:', pos=(BoxVgs[0][0],BoxVgs[0][1]+BoxVgs[1][1]+Margin+3))
+        self.IntTimeBox = wx.ComboBox(self, value=DefaultIntTime, pos=(BoxVgs[0][0],BoxVgs[0][1]+BoxVgs[1][1]+Margin+23), size=(80,20), choices=['SHORt','MEDium','LONG'])
+        self.HTimeTx = wx.StaticText(self, label='Hold Time (s):', pos=(BoxVgs[0][0],BoxVgs[0][1]+BoxVgs[1][1]+Margin+53))
+        self.HTimeBox = wx.SpinCtrlDouble(self, value='1', pos=(BoxVgs[0][0],BoxVgs[0][1]+BoxVgs[1][1]+Margin+73), size=(80,20), min=0, max=10, inc=0.1, style=wx.SP_ARROW_KEYS|wx.TE_CENTRE)
         self.Sizer2.Add(self.IntTimeBox)
 
         #======== Image preview =========#
@@ -96,7 +94,6 @@ class CVTab(GenericTab):
         time.sleep(0.5)
         self.HP.DisableAll()
         VStep=(self.VStop.GetValue()-self.VStart.GetValue())/(self.VPoints.GetValue())
-        print(VStep)
 
         if  "SMU" in self.VBox.GetValue():
             self.HP.SetSMU("SMU1", "Vf", "If", "V", "VAR1")
@@ -115,8 +112,9 @@ class CVTab(GenericTab):
         self.HP.SetVar("Var1", "V", self.VStart.GetValue(), self.VStop.GetValue(), VStep, self.Comp.GetValue())
 
         self.HP.SetAxis("X", "Vf", 'LIN', ETF(self.VStart.GetValue()), ETF(self.VStop.GetValue()))
-        self.HP.SetAxis("Y1", "C", 1, 0, 2)
-        self.HP.SetAxis("Y2", "S", 1, 0, 2)
+        self.HP.SetAxis("Y1", "C", 1, 0, .2)
+##        self.HP.SetAxis("Y2", "S", 1, 0, 1)
+        self.HP.SetHoldTime(int(self.HTimeBox.GetValue()))
 
         self.HP.save_list(data_variables)
 
