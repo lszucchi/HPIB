@@ -1,4 +1,4 @@
-from Tab_Generic import *
+from .Tab_Generic import *
 
 class General(GenericTab):
     
@@ -7,8 +7,6 @@ class General(GenericTab):
         self.timer = wx.Timer(self)
         
         self.DrawSaveBox(10, 0, 790)
-
- 
         self.DrawConfigBox(10, 80)
 
         #========  Channel Config ========#
@@ -340,7 +338,7 @@ class General(GenericTab):
         scale='LIN'
         if 'log' in self.YAxis[0]:
             scale='LOG'
-            self.YAxis[0]=YAxis[0].split('log')[1].strip('( )')
+            self.YAxis[0]=YAxis[0].split('log')[1].strip('( )') # type: ignore
         
         self.HP.SetAxis("Y1", self.YAxis[0], scale, ETF(self.Y1Min.GetValue()), ETF(self.Y1Max.GetValue()))
 
@@ -351,7 +349,7 @@ class General(GenericTab):
             scale='LIN'
             if 'log' in self.YAxis[1]:
                 scale='LOG'
-                self.YAxis[1]=YAxis[1].split('log')[1].strip('( )')
+                self.YAxis[1]=YAxis[1].split('log')[1].strip('( )') # type: ignore
                 
             if not (self.Y2Min.GetValue() and self.Y2Max.GetValue()):
                 self.Y2Min.SetValue('0')

@@ -1,4 +1,4 @@
-from Tab_Generic import *
+from .Tab_Generic import *
 
 class IVTab(GenericTab):
     """
@@ -64,7 +64,7 @@ class IVTab(GenericTab):
                             self.HP.SetEx_Ib(-0.5,self.VgVpStop.GetValue(),self.VgVpStep.GetValue(),ptype=self.ptype.GetValue())
                             save_path=self.SaveFilePath.GetValue()+'/Ch ' + str(Chn+1) + '-Ex_Ib-' + datetime.datetime.now().strftime("%y%m%d %H%M%S") + '.csv'
                             self.HP.get_data(save_path)
-                            Ispec=self.HP.Ex_Ib(save_path, ptype=ptype.GetValue())
+                            Ispec=self.HP.Ex_Ib(save_path, ptype=ptype.GetValue()) # type: ignore
                             
                     self.Progress.AppendText(str('Vp_Vgs')+ '  ')
                     self.HP.SetVp(Ispec,self.VgVpStart.GetValue(),self.VgVpStop.GetValue(),self.VgVpStep.GetValue(),ptype=self.ptype.GetValue())

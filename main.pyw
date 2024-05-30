@@ -1,12 +1,8 @@
-import sys
-sys.path.append("Modules")
-
-from Tab_GP import *
-from Tab_IV import *
-from Tab_CV import *
-from Tab_4P import *
-
-from defaults import *
+from Modules.Tab_Generic import *
+from Modules.Tab_4P import FourPoint
+from Modules.Tab_CV import CVTab
+from Modules.Tab_GP import General
+from Modules.Tab_IV import IVTab
                 
 ####### COMMIT TEST
                 
