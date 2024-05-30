@@ -52,19 +52,6 @@ class DemoFrame(wx.Frame):
                           )
         panel = wx.Panel(self)
         
-        self.notebook = NotebookDemo(panel)
-        sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(self.notebook, 1, wx.ALL|wx.EXPAND, 5)
-        panel.SetSizer(sizer)
-
-        self.notebook.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.OnPageChanged)
-        self.Layout()
-        self.SetSize(1535,570)
-        self.Move(wx.Point(-8,0))
-        self.Maximize(False)
- 
-        self.Show()
-
         menubar = wx.MenuBar()
         fileMenu = wx.Menu()
         
@@ -76,13 +63,26 @@ class DemoFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnReinit, reinit)
 
         self.SetMenuBar ( menubar )
-        self.debug=False
+
+        self.notebook = NotebookDemo(panel)
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(self.notebook, 1, wx.ALL|wx.EXPAND, 5)
+        panel.SetSizer(sizer)
+        self.notebook.debug=False
+
+        self.notebook.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.OnPageChanged)
+        self.Layout()
+        self.SetSize(1535,570)
+        self.Move(wx.Point(-8,0))
+        self.Maximize(False)
+ 
+        self.Show()
 
         
     def OnSetDebug(self, event):
         self.SetDebug.Check(self.SetDebug.IsChecked())
-        self.debug = self.SetDebug.IsChecked()
-        print(self.debug)
+        self.notebook.debug = self.SetDebug.IsChecked()
+        print(self.notebook.debug)
             
         return 0
 

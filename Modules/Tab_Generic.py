@@ -14,8 +14,8 @@ from defaults import *
 class GenericTab(wx.Panel):
 
     def OpenHP(self, addr, inst):
-        self.debug=self.GetParent().GetParent().GetParent().debug
         
+        self.debug=self.GetParent().debug
         if 'GPIB' not in addr:
             addr="GPIB0::"+str(addr)
         
@@ -143,8 +143,11 @@ class GenericTab(wx.Panel):
         self.Sizer1a.Add(self.GBox)
         
     def Measure(self):
+        if self.HP.term == '':
+
+            self.ShowMessage(f'Error: No config sent', True)
+            
         self.Progress.AppendText('\nMeasurement started!\n...')
-        print("a")
         try:
             self.HP.SetIntTime(self.IntTimeBox.GetValue())
             ReturnFlag = self.HP.SingleSave(self.SaveFilePath.GetValue(), timeout=180)
@@ -178,6 +181,9 @@ class GenericTab(wx.Panel):
         
     def OnButton(self, event):
         self.Stop_flag=False
+        if not hasattr(self, 'HP'):
+            if self.ShowMessage("No config sent", False):
+                return 1
         if self.SaveFilePath.GetValue() == "":
             if self.ShowMessage("Select savepath and try again", False):
                 self.OnSaveButton(1)
