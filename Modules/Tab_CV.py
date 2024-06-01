@@ -55,7 +55,7 @@ class CVTab(GenericTab):
 
         self.VStepTx = wx.StaticText(self, label='V Points', pos=(BoxVgs[0][0]+2*int(config['Window']['Margin']), BoxVgs[0][1]+30+140))
         self.VStepTx.SetFont(wx.Font(12, wx.DEFAULT, wx.NORMAL, wx.NORMAL, False))
-        self.VPoints= wx.SpinCtrlDouble(self, value=str (200), pos=(BoxVgs[0][0]+2*int(config['Window']['Margin']), BoxVgs[0][1]+50+140), min=10, max=2000, inc=10, size=(80,35), style=wx.SP_ARROW_KEYS|wx.TE_CENTRE, name='sv_VSteop')
+        self.VPoints= wx.SpinCtrlDouble(self, value=str (200), pos=(BoxVgs[0][0]+2*int(config['Window']['Margin']), BoxVgs[0][1]+50+140), min=10, max=2000, inc=10, size=(80,35), style=wx.SP_ARROW_KEYS|wx.TE_CENTRE, name='sv_Vpoints')
         self.VPoints.SetFont(wx.Font(17, wx.DEFAULT, wx.NORMAL, wx.NORMAL, False))
         self.Sizer2.Add(self.VPoints)
 
