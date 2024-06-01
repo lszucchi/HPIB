@@ -1,8 +1,8 @@
-from Modules.Tab_Generic import *
-from Modules.Tab_4P import FourPoint
-from Modules.Tab_CV import CVTab
-from Modules.Tab_GP import General
-from Modules.Tab_IV import IVTab
+from modules.Tab_Generic import *
+from modules.Tab_4P import FourPoint
+from modules.Tab_CV import CVTab
+from modules.Tab_GP import General
+from modules.Tab_IV import IVTab
 
 ########################################################################
 class MainNotebook(wx.Notebook):

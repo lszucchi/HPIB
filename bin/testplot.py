@@ -1,5 +1,5 @@
 import sys
-sys.path.append("../Modules")
+sys.path.append("../mdules")
 
 from HPIB_plot import*
 

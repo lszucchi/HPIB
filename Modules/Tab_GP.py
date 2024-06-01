@@ -1,7 +1,7 @@
 from .Tab_Generic import *
 
 scripts=configparser.ConfigParser()
-scripts.read('./Scripts/MainScripts.ini')
+scripts.read('./scripts/MainScripts.ini')
 
 class General(GenericTab):
     
@@ -452,7 +452,7 @@ class General(GenericTab):
             for child in self.GetChildren():
                 if 'sv_' in child.GetName():
                     CurrScr[self.NameBox.GetValue()][child.GetName()]=str(child.GetValue())
-            dialog = wx.FileDialog(None, "Choose a script:", defaultDir="./Scripts", wildcard = "Scripts (*.ini)|*.ini", style=wx.DD_DEFAULT_STYLE)
+            dialog = wx.FileDialog(None, "Choose a script:", defaultDir="./scripts", wildcard = "Scripts (*.ini)|*.ini", style=wx.DD_DEFAULT_STYLE)
             if dialog.ShowModal() == wx.ID_OK:
                 with open(dialog.GetPath(), 'w') as configfile:
                     CurrScr.write(configfile)
@@ -460,7 +460,7 @@ class General(GenericTab):
             ############### Loading Subroutine #################
         if self.ScriptBox.GetValue() == 'Open':
             
-            dialog = wx.FileDialog(None, "Choose a script:", defaultDir="./Scripts", style=wx.DD_DEFAULT_STYLE)
+            dialog = wx.FileDialog(None, "Choose a script:", defaultDir="./scripts", style=wx.DD_DEFAULT_STYLE)
             if dialog.ShowModal() == wx.ID_OK:
                 CurrScr.read(dialog.GetPath())
                 CurrScr=CurrScr[CurrScr.sections()[0]]
