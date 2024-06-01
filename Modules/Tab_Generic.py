@@ -9,6 +9,9 @@ from .HPIB_plot import *
 from .INOSerial import *
 from .defaults import *
 
+config=configparser.ConfigParser()
+config.read("config.ini")
+
 
 class GenericTab(wx.Panel):
 
@@ -55,25 +58,25 @@ class GenericTab(wx.Panel):
         self.Sizer2=wx.BoxSizer()
 
         #Instr Select
-        self.InstTx = wx.StaticText(self, label='Instrument', pos=(self.Box1[0][0]+Margin+5, self.Box1[0][1]+2*Margin))
-        self.Inst = wx.ComboBox(self, value=DefaultInst, pos=(self.Box1[0][0]+Margin+5, self.Box1[0][1]+4*Margin), choices=['HP4145','HP4155'], name='sv_Inst')
+        self.InstTx = wx.StaticText(self, label='Instrument', pos=(self.Box1[0][0]+int(config['Window']['Margin'])+5, self.Box1[0][1]+2*int(config['Window']['Margin'])))
+        self.Inst = wx.ComboBox(self, value=DefaultInst, pos=(self.Box1[0][0]+int(config['Window']['Margin'])+5, self.Box1[0][1]+4*int(config['Window']['Margin'])), choices=['HP4145','HP4155'], name='sv_Inst')
 
         #GPIB address selection box
-        self.GPIBTXT = wx.StaticText(self, label='GBIP Address', pos=(self.Box1[0][0]+105, self.Box1[0][1]+2*Margin))
-        self.GPIBCH = wx.ComboBox(self, value='17', pos=(self.Box1[0][0]+105, self.Box1[0][1]+4*Margin), size=(40,40), choices=['15','16','17'], name='sv_GPIBCH')
+        self.GPIBTXT = wx.StaticText(self, label='GBIP Address', pos=(self.Box1[0][0]+105, self.Box1[0][1]+2*int(config['Window']['Margin'])))
+        self.GPIBCH = wx.ComboBox(self, value='17', pos=(self.Box1[0][0]+105, self.Box1[0][1]+4*int(config['Window']['Margin'])), size=(40,40), choices=['15','16','17'], name='sv_GPIBCH')
         self.Sizer2.Add(self.GPIBCH)
 
         
         #COM port selection box
-        self.COMEnable = wx.CheckBox(self, label='SM Port', pos=(self.Box1[0][0]+Margin+5, self.Box1[0][1]+2*Margin+50), name='sv_COMEnable')
+        self.COMEnable = wx.CheckBox(self, label='SM Port', pos=(self.Box1[0][0]+int(config['Window']['Margin'])+5, self.Box1[0][1]+2*int(config['Window']['Margin'])+50), name='sv_COMEnable')
         self.COMEnable.SetValue(0)
-        self.COM = wx.ComboBox(self, value='COM3', pos=(self.Box1[0][0]+Margin+5, self.Box1[0][1]+4*Margin+50), choices=['COM3','COM4'], name='sv_COM')
+        self.COM = wx.ComboBox(self, value='COM3', pos=(self.Box1[0][0]+int(config['Window']['Margin'])+5, self.Box1[0][1]+4*int(config['Window']['Margin'])+50), choices=['COM3','COM4'], name='sv_COM')
         self.Sizer1.Add(self.COM)
 
 
 
         #Checkboxes
-        cbpos=(self.Box1[0][0]+Margin, self.Box1[0][1]+125)
+        cbpos=(self.Box1[0][0]+int(config['Window']['Margin']), self.Box1[0][1]+125)
         self.cb1 = wx.CheckBox(self, label='Channel 1', pos=(cbpos[0], cbpos[1]), name='sv_cb1')
         self.cb2 = wx.CheckBox(self, label='Channel 2', pos=(cbpos[0], cbpos[1]+25), name='sv_cb2')
         self.cb3 = wx.CheckBox(self, label='Channel 3', pos=(cbpos[0], cbpos[1]+50), name='sv_cb3')
@@ -110,13 +113,13 @@ class GenericTab(wx.Panel):
         self.Config_Btn.Bind(wx.EVT_BUTTON, self.OnConfig)
 
         #Start button
-        self.Btn_Start = wx.Button(self, label='Start', pos=(self.Box1[0][0]+100, cbpos[1]+10+2*Margin),size=(100,60))
+        self.Btn_Start = wx.Button(self, label='Start', pos=(self.Box1[0][0]+100, cbpos[1]+10+2*int(config['Window']['Margin'])),size=(100,60))
         self.Sizer2.Add(self.Btn_Start)
         self.Btn_Start.Bind(wx.EVT_BUTTON, self.OnButton)
         
 
         #Stop button
-        Btn_Stop = wx.Button(self, label='Stop', pos=(self.Box1[0][0]+100+25, cbpos[1]+10+60+4*Margin),size=(50,30))
+        Btn_Stop = wx.Button(self, label='Stop', pos=(self.Box1[0][0]+100+25, cbpos[1]+10+60+4*int(config['Window']['Margin'])),size=(50,30))
         Btn_Stop.Bind(wx.EVT_BUTTON, self.Stop)
 
     def DrawSMUConfig(self, X, Y):
@@ -125,20 +128,20 @@ class GenericTab(wx.Panel):
         self.Bx1a=wx.StaticBox(self,label='SMU Config', pos=(self.Box1a[0][0], self.Box1a[0][1]),size=(self.Box1a[1][0], self.Box1a[1][1]))
         self.Sizer1a=wx.StaticBoxSizer(self.Bx1a)
 
-        self.DBoxTx = wx.StaticText(self, label='S:', pos=(X+1*Margin, Y+2*Margin+3))
-        self.DBox  = wx.ComboBox(self, value='SMU1', pos=(X+3*Margin+5, Y+2*Margin), size=(60,40), choices=['SMU1','SMU2','SMU3','SMU4'])
+        self.DBoxTx = wx.StaticText(self, label='S:', pos=(X+1*int(config['Window']['Margin']), Y+2*int(config['Window']['Margin'])+3))
+        self.DBox  = wx.ComboBox(self, value='SMU1', pos=(X+3*int(config['Window']['Margin'])+5, Y+2*int(config['Window']['Margin'])), size=(60,40), choices=['SMU1','SMU2','SMU3','SMU4'])
         self.Sizer1a.Add(self.DBox)
 
-        self.SBoxTx  = wx.StaticText(self, label='D:', pos=(X+2*Margin+SMU_MarginX, Y+2*Margin+3))
-        self.SBox = wx.ComboBox(self, value='SMU2', pos=(X+4*Margin+5+SMU_MarginX, Y+2*Margin), size=(60,40), choices=['SMU1','SMU2','SMU3','SMU4'])
+        self.SBoxTx  = wx.StaticText(self, label='D:', pos=(X+2*int(config['Window']['Margin'])+int(config['Window']['SMUMX']), Y+2*int(config['Window']['Margin'])+3))
+        self.SBox = wx.ComboBox(self, value='SMU2', pos=(X+4*int(config['Window']['Margin'])+5+int(config['Window']['SMUMX']), Y+2*int(config['Window']['Margin'])), size=(60,40), choices=['SMU1','SMU2','SMU3','SMU4'])
         self.Sizer1a.Add(self.SBox)
 
-        self.BBoxTx = wx.StaticText(self, label='B:', pos=(X+1*Margin, Y+2*Margin+3+SMU_MarginY))
-        self.BBox = wx.ComboBox(self, value='SMU4', pos=(X+3*Margin+5, Y+2*Margin+SMU_MarginY), size=(60,40), choices=['SMU1','SMU2','SMU3','SMU4'])
+        self.BBoxTx = wx.StaticText(self, label='B:', pos=(X+1*int(config['Window']['Margin']), Y+2*int(config['Window']['Margin'])+3+int(config['Window']['SMUMY'])))
+        self.BBox = wx.ComboBox(self, value='SMU4', pos=(X+3*int(config['Window']['Margin'])+5, Y+2*int(config['Window']['Margin'])+int(config['Window']['SMUMY'])), size=(60,40), choices=['SMU1','SMU2','SMU3','SMU4'])
         self.Sizer1a.Add(self.BBox)
 
-        self.GBoxTx = wx.StaticText(self, label='G:', pos=(X+2*Margin+SMU_MarginX,  Y+2*Margin+3+SMU_MarginY))
-        self.GBox = wx.ComboBox(self, value='SMU3', pos=(X+4*Margin+5+SMU_MarginX, Y+2*Margin+SMU_MarginY), size=(60,40), choices=['SMU1','SMU2','SMU3','SMU4'])
+        self.GBoxTx = wx.StaticText(self, label='G:', pos=(X+2*int(config['Window']['Margin'])+int(config['Window']['SMUMX']),  Y+2*int(config['Window']['Margin'])+3+int(config['Window']['SMUMY'])))
+        self.GBox = wx.ComboBox(self, value='SMU3', pos=(X+4*int(config['Window']['Margin'])+5+int(config['Window']['SMUMX']), Y+2*int(config['Window']['Margin'])+int(config['Window']['SMUMY'])), size=(60,40), choices=['SMU1','SMU2','SMU3','SMU4'])
         self.Sizer1a.Add(self.GBox)
         
     def Measure(self):

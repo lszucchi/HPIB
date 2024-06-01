@@ -91,132 +91,132 @@ class IVTab(GenericTab):
         self.Config_Btn.Destroy()
         self.ptype = wx.CheckBox(self, label="p-type", pos=(130, 180), name='sv_ptype')
         
-        self.DrawSMUConfig(Margin, self.Box1[0][1]+self.Box1[1][1]+Margin)
+        self.DrawSMUConfig(int(config['Window']['Margin']), self.Box1[0][1]+self.Box1[1][1]+int(config['Window']['Margin']))
 
         #========  Id x Vgs ========#
         # BoxN = [[PosX, PoxY],[SizeX,SizeY]]
                          
-        BoxVgs=[[self.Box1[0][0]+Margin+self.Box1[1][0]     ,self.Box1[0][1]]     ,       [225        ,280]]
+        BoxVgs=[[self.Box1[0][0]+int(config['Window']['Margin'])+self.Box1[1][0]     ,self.Box1[0][1]]     ,       [225        ,280]]
         self.Bx2=wx.StaticBox(self,label='Id x Vgs', pos=(BoxVgs[0][0], BoxVgs[0][1]),size=(BoxVgs[1][0], BoxVgs[1][1]))
         self.Sizer2=wx.StaticBoxSizer(self.Bx2)
         
-        self.EnableIdVgs = wx.CheckBox(self, label='Enable', pos=(BoxVgs[0][0]+Margin, BoxVgs[0][1]+2*Margin), name='sv_EnIdVgs')
+        self.EnableIdVgs = wx.CheckBox(self, label='Enable', pos=(BoxVgs[0][0]+int(config['Window']['Margin']), BoxVgs[0][1]+2*int(config['Window']['Margin'])), name='sv_EnIdVgs')
         self.EnableIdVgs.SetValue(True)
         self.Sizer2.Add(self.EnableIdVgs)
  
-        self.EnableVgsSat = wx.CheckBox(self, label='Measure Vd Sat', pos=(BoxVgs[0][0]+Margin+110, BoxVgs[0][1]+2*Margin), name='sv_EnIdVgsSat')
+        self.EnableVgsSat = wx.CheckBox(self, label='Measure Vd Sat', pos=(BoxVgs[0][0]+int(config['Window']['Margin'])+110, BoxVgs[0][1]+2*int(config['Window']['Margin'])), name='sv_EnIdVgsSat')
         self.EnableVgsSat.SetValue(True)
         self.Sizer2.Add(self.EnableVgsSat)
         self.EnableVgsSat.Bind(wx.EVT_CHECKBOX, self.DrawVgsVdSat)
         
-        self.VdVgsSweep = wx.CheckBox(self, label='Sweep Vd=Vg', pos=(BoxVgs[0][0]+Margin, BoxVgs[0][1]+50+SMU_MarginY), name='sv_IdVgsSweep')
+        self.VdVgsSweep = wx.CheckBox(self, label='Sweep Vd=Vg', pos=(BoxVgs[0][0]+int(config['Window']['Margin']), BoxVgs[0][1]+50+int(config['Window']['SMUMY'])), name='sv_IdVgsSweep')
         self.Sizer2.Add(self.VdVgsSweep)
         self.VdVgsSweep.Bind(wx.EVT_CHECKBOX, self.DrawVgsVd)
 
         ### Draw VGS SWEEP
-        self.VdVgsStartTx = wx.StaticText(self, label='Vd', pos=(BoxVgs[0][0]+Margin, BoxVgs[0][1]+50))
-        self.VdVgsStart = wx.SpinCtrlDouble(self, value=str (DefaultVd), pos=(BoxVgs[0][0]+Margin, BoxVgs[0][1]+70), size=(60,20),style=wx.SP_ARROW_KEYS, name='sv_VdVgsStart')
+        self.VdVgsStartTx = wx.StaticText(self, label='Vd', pos=(BoxVgs[0][0]+int(config['Window']['Margin']), BoxVgs[0][1]+50))
+        self.VdVgsStart = wx.SpinCtrlDouble(self, value=str (DefaultVd), pos=(BoxVgs[0][0]+int(config['Window']['Margin']), BoxVgs[0][1]+70), size=(60,20),style=wx.SP_ARROW_KEYS, name='sv_VdVgsStart')
         self.VdVgsStart.SetIncrement(0.1)
         #self.Sizer2.Add(self.VdVgsStart)
 
         ### Draw VGS sat SWEEP
-        self.VdVgsSatTx = wx.StaticText(self, label='Vd Sat', pos=(BoxVgs[0][0]+Margin+SMU_MarginX, BoxVgs[0][1]+50))
-        self.VdVgsSat= wx.SpinCtrlDouble(self, value=str (DefaultMax), pos=(BoxVgs[0][0]+Margin+SMU_MarginX, BoxVgs[0][1]+70), size=(60,20),style=wx.SP_ARROW_KEYS, name='sv_VdVgsSat')
+        self.VdVgsSatTx = wx.StaticText(self, label='Vd Sat', pos=(BoxVgs[0][0]+int(config['Window']['Margin'])+int(config['Window']['SMUMX']), BoxVgs[0][1]+50))
+        self.VdVgsSat= wx.SpinCtrlDouble(self, value=str (DefaultMax), pos=(BoxVgs[0][0]+int(config['Window']['Margin'])+int(config['Window']['SMUMX']), BoxVgs[0][1]+70), size=(60,20),style=wx.SP_ARROW_KEYS, name='sv_VdVgsSat')
         self.VdVgsSat.SetIncrement(0.1)
         #self.Sizer2.Add(self.VdVgsSat)
 
         # Vg Step
-        self.VgVgsStartTx = wx.StaticText(self, label='Vg Initial Value', pos=(BoxVgs[0][0]+Margin, BoxVgs[0][1]+180))
-        self.VgVgsStart = wx.SpinCtrlDouble(self, value='0', pos=(BoxVgs[0][0]+Margin, BoxVgs[0][1]+200), size=(60,20),style=wx.SP_ARROW_KEYS, name='sv_VgVgsStart')
+        self.VgVgsStartTx = wx.StaticText(self, label='Vg Initial Value', pos=(BoxVgs[0][0]+int(config['Window']['Margin']), BoxVgs[0][1]+180))
+        self.VgVgsStart = wx.SpinCtrlDouble(self, value='0', pos=(BoxVgs[0][0]+int(config['Window']['Margin']), BoxVgs[0][1]+200), size=(60,20),style=wx.SP_ARROW_KEYS, name='sv_VgVgsStart')
         self.VgVgsStart.SetIncrement(0.1)
         self.Sizer2.Add(self.VgVgsStart)
 
-        self.VgVgsStepTx = wx.StaticText(self, label='Vg Step Size', pos=(BoxVgs[0][0]+Margin+SMU_MarginX, BoxVgs[0][1]+180))
-        self.VgVgsStep = wx.SpinCtrlDouble(self, value=str(DefaultStep/StepScale), pos=(BoxVgs[0][0]+Margin+SMU_MarginX, BoxVgs[0][1]+200), size=(60,20),style=wx.SP_ARROW_KEYS, name='sv_VgVgsStep')
+        self.VgVgsStepTx = wx.StaticText(self, label='Vg Step Size', pos=(BoxVgs[0][0]+int(config['Window']['Margin'])+int(config['Window']['SMUMX']), BoxVgs[0][1]+180))
+        self.VgVgsStep = wx.SpinCtrlDouble(self, value=str(DefaultStep/StepScale), pos=(BoxVgs[0][0]+int(config['Window']['Margin'])+int(config['Window']['SMUMX']), BoxVgs[0][1]+200), size=(60,20),style=wx.SP_ARROW_KEYS, name='sv_VgVgsStep')
         self.VgVgsStep.SetIncrement(0.01)
         self.Sizer2.Add(self.VgVgsStep)
 
-        self.VgVgsStopTx = wx.StaticText(self, label='Vg Stop Value', pos=(BoxVgs[0][0]+Margin, BoxVgs[0][1]+180+SMU_MarginY))
-        self.VgVgsStop = wx.SpinCtrlDouble(self, value=str (DefaultMax), pos=(BoxVgs[0][0]+Margin, BoxVgs[0][1]+200+SMU_MarginY), size=(60,20),style=wx.SP_ARROW_KEYS, name='sv_VgVgsStop')
+        self.VgVgsStopTx = wx.StaticText(self, label='Vg Stop Value', pos=(BoxVgs[0][0]+int(config['Window']['Margin']), BoxVgs[0][1]+180+int(config['Window']['SMUMY'])))
+        self.VgVgsStop = wx.SpinCtrlDouble(self, value=str (DefaultMax), pos=(BoxVgs[0][0]+int(config['Window']['Margin']), BoxVgs[0][1]+200+int(config['Window']['SMUMY'])), size=(60,20),style=wx.SP_ARROW_KEYS, name='sv_VgVgsStop')
         self.VgVgsStop.SetIncrement(0.1)
         self.Sizer2.Add(self.VgVgsStop)
 
-        #self.VgVgsPointsTx = wx.StaticText(self, label='Vg Step Number', pos=(BoxVgs[0][0]+Margin+SMU_MarginX, BoxVgs[0][1]+180+SMU_MarginY))
-        #self.VgVgsPoints = wx.SpinCtrl(self, value='40', pos=(BoxVgs[0][0]+Margin+SMU_MarginX, BoxVgs[0][1]+200+SMU_MarginY), size=(60,20),style=wx.SP_ARROW_KEYS)
+        #self.VgVgsPointsTx = wx.StaticText(self, label='Vg Step Number', pos=(BoxVgs[0][0]+int(config['Window']['Margin'])+int(config['Window']['SMUMX']), BoxVgs[0][1]+180+int(config['Window']['SMUMY'])))
+        #self.VgVgsPoints = wx.SpinCtrl(self, value='40', pos=(BoxVgs[0][0]+int(config['Window']['Margin'])+int(config['Window']['SMUMX']), BoxVgs[0][1]+200+int(config['Window']['SMUMY'])), size=(60,20),style=wx.SP_ARROW_KEYS)
 
 
 
         #========  Id x Vds ========#
         # BoxN = [[PosX, PoxY],[SizeX,SizeY]]
-        BoxVds=[[BoxVgs[0][0]+Margin+BoxVgs[1][0]        ,self.Box1[0][1]],        [225        ,280]]
+        BoxVds=[[BoxVgs[0][0]+int(config['Window']['Margin'])+BoxVgs[1][0]        ,self.Box1[0][1]],        [225        ,280]]
         self.Bx3=wx.StaticBox(self,label='Id x Vds', pos=(BoxVds[0][0], BoxVds[0][1]),size=(BoxVds[1][0], BoxVds[1][1]))
         self.Sizer3=wx.StaticBoxSizer(self.Bx3)
         
         # Enable
-        self.EnableIdVds = wx.CheckBox(self, label='Enable Id x Vds', pos=(BoxVds[0][0]+Margin, BoxVds[0][1]+2*Margin), name='sv_EnIdVds')
+        self.EnableIdVds = wx.CheckBox(self, label='Enable Id x Vds', pos=(BoxVds[0][0]+int(config['Window']['Margin']), BoxVds[0][1]+2*int(config['Window']['Margin'])), name='sv_EnIdVds')
         self.EnableIdVds.SetValue(True)
         self.Sizer3.Add(self.EnableIdVds)
 
         #Value Config
 
         #Vd Sweep
-        self.VdVdsStartTx = wx.StaticText(self, label='Vd Initial Value', pos=(BoxVds[0][0]+Margin, BoxVds[0][1]+50))
-        self.VdVdsStart = wx.SpinCtrlDouble(self, value='0', pos=(BoxVds[0][0]+Margin, BoxVds[0][1]+70), size=(60,20),style=wx.SP_ARROW_KEYS, name='sv_VdVdsStart')
+        self.VdVdsStartTx = wx.StaticText(self, label='Vd Initial Value', pos=(BoxVds[0][0]+int(config['Window']['Margin']), BoxVds[0][1]+50))
+        self.VdVdsStart = wx.SpinCtrlDouble(self, value='0', pos=(BoxVds[0][0]+int(config['Window']['Margin']), BoxVds[0][1]+70), size=(60,20),style=wx.SP_ARROW_KEYS, name='sv_VdVdsStart')
         self.VdVdsStart.SetIncrement(0.1)
         self.Sizer3.Add(self.VdVdsStart)
 
-        self.VdVdsStepTx = wx.StaticText(self, label='Vd Step Size', pos=(BoxVds[0][0]+Margin+SMU_MarginX, BoxVds[0][1]+50))
-        self.VdVdsStep = wx.SpinCtrlDouble(self, value=str(DefaultStep/StepScale), pos=(BoxVds[0][0]+Margin+SMU_MarginX, BoxVds[0][1]+70), size=(60,20),style=wx.SP_ARROW_KEYS, name='sv_VdVdsStep')
+        self.VdVdsStepTx = wx.StaticText(self, label='Vd Step Size', pos=(BoxVds[0][0]+int(config['Window']['Margin'])+int(config['Window']['SMUMX']), BoxVds[0][1]+50))
+        self.VdVdsStep = wx.SpinCtrlDouble(self, value=str(DefaultStep/StepScale), pos=(BoxVds[0][0]+int(config['Window']['Margin'])+int(config['Window']['SMUMX']), BoxVds[0][1]+70), size=(60,20),style=wx.SP_ARROW_KEYS, name='sv_VdVdsStep')
         self.VdVdsStep.SetIncrement(0.01)
         self.Sizer3.Add(self.VdVdsStep)
 
-        self.VdVdsStopTx = wx.StaticText(self, label='Vd Stop Value', pos=(BoxVds[0][0]+Margin, BoxVds[0][1]+50+SMU_MarginY))
-        self.VdVdsStop = wx.SpinCtrlDouble(self, value=str (DefaultMax), pos=(BoxVds[0][0]+Margin, BoxVds[0][1]+70+SMU_MarginY), size=(60,20),style=wx.SP_ARROW_KEYS, name='sv_VdVdsStop')
+        self.VdVdsStopTx = wx.StaticText(self, label='Vd Stop Value', pos=(BoxVds[0][0]+int(config['Window']['Margin']), BoxVds[0][1]+50+int(config['Window']['SMUMY'])))
+        self.VdVdsStop = wx.SpinCtrlDouble(self, value=str (DefaultMax), pos=(BoxVds[0][0]+int(config['Window']['Margin']), BoxVds[0][1]+70+int(config['Window']['SMUMY'])), size=(60,20),style=wx.SP_ARROW_KEYS, name='sv_VdVdsStop')
         self.VdVdsStop.SetIncrement(0.1)
         self.Sizer3.Add(self.VdVdsStop)
 
-        #self.VdVdsPointsTx = wx.StaticText(self, label='Vd Step Number', pos=(BoxVds[0][0]+Margin+SMU_MarginX, BoxVds[0][1]+50+SMU_MarginY))
-        #self.VdVdsPoints = wx.SpinCtrl(self, value='40', pos=(BoxVds[0][0]+Margin+SMU_MarginX, BoxVds[0][1]+70+SMU_MarginY), size=(60,20),style=wx.SP_ARROW_KEYS)
+        #self.VdVdsPointsTx = wx.StaticText(self, label='Vd Step Number', pos=(BoxVds[0][0]+int(config['Window']['Margin'])+int(config['Window']['SMUMX']), BoxVds[0][1]+50+int(config['Window']['SMUMY'])))
+        #self.VdVdsPoints = wx.SpinCtrl(self, value='40', pos=(BoxVds[0][0]+int(config['Window']['Margin'])+int(config['Window']['SMUMX']), BoxVds[0][1]+70+int(config['Window']['SMUMY'])), size=(60,20),style=wx.SP_ARROW_KEYS)
 
         # Vg Step
-        self.VgVdsStartTx = wx.StaticText(self, label='Vg Initial Value', pos=(BoxVds[0][0]+Margin, BoxVds[0][1]+180))
-        self.VgVdsStart = wx.SpinCtrlDouble(self, value='0', pos=(BoxVds[0][0]+Margin, BoxVds[0][1]+200), size=(60,20),style=wx.SP_ARROW_KEYS, name='sv_VgVdsStart')
+        self.VgVdsStartTx = wx.StaticText(self, label='Vg Initial Value', pos=(BoxVds[0][0]+int(config['Window']['Margin']), BoxVds[0][1]+180))
+        self.VgVdsStart = wx.SpinCtrlDouble(self, value='0', pos=(BoxVds[0][0]+int(config['Window']['Margin']), BoxVds[0][1]+200), size=(60,20),style=wx.SP_ARROW_KEYS, name='sv_VgVdsStart')
         self.VgVdsStart.SetIncrement(0.1)
         self.Sizer3.Add(self.VgVdsStart)
 
-        self.VgVdsStepTx = wx.StaticText(self, label='Vg Step Size', pos=(BoxVds[0][0]+Margin+SMU_MarginX, BoxVds[0][1]+180))
-        self.VgVdsStep = wx.SpinCtrlDouble(self, value=str(DefaultStep), pos=(BoxVds[0][0]+Margin+SMU_MarginX, BoxVds[0][1]+200), size=(60,20),style=wx.SP_ARROW_KEYS, name='sv_VgVdsStep')
+        self.VgVdsStepTx = wx.StaticText(self, label='Vg Step Size', pos=(BoxVds[0][0]+int(config['Window']['Margin'])+int(config['Window']['SMUMX']), BoxVds[0][1]+180))
+        self.VgVdsStep = wx.SpinCtrlDouble(self, value=str(DefaultStep), pos=(BoxVds[0][0]+int(config['Window']['Margin'])+int(config['Window']['SMUMX']), BoxVds[0][1]+200), size=(60,20),style=wx.SP_ARROW_KEYS, name='sv_VgVdsStep')
         self.VgVdsStep.SetIncrement(0.1)
         self.Sizer3.Add(self.VgVdsStep)
 
-        self.VgVdsStopTx = wx.StaticText(self, label='Vg Stop Value', pos=(BoxVds[0][0]+Margin, BoxVds[0][1]+180+SMU_MarginY))
-        self.VgVdsStop = wx.SpinCtrlDouble(self, value=str (DefaultMax), pos=(BoxVds[0][0]+Margin, BoxVds[0][1]+200+SMU_MarginY), size=(60,20),style=wx.SP_ARROW_KEYS, name='sv_VgVdsStop')
+        self.VgVdsStopTx = wx.StaticText(self, label='Vg Stop Value', pos=(BoxVds[0][0]+int(config['Window']['Margin']), BoxVds[0][1]+180+int(config['Window']['SMUMY'])))
+        self.VgVdsStop = wx.SpinCtrlDouble(self, value=str (DefaultMax), pos=(BoxVds[0][0]+int(config['Window']['Margin']), BoxVds[0][1]+200+int(config['Window']['SMUMY'])), size=(60,20),style=wx.SP_ARROW_KEYS, name='sv_VgVdsStop')
         self.VgVdsStop.SetIncrement(0.1)
         self.Sizer3.Add(self.VgVdsStop)
 
-        #self.VgVdsPointsTx = wx.StaticText(self, label='Vg Step Number', pos=(BoxVds[0][0]+Margin+SMU_MarginX, BoxVds[0][1]+180+SMU_MarginY))
-        #self.VgVdsPoints = wx.SpinCtrl(self, value='5', pos=(BoxVds[0][0]+Margin+SMU_MarginX, BoxVds[0][1]+200+SMU_MarginY), size=(60,20),style=wx.SP_ARROW_KEYS)
+        #self.VgVdsPointsTx = wx.StaticText(self, label='Vg Step Number', pos=(BoxVds[0][0]+int(config['Window']['Margin'])+int(config['Window']['SMUMX']), BoxVds[0][1]+180+int(config['Window']['SMUMY'])))
+        #self.VgVdsPoints = wx.SpinCtrl(self, value='5', pos=(BoxVds[0][0]+int(config['Window']['Margin'])+int(config['Window']['SMUMX']), BoxVds[0][1]+200+int(config['Window']['SMUMY'])), size=(60,20),style=wx.SP_ARROW_KEYS)
 
 
 
         #========  Vp x Vg ========#
         # BoxN = [[PosX, PoxY],[SizeX,SizeY]]
         global BoxVp
-        BoxVp=[[BoxVds[0][0]+Margin+BoxVds[1][0]       ,self.Box1[0][1]]        ,[225        ,280]]
+        BoxVp=[[BoxVds[0][0]+int(config['Window']['Margin'])+BoxVds[1][0]       ,self.Box1[0][1]]        ,[225        ,280]]
         self.Bx4=wx.StaticBox(self,label='Vp x Vgs', pos=(BoxVp[0][0],BoxVp[0][1]),size=(BoxVp[1][0], BoxVp[1][1]))
         self.Sizer4=wx.StaticBoxSizer(self.Bx4)
         
-        self.EnableVp = wx.CheckBox(self, label='Enable Vp', pos=(BoxVp[0][0]+Margin, BoxVp[0][1]+2*Margin), name='sv_EnVp')
+        self.EnableVp = wx.CheckBox(self, label='Enable Vp', pos=(BoxVp[0][0]+int(config['Window']['Margin']), BoxVp[0][1]+2*int(config['Window']['Margin'])), name='sv_EnVp')
         self.EnableVp.SetValue(True)
         self.Sizer4.Add(self.EnableVp)
 
         #Value Config
 
         #Vd Sweep
-        self.IsImport = wx.CheckBox(self, label='Import Ispec', pos=(BoxVp[0][0]+Margin, BoxVp[0][1]+50+20), name='sv_IsImport')
+        self.IsImport = wx.CheckBox(self, label='Import Ispec', pos=(BoxVp[0][0]+int(config['Window']['Margin']), BoxVp[0][1]+50+20), name='sv_IsImport')
         
-        self.IsDefTx = wx.StaticText(self, label='Ispec', pos=(BoxVp[0][0]+Margin+SMU_MarginX-10, BoxVp[0][1]+50))
-        self.IsDef = wx.TextCtrl(self, value='1e-6', pos=(BoxVp[0][0]+Margin+SMU_MarginX-10, BoxVp[0][1]+70), size=(60,20), name='sv_IsDef')
+        self.IsDefTx = wx.StaticText(self, label='Ispec', pos=(BoxVp[0][0]+int(config['Window']['Margin'])+int(config['Window']['SMUMX'])-10, BoxVp[0][1]+50))
+        self.IsDef = wx.TextCtrl(self, value='1e-6', pos=(BoxVp[0][0]+int(config['Window']['Margin'])+int(config['Window']['SMUMX'])-10, BoxVp[0][1]+70), size=(60,20), name='sv_IsDef')
         self.IsDef.SetValue(" ")
         #self.Sizer4.Add(self.IsDef)
         
@@ -227,31 +227,31 @@ class IVTab(GenericTab):
         self.Sizer4.Add(self.IsImport)
 
         # Vg Step
-        self.VgVpStartTx = wx.StaticText(self, label='Vg Initial Value', pos=(BoxVp[0][0]+Margin, BoxVp[0][1]+180))
-        self.VgVpStart = wx.SpinCtrlDouble(self, value='0', pos=(BoxVp[0][0]+Margin, BoxVp[0][1]+200), size=(60,20),style=wx.SP_ARROW_KEYS, name='sv_VgVpStart')
+        self.VgVpStartTx = wx.StaticText(self, label='Vg Initial Value', pos=(BoxVp[0][0]+int(config['Window']['Margin']), BoxVp[0][1]+180))
+        self.VgVpStart = wx.SpinCtrlDouble(self, value='0', pos=(BoxVp[0][0]+int(config['Window']['Margin']), BoxVp[0][1]+200), size=(60,20),style=wx.SP_ARROW_KEYS, name='sv_VgVpStart')
         self.VgVpStart.SetIncrement(0.1)
         self.Sizer4.Add(self.VgVpStart)
 
-        self.VgVpStepTx = wx.StaticText(self, label='Vg Step Size', pos=(BoxVp[0][0]+Margin+SMU_MarginX, BoxVp[0][1]+180))
-        self.VgVpStep = wx.SpinCtrlDouble(self, value=str (DefaultStep/StepScale), pos=(BoxVp[0][0]+Margin+SMU_MarginX, BoxVp[0][1]+200), size=(60,20),style=wx.SP_ARROW_KEYS, name='sv_VgVpStep')
+        self.VgVpStepTx = wx.StaticText(self, label='Vg Step Size', pos=(BoxVp[0][0]+int(config['Window']['Margin'])+int(config['Window']['SMUMX']), BoxVp[0][1]+180))
+        self.VgVpStep = wx.SpinCtrlDouble(self, value=str (DefaultStep/StepScale), pos=(BoxVp[0][0]+int(config['Window']['Margin'])+int(config['Window']['SMUMX']), BoxVp[0][1]+200), size=(60,20),style=wx.SP_ARROW_KEYS, name='sv_VgVpStep')
         self.VgVpStep.SetIncrement(0.01)
         self.Sizer4.Add(self.VgVpStep)
 
-        self.VgVpStopTx = wx.StaticText(self, label='Vg Stop Value', pos=(BoxVp[0][0]+Margin, BoxVp[0][1]+180+SMU_MarginY))
-        self.VgVpStop = wx.SpinCtrlDouble(self, value=str (DefaultMax), pos=(BoxVp[0][0]+Margin, BoxVp[0][1]+200+SMU_MarginY), size=(60,20),style=wx.SP_ARROW_KEYS, name='sv_VgVpstop')
+        self.VgVpStopTx = wx.StaticText(self, label='Vg Stop Value', pos=(BoxVp[0][0]+int(config['Window']['Margin']), BoxVp[0][1]+180+int(config['Window']['SMUMY'])))
+        self.VgVpStop = wx.SpinCtrlDouble(self, value=str (DefaultMax), pos=(BoxVp[0][0]+int(config['Window']['Margin']), BoxVp[0][1]+200+int(config['Window']['SMUMY'])), size=(60,20),style=wx.SP_ARROW_KEYS, name='sv_VgVpstop')
         self.VgVpStop.SetIncrement(0.1)
         self.Sizer4.Add(self.VgVpStop)
 
-        #self.VgVpPointsTx = wx.StaticText(self, label='Vg Step Number', pos=(BoxVp[0][0]+Margin+SMU_MarginX, BoxVp[0][1]+180+SMU_MarginY))
-        #self.VgVpPoints = wx.SpinCtrl(self, value='40', pos=(BoxVp[0][0]+Margin+SMU_MarginX, BoxVp[0][1]+200+SMU_MarginY), size=(60,20),style=wx.SP_ARROW_KEYS)
+        #self.VgVpPointsTx = wx.StaticText(self, label='Vg Step Number', pos=(BoxVp[0][0]+int(config['Window']['Margin'])+int(config['Window']['SMUMX']), BoxVp[0][1]+180+int(config['Window']['SMUMY'])))
+        #self.VgVpPoints = wx.SpinCtrl(self, value='40', pos=(BoxVp[0][0]+int(config['Window']['Margin'])+int(config['Window']['SMUMX']), BoxVp[0][1]+200+int(config['Window']['SMUMY'])), size=(60,20),style=wx.SP_ARROW_KEYS)
 
-        self.Progress=wx.TextCtrl(self, pos=(BoxVgs[0][0],BoxVgs[0][1]+BoxVgs[1][1]+Margin), size=(400, 90),style=wx.TE_MULTILINE)
+        self.Progress=wx.TextCtrl(self, pos=(BoxVgs[0][0],BoxVgs[0][1]+BoxVgs[1][1]+int(config['Window']['Margin'])), size=(400, 90),style=wx.TE_MULTILINE)
 
-        self.CurrentTx = wx.StaticText(self, label='Current Step:', pos=(BoxVgs[0][0]+Margin+400,BoxVgs[0][1]+BoxVgs[1][1]+Margin+3))
-        self.Current = wx.TextCtrl(self, pos=(BoxVgs[0][0]+Margin+400+80,BoxVgs[0][1]+BoxVgs[1][1]+Margin),size=(150,20))
+        self.CurrentTx = wx.StaticText(self, label='Current Step:', pos=(BoxVgs[0][0]+int(config['Window']['Margin'])+400,BoxVgs[0][1]+BoxVgs[1][1]+int(config['Window']['Margin'])+3))
+        self.Current = wx.TextCtrl(self, pos=(BoxVgs[0][0]+int(config['Window']['Margin'])+400+80,BoxVgs[0][1]+BoxVgs[1][1]+int(config['Window']['Margin'])),size=(150,20))
 
-        self.IntTimeTx = wx.StaticText(self, label='Integration Time:', pos=(BoxVgs[0][0]+Margin+400,BoxVgs[0][1]+BoxVgs[1][1]+Margin+33))
-        self.IntTimeBox = wx.ComboBox(self, value=DefaultIntTime, pos=(BoxVgs[0][0]+Margin+400,BoxVgs[0][1]+BoxVgs[1][1]+Margin+53), size=(80,40), choices=['SHORt','MEDium','LONG'], style=wx.CB_READONLY, name='sv_IntTime')                
+        self.IntTimeTx = wx.StaticText(self, label='Integration Time:', pos=(BoxVgs[0][0]+int(config['Window']['Margin'])+400,BoxVgs[0][1]+BoxVgs[1][1]+int(config['Window']['Margin'])+33))
+        self.IntTimeBox = wx.ComboBox(self, value=DefaultIntTime, pos=(BoxVgs[0][0]+int(config['Window']['Margin'])+400,BoxVgs[0][1]+BoxVgs[1][1]+int(config['Window']['Margin'])+53), size=(80,40), choices=['SHORt','MEDium','LONG'], style=wx.CB_READONLY, name='sv_IntTime')                
         self.Sizer4.Add(self.IntTimeBox)
 
 
