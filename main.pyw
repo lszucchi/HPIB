@@ -3,42 +3,25 @@ from Modules.Tab_4P import FourPoint
 from Modules.Tab_CV import CVTab
 from Modules.Tab_GP import General
 from Modules.Tab_IV import IVTab
-                
-####### COMMIT TEST
-                
+
 ########################################################################
-class NotebookDemo(wx.Notebook):
-    """
-    Notebook class
-    """
+class MainNotebook(wx.Notebook):
  
     #----------------------------------------------------------------------
     def __init__(self, parent):
-        wx.Notebook.__init__(self, parent, id=wx.ID_ANY, style=
-                             wx.BK_DEFAULT
-                             #wx.BK_TOP 
-                             #wx.BK_BOTTOM
-                             #wx.BK_LEFT
-                             #wx.BK_RIGHT
-                             )
+        wx.Notebook.__init__(self, parent, id=wx.ID_ANY, style=wx.BK_DEFAULT)
 
         self.AddPage(General(self), "General")
         
-        # Create the first tab and add it to the notebook
         self.AddPage(IVTab(self), "I-V Measurements")
  
-        # Create and add the second tab
-        self.AddPage(CVTab(self), "C-V Mesurements")
+        self.AddPage(CVTab(self), "C-V Measurements")
  
-        # Create and add the third tab
         self.AddPage(FourPoint(self), "4-Point Measurements")        
  
  
 ########################################################################
-class DemoFrame(wx.Frame):
-    """
-    Frame that holds all other widgets
-    """
+class MainFrame(wx.Frame):
  
     #----------------------------------------------------------------------
     def __init__(self):
@@ -60,7 +43,7 @@ class DemoFrame(wx.Frame):
 
         self.SetMenuBar ( menubar )
 
-        self.notebook = NotebookDemo(panel)
+        self.notebook = MainNotebook(panel)
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self.notebook, 1, wx.ALL|wx.EXPAND, 5)
         panel.SetSizer(sizer)
@@ -109,5 +92,5 @@ class DemoFrame(wx.Frame):
 #----------------------------------------------------------------------
 if __name__ == "__main__":
     app = wx.App()
-    frame = DemoFrame()
+    frame = MainFrame()
     app.MainLoop()

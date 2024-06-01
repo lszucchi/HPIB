@@ -1,4 +1,4 @@
-from HPIB import *
+from .HPIB import *
 
 class HP4145(HP):
 
@@ -133,6 +133,8 @@ class HP4145(HP):
     def SetVSMU(self, SMUno, VNAME, Func='CONS', Value=0, Comp='1e-3'):
 
         SMUno=SMUno.upper()
+        t=SMUno[1]
+        no=SMUno[-1]
         if SMUno not in ['VMU1', 'VMU2','VSU1','VSU2']:
             raise Exception("Invalid VS or VM: <{SMUno}>")
 

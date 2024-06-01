@@ -1,14 +1,13 @@
-import wx, datetime, time
+import os, wx, datetime, time, configparser
 import wx.lib.agw.floatspin as FS7
-
-from HPIB4145 import *
-from HPIB4155 import *
-from INOSerial import *
-from HPIB_plot import *
-
 from threading import Thread
 
-from defaults import *
+from .HPIB import *
+from .HPIB4145 import HP4145
+from .HPIB4155 import HP4155
+from .HPIB_plot import *
+from .INOSerial import *
+from .defaults import *
 
 
 class GenericTab(wx.Panel):
@@ -42,7 +41,7 @@ class GenericTab(wx.Panel):
         Bx0.SetFont(wx.Font(15, wx.DEFAULT, wx.NORMAL, wx.NORMAL, False))
         self.Dir_Select = wx.Button(self, label='Save dir', pos=(X+10,Y+25),size=(80,30))
         self.Dir_Select.SetFont(wx.Font(12, wx.DEFAULT, wx.NORMAL, wx.NORMAL, False))
-        self.Dir_Select.Bind(wx.EVT_BUTTON, self.InitValues)
+        self.Dir_Select.Bind(wx.EVT_BUTTON, self.UpdateCfg)
         self.SaveFilePath=wx.TextCtrl(self, pos=(X+100, Y+25), size=(length, 30), style=wx.TE_LEFT, name='sv_SaveFilePath')
         
     
@@ -236,25 +235,29 @@ class GenericTab(wx.Panel):
                     NewW = PhotoMaxSizeX
                     NewH = PhotoMaxSizeX * H / W
                 else:
-                    NewH = PhotoMaxSizeY
-                    NewW = PhotoMaxSizeY * W / H
+                    NewH = PhotoMaxSizeY # type: ignore
+                    NewW = PhotoMaxSizeY * W / H # type: ignore
                 img = img.Scale(int(NewW),int(NewH))
                 self.imageCtrl.SetBitmap(wx.Bitmap(img))
                 self.Refresh()
 
     def UpdateCfg(self, event):
+        config = configparser.ConfigParser()
         self.ChildList=[]
         for child in self.GetChildren():
-            if child.__class__.__name__ not in ['StaticBox', 'Button', 'StaticText', 'StaticBitmap']:
-                self.ChildList+=[str(child.GetValue())]
-        with open('init.cfg', 'w') as file:
-            file.write(self.__class__.__name__)
-            file.write("\n")
-            for child in  self.ChildList:
-                file.write(str(child))
-                file.write("\n")
+            if 'sv_' in child.GetName():
+                self.ChildList+=[(str(child.GetName()), str(child.GetValue()))]
+        config[self.__class__.__name__]=dict(self.ChildList)
+        with open('example.ini', 'w') as configfile:
+            config.write(configfile)
+        print(dict(self.ChildList))
+        #with open('init.cfg', 'w') as file:
+        #    file.write(self.__class__.__name__)
+        #    file.write(",")
+        #    for child in  self.ChildList:
+        #        file.write(str(child))
+        #        file.write(",")
         print(self.ChildList)
-        return 0
 
     def InitValues(self, event):
         with open('init.cfg', 'r') as file:

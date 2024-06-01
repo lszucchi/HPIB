@@ -138,12 +138,12 @@ def PlotDiode(path,draw=False):
     ax2 = ax1.twinx()
     ax1.grid(True, which='both')
 
-    ax1.plot(VD, ID, 'b')
+    ax1.plot(VS, ID, 'b')
 
     ax2.plot(VS, IS, 'r--')
     
     ax1.set_xlabel('V')
-    ax1.set_xlim(np.min(VD), np.max(VD))
+    ax1.set_xlim(np.min(VS), np.max(VS))
     ax1.set_ylabel('I_D', color='b')
 
     if(np.abs(np.min(ID))>np.abs(np.max(ID))):
@@ -162,7 +162,7 @@ def PlotDiode(path,draw=False):
         plt.draw()
         plt.pause(0.001)
 
-    return save_path
+    return save_path # type: ignore
 
 def PlotVgs(path,draw=False):
 
@@ -317,6 +317,11 @@ def PlotSi4P(path,dop,draw=False):
     return save_path
 
 def Early():
+    VDS=0
+    VGS=0
+    IDS=0
+    EarlyLimitAvg=0
+
     fig2 = plt.figure()
     Early=np.empty(len(VGS))
     EarlyFit=np.empty([len(VGS),2])
@@ -450,8 +455,14 @@ def GetConc(x, dop):
                 return '{:.1e}'.format(10**ans)
         else:
             return 'Outside of range'
-
         
+def ScaleTrace(path, scaling, tracelist):
+    df=pd.read_csv(path, header=[0, 1])
+    for trace in tracelist:
+        df[trace]=df[trace]*scaling
+    out_path="-scaled".join(os.path.splitext(path))
+    df.to_csv(out_path, index=False, float_format='%.5e')
+
 ##C=[10,11,12,13,14,15,16,17,18,19,20,21]
 ##roP=np.log10([2.47610e5, 43606.3,4415.312387249216,442.0453159585842,44.4686935514397,4.582406466927884,0.527248940805391,0.08652951931265407,0.022535571622752913,0.005437594960591998, 8.48506e-4, 3.12902e-4])
 ##roB=np.log10([3.95729e5, 1.27926e5, 14667.262500697669,1467.6130226932708,147.2256168021463,14.965676972314505,1.6238443702134566,0.21496536080345086,0.04191163444675014,0.00886221011340648, 0.00126728, 2.55205e-4])

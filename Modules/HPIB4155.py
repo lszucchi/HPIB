@@ -1,4 +1,4 @@
-from HPIB import *
+from .HPIB import *
 
 class HP4155(HP):
 
@@ -107,7 +107,6 @@ class HP4155(HP):
         
         # recursively get data for each variable
         for i, listvar in enumerate(header[1:]):
-
             lastdata = np.column_stack((lastdata, self.DataOutput(listvar)))
         
         header = pd.MultiIndex.from_product([self.data_variables,
@@ -131,7 +130,7 @@ class HP4155(HP):
         Func=Func.upper()
         if Func not in ['CONS', 'VAR1', 'VAR2', 'VARD']:
 
-            raise Exception(f"Invalid Mode in {SMUno}: <{Mode}>")
+            raise Exception(f"Invalid Func in {SMUno}: <{Func}>")
 
         self.beep()
         

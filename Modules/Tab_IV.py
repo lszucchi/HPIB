@@ -39,7 +39,7 @@ class IVTab(GenericTab):
 
                     save_path=path+'Ch ' + str(Chn+1) + '-' + self.HP.term + '-' + datetime.datetime.now().strftime("%y%m%d %H%M%S") + '.csv'
                     self.HP.SingleSave(save_path)
-                    self.RefreshImg(Plot(self, save_path, 'ID', 'VG'))
+                    self.RefreshImg(Plot(save_path, 'ID', 'VG'))
                     
             if self.EnableVgsSat.GetValue():
                     self.Progress.AppendText(str('Id_VgsSat')+ '  ')
@@ -89,7 +89,7 @@ class IVTab(GenericTab):
  
         self.DrawConfigBox(10, 80)
         self.Config_Btn.Destroy()
-        self.ptype = wx.CheckBox(self, label="p-type", pos=(130, 180))
+        self.ptype = wx.CheckBox(self, label="p-type", pos=(130, 180), name='sv_ptype')
         
         self.DrawSMUConfig(Margin, self.Box1[0][1]+self.Box1[1][1]+Margin)
 
@@ -100,44 +100,44 @@ class IVTab(GenericTab):
         self.Bx2=wx.StaticBox(self,label='Id x Vgs', pos=(BoxVgs[0][0], BoxVgs[0][1]),size=(BoxVgs[1][0], BoxVgs[1][1]))
         self.Sizer2=wx.StaticBoxSizer(self.Bx2)
         
-        self.EnableIdVgs = wx.CheckBox(self, label='Enable', pos=(BoxVgs[0][0]+Margin, BoxVgs[0][1]+2*Margin))
+        self.EnableIdVgs = wx.CheckBox(self, label='Enable', pos=(BoxVgs[0][0]+Margin, BoxVgs[0][1]+2*Margin), name='sv_EnIdVgs')
         self.EnableIdVgs.SetValue(True)
         self.Sizer2.Add(self.EnableIdVgs)
  
-        self.EnableVgsSat = wx.CheckBox(self, label='Measure Vd Sat', pos=(BoxVgs[0][0]+Margin+110, BoxVgs[0][1]+2*Margin))
+        self.EnableVgsSat = wx.CheckBox(self, label='Measure Vd Sat', pos=(BoxVgs[0][0]+Margin+110, BoxVgs[0][1]+2*Margin), name='sv_EnIdVgsSat')
         self.EnableVgsSat.SetValue(True)
         self.Sizer2.Add(self.EnableVgsSat)
         self.EnableVgsSat.Bind(wx.EVT_CHECKBOX, self.DrawVgsVdSat)
         
-        self.VdVgsSweep = wx.CheckBox(self, label='Sweep Vd=Vg', pos=(BoxVgs[0][0]+Margin, BoxVgs[0][1]+50+SMU_MarginY))
+        self.VdVgsSweep = wx.CheckBox(self, label='Sweep Vd=Vg', pos=(BoxVgs[0][0]+Margin, BoxVgs[0][1]+50+SMU_MarginY), name='sv_IdVgsSweep')
         self.Sizer2.Add(self.VdVgsSweep)
         self.VdVgsSweep.Bind(wx.EVT_CHECKBOX, self.DrawVgsVd)
 
         ### Draw VGS SWEEP
         self.VdVgsStartTx = wx.StaticText(self, label='Vd', pos=(BoxVgs[0][0]+Margin, BoxVgs[0][1]+50))
-        self.VdVgsStart = wx.SpinCtrlDouble(self, value=str (DefaultVd), pos=(BoxVgs[0][0]+Margin, BoxVgs[0][1]+70), size=(60,20),style=wx.SP_ARROW_KEYS)
+        self.VdVgsStart = wx.SpinCtrlDouble(self, value=str (DefaultVd), pos=(BoxVgs[0][0]+Margin, BoxVgs[0][1]+70), size=(60,20),style=wx.SP_ARROW_KEYS, name='sv_VdVgsStart')
         self.VdVgsStart.SetIncrement(0.1)
         #self.Sizer2.Add(self.VdVgsStart)
 
         ### Draw VGS sat SWEEP
         self.VdVgsSatTx = wx.StaticText(self, label='Vd Sat', pos=(BoxVgs[0][0]+Margin+SMU_MarginX, BoxVgs[0][1]+50))
-        self.VdVgsSat= wx.SpinCtrlDouble(self, value=str (DefaultMax), pos=(BoxVgs[0][0]+Margin+SMU_MarginX, BoxVgs[0][1]+70), size=(60,20),style=wx.SP_ARROW_KEYS)
+        self.VdVgsSat= wx.SpinCtrlDouble(self, value=str (DefaultMax), pos=(BoxVgs[0][0]+Margin+SMU_MarginX, BoxVgs[0][1]+70), size=(60,20),style=wx.SP_ARROW_KEYS, name='sv_VdVgsSat')
         self.VdVgsSat.SetIncrement(0.1)
         #self.Sizer2.Add(self.VdVgsSat)
 
         # Vg Step
         self.VgVgsStartTx = wx.StaticText(self, label='Vg Initial Value', pos=(BoxVgs[0][0]+Margin, BoxVgs[0][1]+180))
-        self.VgVgsStart = wx.SpinCtrlDouble(self, value='0', pos=(BoxVgs[0][0]+Margin, BoxVgs[0][1]+200), size=(60,20),style=wx.SP_ARROW_KEYS)
+        self.VgVgsStart = wx.SpinCtrlDouble(self, value='0', pos=(BoxVgs[0][0]+Margin, BoxVgs[0][1]+200), size=(60,20),style=wx.SP_ARROW_KEYS, name='sv_VgVgsStart')
         self.VgVgsStart.SetIncrement(0.1)
         self.Sizer2.Add(self.VgVgsStart)
 
         self.VgVgsStepTx = wx.StaticText(self, label='Vg Step Size', pos=(BoxVgs[0][0]+Margin+SMU_MarginX, BoxVgs[0][1]+180))
-        self.VgVgsStep = wx.SpinCtrlDouble(self, value=str(DefaultStep/StepScale), pos=(BoxVgs[0][0]+Margin+SMU_MarginX, BoxVgs[0][1]+200), size=(60,20),style=wx.SP_ARROW_KEYS)
+        self.VgVgsStep = wx.SpinCtrlDouble(self, value=str(DefaultStep/StepScale), pos=(BoxVgs[0][0]+Margin+SMU_MarginX, BoxVgs[0][1]+200), size=(60,20),style=wx.SP_ARROW_KEYS, name='sv_VgVgsStep')
         self.VgVgsStep.SetIncrement(0.01)
         self.Sizer2.Add(self.VgVgsStep)
 
         self.VgVgsStopTx = wx.StaticText(self, label='Vg Stop Value', pos=(BoxVgs[0][0]+Margin, BoxVgs[0][1]+180+SMU_MarginY))
-        self.VgVgsStop = wx.SpinCtrlDouble(self, value=str (DefaultMax), pos=(BoxVgs[0][0]+Margin, BoxVgs[0][1]+200+SMU_MarginY), size=(60,20),style=wx.SP_ARROW_KEYS)
+        self.VgVgsStop = wx.SpinCtrlDouble(self, value=str (DefaultMax), pos=(BoxVgs[0][0]+Margin, BoxVgs[0][1]+200+SMU_MarginY), size=(60,20),style=wx.SP_ARROW_KEYS, name='sv_VgVgsStop')
         self.VgVgsStop.SetIncrement(0.1)
         self.Sizer2.Add(self.VgVgsStop)
 
@@ -153,7 +153,7 @@ class IVTab(GenericTab):
         self.Sizer3=wx.StaticBoxSizer(self.Bx3)
         
         # Enable
-        self.EnableIdVds = wx.CheckBox(self, label='Enable Id x Vds', pos=(BoxVds[0][0]+Margin, BoxVds[0][1]+2*Margin))
+        self.EnableIdVds = wx.CheckBox(self, label='Enable Id x Vds', pos=(BoxVds[0][0]+Margin, BoxVds[0][1]+2*Margin), name='sv_EnIdVds')
         self.EnableIdVds.SetValue(True)
         self.Sizer3.Add(self.EnableIdVds)
 
@@ -161,17 +161,17 @@ class IVTab(GenericTab):
 
         #Vd Sweep
         self.VdVdsStartTx = wx.StaticText(self, label='Vd Initial Value', pos=(BoxVds[0][0]+Margin, BoxVds[0][1]+50))
-        self.VdVdsStart = wx.SpinCtrlDouble(self, value='0', pos=(BoxVds[0][0]+Margin, BoxVds[0][1]+70), size=(60,20),style=wx.SP_ARROW_KEYS)
+        self.VdVdsStart = wx.SpinCtrlDouble(self, value='0', pos=(BoxVds[0][0]+Margin, BoxVds[0][1]+70), size=(60,20),style=wx.SP_ARROW_KEYS, name='sv_VdVdsStart')
         self.VdVdsStart.SetIncrement(0.1)
         self.Sizer3.Add(self.VdVdsStart)
 
         self.VdVdsStepTx = wx.StaticText(self, label='Vd Step Size', pos=(BoxVds[0][0]+Margin+SMU_MarginX, BoxVds[0][1]+50))
-        self.VdVdsStep = wx.SpinCtrlDouble(self, value=str(DefaultStep/StepScale), pos=(BoxVds[0][0]+Margin+SMU_MarginX, BoxVds[0][1]+70), size=(60,20),style=wx.SP_ARROW_KEYS)
+        self.VdVdsStep = wx.SpinCtrlDouble(self, value=str(DefaultStep/StepScale), pos=(BoxVds[0][0]+Margin+SMU_MarginX, BoxVds[0][1]+70), size=(60,20),style=wx.SP_ARROW_KEYS, name='sv_VdVdsStep')
         self.VdVdsStep.SetIncrement(0.01)
         self.Sizer3.Add(self.VdVdsStep)
 
         self.VdVdsStopTx = wx.StaticText(self, label='Vd Stop Value', pos=(BoxVds[0][0]+Margin, BoxVds[0][1]+50+SMU_MarginY))
-        self.VdVdsStop = wx.SpinCtrlDouble(self, value=str (DefaultMax), pos=(BoxVds[0][0]+Margin, BoxVds[0][1]+70+SMU_MarginY), size=(60,20),style=wx.SP_ARROW_KEYS)
+        self.VdVdsStop = wx.SpinCtrlDouble(self, value=str (DefaultMax), pos=(BoxVds[0][0]+Margin, BoxVds[0][1]+70+SMU_MarginY), size=(60,20),style=wx.SP_ARROW_KEYS, name='sv_VdVdsStop')
         self.VdVdsStop.SetIncrement(0.1)
         self.Sizer3.Add(self.VdVdsStop)
 
@@ -180,17 +180,17 @@ class IVTab(GenericTab):
 
         # Vg Step
         self.VgVdsStartTx = wx.StaticText(self, label='Vg Initial Value', pos=(BoxVds[0][0]+Margin, BoxVds[0][1]+180))
-        self.VgVdsStart = wx.SpinCtrlDouble(self, value='0', pos=(BoxVds[0][0]+Margin, BoxVds[0][1]+200), size=(60,20),style=wx.SP_ARROW_KEYS)
+        self.VgVdsStart = wx.SpinCtrlDouble(self, value='0', pos=(BoxVds[0][0]+Margin, BoxVds[0][1]+200), size=(60,20),style=wx.SP_ARROW_KEYS, name='sv_VgVdsStart')
         self.VgVdsStart.SetIncrement(0.1)
         self.Sizer3.Add(self.VgVdsStart)
 
         self.VgVdsStepTx = wx.StaticText(self, label='Vg Step Size', pos=(BoxVds[0][0]+Margin+SMU_MarginX, BoxVds[0][1]+180))
-        self.VgVdsStep = wx.SpinCtrlDouble(self, value=str(DefaultStep), pos=(BoxVds[0][0]+Margin+SMU_MarginX, BoxVds[0][1]+200), size=(60,20),style=wx.SP_ARROW_KEYS)
+        self.VgVdsStep = wx.SpinCtrlDouble(self, value=str(DefaultStep), pos=(BoxVds[0][0]+Margin+SMU_MarginX, BoxVds[0][1]+200), size=(60,20),style=wx.SP_ARROW_KEYS, name='sv_VgVdsStep')
         self.VgVdsStep.SetIncrement(0.1)
         self.Sizer3.Add(self.VgVdsStep)
 
         self.VgVdsStopTx = wx.StaticText(self, label='Vg Stop Value', pos=(BoxVds[0][0]+Margin, BoxVds[0][1]+180+SMU_MarginY))
-        self.VgVdsStop = wx.SpinCtrlDouble(self, value=str (DefaultMax), pos=(BoxVds[0][0]+Margin, BoxVds[0][1]+200+SMU_MarginY), size=(60,20),style=wx.SP_ARROW_KEYS)
+        self.VgVdsStop = wx.SpinCtrlDouble(self, value=str (DefaultMax), pos=(BoxVds[0][0]+Margin, BoxVds[0][1]+200+SMU_MarginY), size=(60,20),style=wx.SP_ARROW_KEYS, name='sv_VgVdsStop')
         self.VgVdsStop.SetIncrement(0.1)
         self.Sizer3.Add(self.VgVdsStop)
 
@@ -206,17 +206,17 @@ class IVTab(GenericTab):
         self.Bx4=wx.StaticBox(self,label='Vp x Vgs', pos=(BoxVp[0][0],BoxVp[0][1]),size=(BoxVp[1][0], BoxVp[1][1]))
         self.Sizer4=wx.StaticBoxSizer(self.Bx4)
         
-        self.EnableVp = wx.CheckBox(self, label='Enable Vp', pos=(BoxVp[0][0]+Margin, BoxVp[0][1]+2*Margin))
+        self.EnableVp = wx.CheckBox(self, label='Enable Vp', pos=(BoxVp[0][0]+Margin, BoxVp[0][1]+2*Margin), name='sv_EnVp')
         self.EnableVp.SetValue(True)
         self.Sizer4.Add(self.EnableVp)
 
         #Value Config
 
         #Vd Sweep
-        self.IsImport = wx.CheckBox(self, label='Import Ispec', pos=(BoxVp[0][0]+Margin, BoxVp[0][1]+50+20))
+        self.IsImport = wx.CheckBox(self, label='Import Ispec', pos=(BoxVp[0][0]+Margin, BoxVp[0][1]+50+20), name='sv_IsImport')
         
         self.IsDefTx = wx.StaticText(self, label='Ispec', pos=(BoxVp[0][0]+Margin+SMU_MarginX-10, BoxVp[0][1]+50))
-        self.IsDef = wx.TextCtrl(self, value='1e-6', pos=(BoxVp[0][0]+Margin+SMU_MarginX-10, BoxVp[0][1]+70), size=(60,20))
+        self.IsDef = wx.TextCtrl(self, value='1e-6', pos=(BoxVp[0][0]+Margin+SMU_MarginX-10, BoxVp[0][1]+70), size=(60,20), name='sv_IsDef')
         self.IsDef.SetValue(" ")
         #self.Sizer4.Add(self.IsDef)
         
@@ -228,17 +228,17 @@ class IVTab(GenericTab):
 
         # Vg Step
         self.VgVpStartTx = wx.StaticText(self, label='Vg Initial Value', pos=(BoxVp[0][0]+Margin, BoxVp[0][1]+180))
-        self.VgVpStart = wx.SpinCtrlDouble(self, value='0', pos=(BoxVp[0][0]+Margin, BoxVp[0][1]+200), size=(60,20),style=wx.SP_ARROW_KEYS)
+        self.VgVpStart = wx.SpinCtrlDouble(self, value='0', pos=(BoxVp[0][0]+Margin, BoxVp[0][1]+200), size=(60,20),style=wx.SP_ARROW_KEYS, name='sv_VgVpStart')
         self.VgVpStart.SetIncrement(0.1)
         self.Sizer4.Add(self.VgVpStart)
 
         self.VgVpStepTx = wx.StaticText(self, label='Vg Step Size', pos=(BoxVp[0][0]+Margin+SMU_MarginX, BoxVp[0][1]+180))
-        self.VgVpStep = wx.SpinCtrlDouble(self, value=str (DefaultStep/StepScale), pos=(BoxVp[0][0]+Margin+SMU_MarginX, BoxVp[0][1]+200), size=(60,20),style=wx.SP_ARROW_KEYS)
+        self.VgVpStep = wx.SpinCtrlDouble(self, value=str (DefaultStep/StepScale), pos=(BoxVp[0][0]+Margin+SMU_MarginX, BoxVp[0][1]+200), size=(60,20),style=wx.SP_ARROW_KEYS, name='sv_VgVpStep')
         self.VgVpStep.SetIncrement(0.01)
         self.Sizer4.Add(self.VgVpStep)
 
         self.VgVpStopTx = wx.StaticText(self, label='Vg Stop Value', pos=(BoxVp[0][0]+Margin, BoxVp[0][1]+180+SMU_MarginY))
-        self.VgVpStop = wx.SpinCtrlDouble(self, value=str (DefaultMax), pos=(BoxVp[0][0]+Margin, BoxVp[0][1]+200+SMU_MarginY), size=(60,20),style=wx.SP_ARROW_KEYS)
+        self.VgVpStop = wx.SpinCtrlDouble(self, value=str (DefaultMax), pos=(BoxVp[0][0]+Margin, BoxVp[0][1]+200+SMU_MarginY), size=(60,20),style=wx.SP_ARROW_KEYS, name='sv_VgVpstop')
         self.VgVpStop.SetIncrement(0.1)
         self.Sizer4.Add(self.VgVpStop)
 
@@ -251,7 +251,7 @@ class IVTab(GenericTab):
         self.Current = wx.TextCtrl(self, pos=(BoxVgs[0][0]+Margin+400+80,BoxVgs[0][1]+BoxVgs[1][1]+Margin),size=(150,20))
 
         self.IntTimeTx = wx.StaticText(self, label='Integration Time:', pos=(BoxVgs[0][0]+Margin+400,BoxVgs[0][1]+BoxVgs[1][1]+Margin+33))
-        self.IntTimeBox = wx.ComboBox(self, value=DefaultIntTime, pos=(BoxVgs[0][0]+Margin+400,BoxVgs[0][1]+BoxVgs[1][1]+Margin+53), size=(80,40), choices=['SHORt','MEDium','LONG'])                
+        self.IntTimeBox = wx.ComboBox(self, value=DefaultIntTime, pos=(BoxVgs[0][0]+Margin+400,BoxVgs[0][1]+BoxVgs[1][1]+Margin+53), size=(80,40), choices=['SHORt','MEDium','LONG'], style=wx.CB_READONLY, name='sv_IntTime')                
         self.Sizer4.Add(self.IntTimeBox)
 
 

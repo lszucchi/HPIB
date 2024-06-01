@@ -272,7 +272,7 @@ class General(GenericTab):
         ## Misc Configs
         
         self.IntTimeTx = wx.StaticText(self, label='Integration Time:', pos=(self.Box1[0][0],self.Box2[0][1]+self.Box2[1][1]+Margin))
-        self.IntTimeBox = wx.ComboBox(self, value=DefaultIntTime, pos=(self.Box1[0][0],self.Box2[0][1]+self.Box2[1][1]+3*Margin), size=(80,40), choices=['SHORt','MEDium','LONG'], name='sv_IntTimeBox')
+        self.IntTimeBox = wx.ComboBox(self, value=DefaultIntTime, pos=(self.Box1[0][0],self.Box2[0][1]+self.Box2[1][1]+3*Margin), size=(80,40), choices=['SHORt','MEDium','LONG'], name='sv_IntTimeBox', style=wx.CB_READONLY)
 
         self.TimeoutTx = wx.StaticText(self, label='Timeout (min/trace):', pos=(self.Box1[0][0]+100,self.Box2[0][1]+self.Box2[1][1]+Margin))
         self.Timeout = wx.TextCtrl(self, value='1', pos=(self.Box1[0][0]+100,self.Box2[0][1]+self.Box2[1][1]+3*Margin), size=(60,23), name='sv_Timeout')
@@ -295,14 +295,16 @@ class General(GenericTab):
         self.OpenHP(self.GPIBCH.GetValue(), self.Inst.GetValue())
 
         SMUfuncs=[self.SMU1F.GetValue(), self.SMU2F.GetValue(), self.SMU3F.GetValue(), self.SMU4F.GetValue(), self.VS1F.GetValue(), self.VS2F.GetValue()]
-        if SMUfuncs.count('VAR1') != 1:
+        EnableChan=[self.EnableSMU1.GetValue(),self.EnableSMU2.GetValue(),self.EnableSMU3.GetValue(),self.EnableSMU4.GetValue(),self.EnableVS1.GetValue(),self.EnableVS2.GetValue()]
+
+        Funcs=[val for n, val in enumerate(SMUfuncs) if EnableChan[n]]
+
+        if Funcs.count('VAR1') != 1:
             self.ShowMessage('Var1 error', True)
             return 1
 
         self.Progress.AppendText('\nSetting Channels, ')
 
-        EnableChan=[self.EnableSMU1.GetValue(),self.EnableSMU2.GetValue(),self.EnableSMU3.GetValue(),self.EnableSMU4.GetValue(),self.EnableVS1.GetValue(),self.EnableVS2.GetValue()]
-        Funcs=[self.SMU1F.GetValue(), self.SMU2F.GetValue(), self.SMU3F.GetValue(), self.SMU4F.GetValue(), self.VS1F.GetValue(), self.VS2F.GetValue()]
         Comps=[self.SMU1C.GetValue(), self.SMU2C.GetValue(), self.SMU3C.GetValue(), self.SMU4C.GetValue(), self.VS1C.GetValue(), self.VS2C.GetValue()]
         
         self.HP.DisableAll()
@@ -321,13 +323,11 @@ class General(GenericTab):
         self.Progress.AppendText('Vars, ')
         self.HP.SetVar("VAR1", "V", ETF(self.VAR1Start.GetValue()), ETF(self.VAR1Stop.GetValue()), ETF(self.VAR1Step.GetValue()), ETF(Comps[Funcs.index('VAR1')]))
 
-        for n, en in enumerate(EnableChan):
-            if en and Funcs[n]=='VAR2':
-                self.HP.SetVar("VAR2", "V", ETF(self.VAR2Start.GetValue()), ETF(self.VAR2Stop.GetValue()), ETF(self.VAR2Step.GetValue()), ETF(Comps[n]))
+        if "VAR2" in Funcs:
+            self.HP.SetVar("VAR2", "V", ETF(self.VAR2Start.GetValue()), ETF(self.VAR2Stop.GetValue()), ETF(self.VAR2Step.GetValue()), ETF(Comps[n]))
 
-        for n, en in enumerate(EnableChan):
-            if en and Funcs[n]=='VARD':
-                self.HP.SetVar("VARD", "V", ETF(self.VARDRat.GetValue()), ETF(self.VARDOff.GetValue()))
+        if "VARD" in Funcs:
+            self.HP.SetVar("VARD", "V", ETF(self.VARDRat.GetValue()), ETF(self.VARDOff.GetValue()))
 
         ########### Setting Axis
         self.Progress.AppendText('Axis')
@@ -416,14 +416,17 @@ class General(GenericTab):
 
     def VarSet(self, evt):
         
-        SMUfuncs=[sizer.GetChildren()[3].GetWindow().GetValue() for sizer in self.sizers]
+        SMUfuncs=[self.SMU1F.GetValue(), self.SMU2F.GetValue(), self.SMU3F.GetValue(), self.SMU4F.GetValue(), self.VS1F.GetValue(), self.VS2F.GetValue()]
+        EnableChan=[self.EnableSMU1.GetValue(),self.EnableSMU2.GetValue(),self.EnableSMU3.GetValue(),self.EnableSMU4.GetValue(),self.EnableVS1.GetValue(),self.EnableVS2.GetValue()]
+
+        Funcs=[val for n, val in enumerate(SMUfuncs) if EnableChan[n]]
         
-        if SMUfuncs.count('VAR1') != 1:
+        if Funcs.count('VAR1') != 1:
             self.X1.SetValue('---')
             return 1
         
         for n, SMU in enumerate(self.sizers):
-            if SMU.GetChildren()[3].GetWindow().GetValue()=='VAR1':
+            if SMU.GetChildren()[3].GetWindow().GetValue()=='VAR1' and EnableChan[n]:
                 if SMU.GetChildren()[2].GetWindow().GetValue()=='V':
                     self.X1.SetValue(SMU.GetChildren()[0].GetWindow().GetValue())
                     return 0

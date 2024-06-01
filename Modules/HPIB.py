@@ -1,10 +1,8 @@
-import pyvisa
-import string
-import datetime
-
+import pyvisa, string, datetime
 from IPython.display import clear_output, display
-from HPIB_plot import *
 from time import sleep
+
+from .HPIB_plot import *
 
 ########## Tabelas para intruções HPIB ###########
 
@@ -65,7 +63,7 @@ class HP:
         if self.debug: return print(msg)
         return self.inst.write(msg)
 
-    def SingleSave(self, path=".", timeout=2):
+    def SingleSave(self, path=".", timeout=2, scaling=1):
         if self.term=="0": return "Parameters not set"
         
         print(self.term)

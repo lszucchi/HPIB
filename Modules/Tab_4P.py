@@ -1,4 +1,4 @@
-from Tab_Generic import *
+from .Tab_Generic import *
 
 class FourPoint(GenericTab):
     
@@ -21,19 +21,19 @@ class FourPoint(GenericTab):
         self.Sizer1a=wx.StaticBoxSizer(self.Bx1a)
 
         self.DBoxTx = wx.StaticText(self, label='I-:', pos=(X+1*Margin, Y+2*Margin+3))
-        self.DBox  = wx.ComboBox(self, value='SMU1', pos=(X+3*Margin+5, Y+2*Margin), size=(60,40), choices=['SMU1','SMU2','SMU3','SMU4'])
+        self.DBox  = wx.ComboBox(self, value='SMU1', pos=(X+3*Margin+5, Y+2*Margin), size=(60,40), choices=['SMU1','SMU2','SMU3','SMU4'], name='sv_DBox')
         self.Sizer1a.Add(self.DBox)
 
         self.SBoxTx  = wx.StaticText(self, label='I+:', pos=(X+2*Margin+SMU_MarginX, Y+2*Margin+3))
-        self.SBox = wx.ComboBox(self, value='SMU2', pos=(X+4*Margin+5+SMU_MarginX, Y+2*Margin), size=(60,40), choices=['SMU1','SMU2','SMU3','SMU4'])
+        self.SBox = wx.ComboBox(self, value='SMU2', pos=(X+4*Margin+5+SMU_MarginX, Y+2*Margin), size=(60,40), choices=['SMU1','SMU2','SMU3','SMU4'], name='sv_SBox')
         self.Sizer1a.Add(self.SBox)
 
         self.BBoxTx = wx.StaticText(self, label='V-:', pos=(X+1*Margin, Y+2*Margin+3+SMU_MarginY))
-        self.BBox = wx.ComboBox(self, value='VMU1', pos=(X+3*Margin+5, Y+2*Margin+SMU_MarginY), size=(60,40), choices=['VMU1','VMU2','SMU1','SMU2','SMU3','SMU4'])
+        self.BBox = wx.ComboBox(self, value='VMU1', pos=(X+3*Margin+5, Y+2*Margin+SMU_MarginY), size=(60,40), choices=['VMU1','VMU2','SMU1','SMU2','SMU3','SMU4'], name='sv_BBox')
         self.Sizer1a.Add(self.BBox)
 
         self.GBoxTx = wx.StaticText(self, label='V+:', pos=(X+2*Margin+SMU_MarginX,  Y+2*Margin+3+SMU_MarginY))
-        self.GBox = wx.ComboBox(self, value='VMU2', pos=(X+4*Margin+5+SMU_MarginX, Y+2*Margin+SMU_MarginY), size=(60,40), choices=['VMU1','VMU2','SMU1','SMU2','SMU3','SMU4'])
+        self.GBox = wx.ComboBox(self, value='VMU2', pos=(X+4*Margin+5+SMU_MarginX, Y+2*Margin+SMU_MarginY), size=(60,40), choices=['VMU1','VMU2','SMU1','SMU2','SMU3','SMU4'], name='sv_GBox')
         self.Sizer1a.Add(self.GBox)
 
         ######################## V Config ###########################
@@ -44,21 +44,21 @@ class FourPoint(GenericTab):
 
         self.IStartTx = wx.StaticText(self, label='I Start', pos=(BoxVgs[0][0]+2*Margin, BoxVgs[0][1]+30))
         self.IStartTx.SetFont(wx.Font(12, wx.DEFAULT, wx.NORMAL, wx.NORMAL, False))
-        self.IStart= wx.TextCtrl(self, value=str (DefaultStep*1000/StepScale), pos=(BoxVgs[0][0]+Margin, BoxVgs[0][1]+50), size=(110,35), style=wx.TE_CENTRE)
+        self.IStart= wx.TextCtrl(self, value=str (DefaultStep*1000/StepScale), pos=(BoxVgs[0][0]+Margin, BoxVgs[0][1]+50), size=(110,35), style=wx.TE_CENTRE, name='sv_IStart')
         self.IStart.SetFont(wx.Font(12, wx.DEFAULT, wx.NORMAL, wx.NORMAL, False))
         self.IStart.SetValue('1m')
         self.Sizer2.Add(self.IStart)
 
         self.IStopTx = wx.StaticText(self, label='I Stop', pos=(BoxVgs[0][0]+2*Margin, BoxVgs[0][1]+30+70))
         self.IStopTx.SetFont(wx.Font(12, wx.DEFAULT, wx.NORMAL, wx.NORMAL, False))
-        self.IStop= wx.TextCtrl(self, value=str (DefaultStep*1000/StepScale), pos=(BoxVgs[0][0]+Margin, BoxVgs[0][1]+50+70), size=(110,35), style=wx.TE_CENTRE)
+        self.IStop= wx.TextCtrl(self, value=str (DefaultStep*1000/StepScale), pos=(BoxVgs[0][0]+Margin, BoxVgs[0][1]+50+70), size=(110,35), style=wx.TE_CENTRE, name='sv_IStop')
         self.IStop.SetFont(wx.Font(12, wx.DEFAULT, wx.NORMAL, wx.NORMAL, False))
         self.IStop.SetValue('1m')
         self.Sizer2.Add(self.IStop)
 
         self.IStepTx = wx.StaticText(self, label='I Step', pos=(BoxVgs[0][0]+2*Margin, BoxVgs[0][1]+30+140))
         self.IStepTx.SetFont(wx.Font(12, wx.DEFAULT, wx.NORMAL, wx.NORMAL, False))
-        self.IStep= wx.TextCtrl(self, value=str (DefaultStep*1000/StepScale), pos=(BoxVgs[0][0]+Margin, BoxVgs[0][1]+50+140), size=(110,35), style=wx.TE_CENTRE)
+        self.IStep= wx.TextCtrl(self, value=str (DefaultStep*1000/StepScale), pos=(BoxVgs[0][0]+Margin, BoxVgs[0][1]+50+140), size=(110,35), style=wx.TE_CENTRE, name='sv_IStep')
         self.IStep.SetFont(wx.Font(12, wx.DEFAULT, wx.NORMAL, wx.NORMAL, False))
         self.IStep.SetValue('10u')
         self.Sizer2.Add(self.IStep)
@@ -70,7 +70,7 @@ class FourPoint(GenericTab):
         self.Current = wx.TextCtrl(self, pos=(BoxVgs[0][0],BoxVgs[0][1]+BoxVgs[1][1]+Margin+23),size=(130,20))
 
         self.IntTimeTx = wx.StaticText(self, label='Integration Time:', pos=(BoxVgs[0][0],BoxVgs[0][1]+BoxVgs[1][1]+Margin+53))
-        self.IntTimeBox = wx.ComboBox(self, value=DefaultIntTime, pos=(BoxVgs[0][0],BoxVgs[0][1]+BoxVgs[1][1]+Margin+73), size=(80,40), choices=['SHORt','MEDium','LONG'])
+        self.IntTimeBox = wx.ComboBox(self, value=DefaultIntTime, pos=(BoxVgs[0][0],BoxVgs[0][1]+BoxVgs[1][1]+Margin+73), size=(80,40), choices=['SHORt','MEDium','LONG'], style=wx.CB_READONLY, name='sv_IntTime')
         self.Sizer2.Add(self.IntTimeBox)
 
         #======== Image preview =========#
@@ -101,7 +101,7 @@ class FourPoint(GenericTab):
                 self.Progress.AppendText(str('4-Point I-V')+ '  ')
                 self.HP.Set4P(self.HP.ETF(self.IStart.GetValue()),self.HP.ETF(self.IStop.GetValue()),self.HP.ETF(self.IStep.GetValue()))
                 last_path=self.HP.SingleSave(Chn+1,self.SaveFilePath.GetValue(), IntTime=self.IntTimeBox.GetValue())
-                self.RefreshImg(PlotArb("V", "I", last_path))
+                self.RefreshImg(Plot(last_path, "V", "I"))
 
         self.Progress.AppendText('End!\n')
         return 0                          
@@ -119,7 +119,7 @@ class FourPoint(GenericTab):
     def OnButton(self, event):
         global Stop_flag
         Stop_flag = False
-        self.testThread = Thread(target=test1)
+        self.testThread = Thread(target=self.Measure)
         self.testThread.start()
         self.Btn_Start.SetLabel("Running\n.")
         self.Btn_Start.Disable()

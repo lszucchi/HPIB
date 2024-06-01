@@ -10,3 +10,5 @@ Modules/__pycache__/Tab_CV.cpython-311.pyc
 Modules/__pycache__/Tab_Generic.cpython-311.pyc
 Modules/__pycache__/Tab_GP.cpython-311.pyc
 Modules/__pycache__/Tab_IV.cpython-311.pyc
+mycsvfile.csv
+.~lock.mycsvfile.csv#
