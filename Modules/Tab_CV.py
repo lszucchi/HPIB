@@ -43,13 +43,13 @@ class CVTab(GenericTab):
 
         self.VStopTx = wx.StaticText(self, label='V Stop', pos=(BoxVgs[0][0]+2*int(config['Window']['Margin']), BoxVgs[0][1]+30))
         self.VStopTx.SetFont(wx.Font(12, wx.DEFAULT, wx.NORMAL, wx.NORMAL, False))
-        self.VStop= wx.SpinCtrlDouble(self, value=str (DefaultMax), pos=(BoxVgs[0][0]+2*int(config['Window']['Margin']), BoxVgs[0][1]+50), size=(80,35), min=-100, max=100, inc=0.5,style=wx.SP_ARROW_KEYS|wx.TE_CENTRE, name='sv_VStop')
+        self.VStop= wx.SpinCtrlDouble(self, value=str (1), pos=(BoxVgs[0][0]+2*int(config['Window']['Margin']), BoxVgs[0][1]+50), size=(80,35), min=-100, max=100, inc=0.5,style=wx.SP_ARROW_KEYS|wx.TE_CENTRE, name='sv_VStop')
         self.VStop.SetFont(wx.Font(17, wx.DEFAULT, wx.NORMAL, wx.NORMAL, False))
         self.Sizer2.Add(self.VStop)
 
         self.VStartTx = wx.StaticText(self, label='V Start', pos=(BoxVgs[0][0]+2*int(config['Window']['Margin']), BoxVgs[0][1]+30+70))
         self.VStartTx.SetFont(wx.Font(12, wx.DEFAULT, wx.NORMAL, wx.NORMAL, False))
-        self.VStart = wx.SpinCtrlDouble(self, value=str (-DefaultMax), pos=(BoxVgs[0][0]+2*int(config['Window']['Margin']), BoxVgs[0][1]+50+70), size=(80,35), min=-100, max=100, inc=0.5, style=wx.SP_ARROW_KEYS|wx.TE_CENTRE, name='sv_VStart')
+        self.VStart = wx.SpinCtrlDouble(self, value=str (-1), pos=(BoxVgs[0][0]+2*int(config['Window']['Margin']), BoxVgs[0][1]+50+70), size=(80,35), min=-100, max=100, inc=0.5, style=wx.SP_ARROW_KEYS|wx.TE_CENTRE, name='sv_VStart')
         self.VStart.SetFont(wx.Font(17, wx.DEFAULT, wx.NORMAL, wx.NORMAL, False))
         self.Sizer2.Add(self.VStart)
 
@@ -63,7 +63,7 @@ class CVTab(GenericTab):
         ############################# Progress #############################
 
         self.IntTimeTx = wx.StaticText(self, label='Integration Time:', pos=(BoxVgs[0][0],BoxVgs[0][1]+BoxVgs[1][1]+int(config['Window']['Margin'])-10))
-        self.IntTimeBox = wx.ComboBox(self, value=DefaultIntTime, pos=(BoxVgs[0][0],BoxVgs[0][1]+BoxVgs[1][1]+int(config['Window']['Margin'])+10), size=(80,20), choices=['SHORt','MEDium','LONG'], style=wx.CB_READONLY, name='sv_IntTime')
+        self.IntTimeBox = wx.ComboBox(self, value='MEDium', pos=(BoxVgs[0][0],BoxVgs[0][1]+BoxVgs[1][1]+int(config['Window']['Margin'])+10), size=(80,20), choices=['SHORt','MEDium','LONG'], style=wx.CB_READONLY, name='sv_IntTime')
         self.ScaleTx= wx.StaticText(self, label='Scale:', pos=(BoxVgs[0][0],BoxVgs[0][1]+BoxVgs[1][1]+int(config['Window']['Margin'])+35))
         self.ScaleBox = wx.ComboBox(self, value='2 nF', pos=(BoxVgs[0][0],BoxVgs[0][1]+BoxVgs[1][1]+int(config['Window']['Margin'])+55), size=(80,20), choices=['2 nF','200 pF','20 pF/2 pF'], style=wx.CB_READONLY, name='sv_Scale')
         self.HTimeTx = wx.StaticText(self, label='Hold Time (s):', pos=(BoxVgs[0][0],BoxVgs[0][1]+BoxVgs[1][1]+int(config['Window']['Margin'])+80))
@@ -72,14 +72,13 @@ class CVTab(GenericTab):
         self.Sizer2.Add(self.IntTimeBox)
 
         #======== Image preview =========#
-        img = wx.Image((PhotoMaxSizeX,int(PhotoMaxSizeX*480/640)))
-        self.imageCtrl = wx.StaticBitmap(self, wx.ID_ANY, wx.Bitmap(img),pos=(385, 30), size=(PhotoMaxSizeX,int(PhotoMaxSizeX*480/640)))
+        img = wx.Image((int(config['Window']['PhotoMaxSizeX']),int(int(config['Window']['PhotoMaxSizeX'])*480/640)))
+        self.imageCtrl = wx.StaticBitmap(self, wx.ID_ANY, wx.Bitmap(img),pos=(385, 30), size=(int(config['Window']['PhotoMaxSizeX']),int(int(config['Window']['PhotoMaxSizeX'])*480/640)))
         self.img_path = wx.StaticText(self, label="No measurements to show", pos=(385,10),size=(400,20))
 
     def Measure(self):
         try:
             self.HP.SetIntTime(self.IntTimeBox.GetValue())
-            print(self.SaveFilePath.GetValue())
             ReturnFlag = self.HP.SingleSave(self.SaveFilePath.GetValue(), timeout=1800)
         except:
             #ReturnFlag="No instrument\nSend config to open connection"
@@ -94,7 +93,6 @@ class CVTab(GenericTab):
         if self.ShowMessage(f'Error: {ReturnFlag}', True): raise Exception(ReturnFlag)
 
     def Configure(self):
-        print(10**(3-self.ScaleBox.GetSelection()))
         self.OpenHP(self.GPIBCH.GetValue(), self.Inst.GetValue())
         self.HP.beep()
         self.HP.DisableAll()
@@ -136,7 +134,6 @@ class CVTab(GenericTab):
             self.Btn_Start.SetLabel("Start")
             global Stop_flag
             Stop_flag = True
-            print("Stop")
 
     def ToggleSizer(self, Sizer, State):
         children = Sizer.GetChildren()

@@ -1,5 +1,8 @@
 from .Tab_Generic import *
 
+scripts=configparser.ConfigParser()
+scripts.read('./Scripts/MainScripts.ini')
+
 class General(GenericTab):
     
     def __init__(self, parent):
@@ -48,7 +51,7 @@ class General(GenericTab):
         self.SizerSMU1.Add(self.SMU1C)
 
         ## Enable
-        self.EnableSMU1 = wx.CheckBox(self, label='', pos=(self.Box2[0][0]+6*int(config['Window']['Margin'])+2*SizeSMUcol+2*SizeIVcol+2*SizeFMcol+2*int(config['Window']['Margin']), self.Box2[0][1]+SpacingRow+4), name='sv_EnableSMU1')
+        self.EnableSMU1 = wx.CheckBox(self, label='', pos=(self.Box2[0][0]+6*int(config['Window']['Margin'])+2*SizeSMUcol+2*SizeIVcol+2*SizeFMcol+2*int(config['Window']['Margin']), self.Box2[0][1]+SpacingRow+4), name='sv_enSMU1')
         self.EnableSMU1.SetValue(True)
         self.SizerSMU1.Add(self.EnableSMU1)
         self.EnableSMU1.Bind(wx.EVT_CHECKBOX, self.SetSizers)     
@@ -74,7 +77,7 @@ class General(GenericTab):
         self.SizerSMU2.Add(self.SMU2C)
 
         ## Enable
-        self.EnableSMU2 = wx.CheckBox(self, label='', pos=(self.Box2[0][0]+6*int(config['Window']['Margin'])+2*SizeSMUcol+2*SizeIVcol+2*SizeFMcol+2*int(config['Window']['Margin']), self.Box2[0][1]+2*SpacingRow+4), name='sv_EnableSMU2')
+        self.EnableSMU2 = wx.CheckBox(self, label='', pos=(self.Box2[0][0]+6*int(config['Window']['Margin'])+2*SizeSMUcol+2*SizeIVcol+2*SizeFMcol+2*int(config['Window']['Margin']), self.Box2[0][1]+2*SpacingRow+4), name='sv_enSMU2')
         self.EnableSMU2.SetValue(True)
         self.SizerSMU2.Add(self.EnableSMU2)        
         self.EnableSMU2.Bind(wx.EVT_CHECKBOX, self.SetSizers)
@@ -99,7 +102,7 @@ class General(GenericTab):
         self.SizerSMU3.Add(self.SMU3C)
 
         ## Enable
-        self.EnableSMU3 = wx.CheckBox(self, label='', pos=(self.Box2[0][0]+6*int(config['Window']['Margin'])+2*SizeSMUcol+2*SizeIVcol+2*SizeFMcol+2*int(config['Window']['Margin']), self.Box2[0][1]+3*SpacingRow+4), name='sv_EnableSMU3')
+        self.EnableSMU3 = wx.CheckBox(self, label='', pos=(self.Box2[0][0]+6*int(config['Window']['Margin'])+2*SizeSMUcol+2*SizeIVcol+2*SizeFMcol+2*int(config['Window']['Margin']), self.Box2[0][1]+3*SpacingRow+4), name='sv_enSMU3')
         self.EnableSMU3.SetValue(True)
         self.SizerSMU3.Add(self.EnableSMU3)            
         self.EnableSMU3.Bind(wx.EVT_CHECKBOX, self.SetSizers)
@@ -116,15 +119,15 @@ class General(GenericTab):
         self.SizerSMU4.Add(self.SMU4I)
         
         ### Draw SMU4 Mode/Func/Comp
-        self.SMU4M = wx.ComboBox(self, value='COMM', pos=(self.Box2[0][0]+3*int(config['Window']['Margin'])+SizeSMUcol+2*SizeIVcol, self.Box2[0][1]+4*SpacingRow), size=(SizeFMcol,SpacingRow),choices=['COMM','V','I'], name='sv_SMU4I')
+        self.SMU4M = wx.ComboBox(self, value='COMM', pos=(self.Box2[0][0]+3*int(config['Window']['Margin'])+SizeSMUcol+2*SizeIVcol, self.Box2[0][1]+4*SpacingRow), size=(SizeFMcol,SpacingRow),choices=['COMM','V','I'], name='sv_SMU4M')
         self.SizerSMU4.Add(self.SMU4M)
-        self.SMU4F = wx.ComboBox(self, value='CONS', pos=(self.Box2[0][0]+4*int(config['Window']['Margin'])+SizeSMUcol+2*SizeIVcol+SizeFMcol, self.Box2[0][1]+4*SpacingRow), size=(SizeFMcol,SizeRow), choices=['CONS','VAR1','VAR2','VARD'], name='sv_SMU4M')
+        self.SMU4F = wx.ComboBox(self, value='CONS', pos=(self.Box2[0][0]+4*int(config['Window']['Margin'])+SizeSMUcol+2*SizeIVcol+SizeFMcol, self.Box2[0][1]+4*SpacingRow), size=(SizeFMcol,SizeRow), choices=['CONS','VAR1','VAR2','VARD'], name='sv_SMU4F')
         self.SizerSMU4.Add(self.SMU4F)
-        self.SMU4C = wx.TextCtrl(self, value='1e-3', pos=(self.Box2[0][0]+5*int(config['Window']['Margin'])+SizeSMUcol+2*SizeIVcol+2*SizeFMcol, self.Box2[0][1]+4*SpacingRow), size=(SizeSMUcol,SizeRow), name='sv_SMU4F')
+        self.SMU4C = wx.TextCtrl(self, value='1e-3', pos=(self.Box2[0][0]+5*int(config['Window']['Margin'])+SizeSMUcol+2*SizeIVcol+2*SizeFMcol, self.Box2[0][1]+4*SpacingRow), size=(SizeSMUcol,SizeRow), name='sv_SMU4C')
         self.SizerSMU4.Add(self.SMU4C)
 
         ## Enable
-        self.EnableSMU4 = wx.CheckBox(self, label='', pos=(self.Box2[0][0]+6*int(config['Window']['Margin'])+2*SizeSMUcol+2*SizeIVcol+2*SizeFMcol+2*int(config['Window']['Margin']), self.Box2[0][1]+4*SpacingRow+4), name='sv_EnableSMU4')
+        self.EnableSMU4 = wx.CheckBox(self, label='', pos=(self.Box2[0][0]+6*int(config['Window']['Margin'])+2*SizeSMUcol+2*SizeIVcol+2*SizeFMcol+2*int(config['Window']['Margin']), self.Box2[0][1]+4*SpacingRow+4), name='sv_enSMU4')
         self.EnableSMU4.SetValue(True)
         self.SizerSMU4.Add(self.EnableSMU4)        
         self.EnableSMU4.Bind(wx.EVT_CHECKBOX, self.SetSizers)
@@ -151,7 +154,7 @@ class General(GenericTab):
         self.SizerVS1.Add(self.VS1C)
 
         ## Enable
-        self.EnableVS1 = wx.CheckBox(self, label='', pos=(self.Box2[0][0]+6*int(config['Window']['Margin'])+2*SizeSMUcol+2*SizeIVcol+2*SizeFMcol+2*int(config['Window']['Margin']), self.Box2[0][1]+5*SpacingRow+4), name='sv_EnableVS1')
+        self.EnableVS1 = wx.CheckBox(self, label='', pos=(self.Box2[0][0]+6*int(config['Window']['Margin'])+2*SizeSMUcol+2*SizeIVcol+2*SizeFMcol+2*int(config['Window']['Margin']), self.Box2[0][1]+5*SpacingRow+4), name='sv_enVS1')
         self.EnableVS1.SetValue(False)
         self.SizerVS1.Add(self.EnableVS1)       
         self.EnableVS1.Bind(wx.EVT_CHECKBOX, self.SetSizers)
@@ -178,7 +181,7 @@ class General(GenericTab):
         self.SizerVS2.Add(self.VS2C)
 
         ## Enable
-        self.EnableVS2 = wx.CheckBox(self, label='', pos=(self.Box2[0][0]+6*int(config['Window']['Margin'])+2*SizeSMUcol+2*SizeIVcol+2*SizeFMcol+2*int(config['Window']['Margin']), self.Box2[0][1]+6*SpacingRow+4), name='sv_EnableVS2')
+        self.EnableVS2 = wx.CheckBox(self, label='', pos=(self.Box2[0][0]+6*int(config['Window']['Margin'])+2*SizeSMUcol+2*SizeIVcol+2*SizeFMcol+2*int(config['Window']['Margin']), self.Box2[0][1]+6*SpacingRow+4), name='sv_enVS2')
         self.EnableVS2.SetValue(False)
         self.SizerVS2.Add(self.EnableVS2)           
         self.EnableVS2.Bind(wx.EVT_CHECKBOX, self.SetSizers)
@@ -266,13 +269,17 @@ class General(GenericTab):
         self.Y2Max = wx.TextCtrl(self, value='', pos=(Box4[0][0]+175, Box4[0][1]+3*SpacingRow-2*int(config['Window']['Margin'])), size=(SizeIVcol,SizeRow), style=wx.TE_CENTRE, name='sv_Y2Max')
         self.X1Max.Disable()
 
-        self.Traces = wx.TextCtrl(self, value='', pos=(Box4[0][0]+int(config['Window']['Margin']), Box4[0][1]+4*SpacingRow-3*int(config['Window']['Margin'])+5), size=(Box4[1][0]-2*int(config['Window']['Margin']),SizeRow), name='sv_Traces')
+        self.Traces = wx.TextCtrl(self, value='I1, I3, I4', pos=(Box4[0][0]+int(config['Window']['Margin']), Box4[0][1]+4*SpacingRow-3*int(config['Window']['Margin'])+5), size=(Box4[1][0]-2*int(config['Window']['Margin']),SizeRow), name='sv_Traces')
         self.ufunc = wx.TextCtrl(self, value='VM=VMU2-VMU1', pos=(Box4[0][0]+int(config['Window']['Margin']), Box4[0][1]+5*SpacingRow-3*int(config['Window']['Margin'])+5), size=(Box4[1][0]-2*int(config['Window']['Margin']),SizeRow), name='sv_ufunc')
 
         ## Misc Configs
         
         self.IntTimeTx = wx.StaticText(self, label='Integration Time:', pos=(self.Box1[0][0],self.Box2[0][1]+self.Box2[1][1]+int(config['Window']['Margin'])))
-        self.IntTimeBox = wx.ComboBox(self, value=DefaultIntTime, pos=(self.Box1[0][0],self.Box2[0][1]+self.Box2[1][1]+3*int(config['Window']['Margin'])), size=(80,40), choices=['SHORt','MEDium','LONG'], name='sv_IntTimeBox', style=wx.CB_READONLY)
+        self.IntTimeBox = wx.ComboBox(self, value='MEDium', pos=(self.Box1[0][0],self.Box2[0][1]+self.Box2[1][1]+3*int(config['Window']['Margin'])), size=(80,40), choices=['SHORt','MEDium','LONG'], name='sv_IntTimeBox', style=wx.CB_READONLY)
+
+        self.ScriptBox = wx.ComboBox(self, value='Script:', pos=(self.Box1[0][0],self.Box2[0][1]+self.Box2[1][1]+3*int(config['Window']['Margin'])+int(config['Window']['SMUMY'])), size=(80,20), choices=['Script:']+scripts.sections()+['Open', 'Save'] , style=wx.CB_READONLY)
+        self.NameBox = wx.TextCtrl(self, value='New', pos=(self.Box1[0][0]+int(config['Window']['SMUMX']),self.Box2[0][1]+self.Box2[1][1]+3*int(config['Window']['Margin'])+int(config['Window']['SMUMY'])), size=(120,20))
+        self.ScriptBox.Bind(wx.EVT_COMBOBOX, self.ScriptMenu)
 
         self.TimeoutTx = wx.StaticText(self, label='Timeout (min/trace):', pos=(self.Box1[0][0]+100,self.Box2[0][1]+self.Box2[1][1]+int(config['Window']['Margin'])))
         self.Timeout = wx.TextCtrl(self, value='1', pos=(self.Box1[0][0]+100,self.Box2[0][1]+self.Box2[1][1]+3*int(config['Window']['Margin'])), size=(60,23), name='sv_Timeout')
@@ -280,15 +287,14 @@ class General(GenericTab):
         self.Progress=wx.TextCtrl(self, pos=(self.Box2[0][0],self.Box2[0][1]+self.Box2[1][1]+int(config['Window']['Margin'])), size=(self.Box2[1][0], 90),style=wx.TE_MULTILINE) 
         
         #======== Image preview =========#
-        img = wx.Image((PhotoMaxSizeX,int(PhotoMaxSizeX*480/640)))
-        self.imageCtrl = wx.StaticBitmap(self, wx.ID_ANY, wx.Bitmap(img),pos=(935, 30), size=(PhotoMaxSizeX,int(PhotoMaxSizeX*480/640)))
+        img = wx.Image((int(config['Window']['PhotoMaxSizeX']),int(int(config['Window']['PhotoMaxSizeX'])*480/640)))
+        self.imageCtrl = wx.StaticBitmap(self, wx.ID_ANY, wx.Bitmap(img),pos=(935, 30), size=(int(config['Window']['PhotoMaxSizeX']),int(int(config['Window']['PhotoMaxSizeX'])*480/640)))
         self.img_path = wx.StaticText(self, label="No measurements to show", pos=(960,10),size=(400,20))
 
         #========  End ========#
         self.Show()
         self.SetSizers(1)
        # self.Maximize()
-
 
     def Configure(self):
 
@@ -370,7 +376,7 @@ class General(GenericTab):
         for function in self.ufunc.GetValue().split(','):
             self.HP.UFUNC(function.strip(' '))
         
-        if self.debug:
+        if config['Window'].getboolean('Debug'):
             print("\nTraces: ["+','.join(data_variables)+']')
             print(self.HP.Var2)
         self.Progress.AppendText('\nConfig done')
@@ -383,7 +389,6 @@ class General(GenericTab):
         self.Progress.AppendText('\nMeasurement started!\n...')
         try:
             self.HP.SetIntTime(self.IntTimeBox.GetValue())
-            print(self.SaveFilePath.GetValue())
             ReturnFlag = self.HP.SingleSave(self.SaveFilePath.GetValue(), timeout=1800)
         except:
             #ReturnFlag="No instrument\nSend config to open connection"
@@ -436,3 +441,39 @@ class General(GenericTab):
                 else:
                     self.X1.SetValue('---')
                     return 1
+    
+    def ScriptMenu(self, event):
+        CurrScr=configparser.ConfigParser()
+        if self.ScriptBox.GetValue() == 'Script:':
+            return 0
+            ############### Saving Subroutine #################
+        if self.ScriptBox.GetValue() == 'Save':
+            CurrScr[self.NameBox.GetValue()]={}
+            for child in self.GetChildren():
+                if 'sv_' in child.GetName():
+                    CurrScr[self.NameBox.GetValue()][child.GetName()]=str(child.GetValue())
+            dialog = wx.FileDialog(None, "Choose a script:", defaultDir="./Scripts", wildcard = "Scripts (*.ini)|*.ini", style=wx.DD_DEFAULT_STYLE)
+            if dialog.ShowModal() == wx.ID_OK:
+                with open(dialog.GetPath(), 'w') as configfile:
+                    CurrScr.write(configfile)
+            return 0
+            ############### Loading Subroutine #################
+        if self.ScriptBox.GetValue() == 'Open':
+            
+            dialog = wx.FileDialog(None, "Choose a script:", defaultDir="./Scripts", style=wx.DD_DEFAULT_STYLE)
+            if dialog.ShowModal() == wx.ID_OK:
+                CurrScr.read(dialog.GetPath())
+                CurrScr=CurrScr[CurrScr.sections()[0]]
+        else:
+            CurrScr=scripts[self.ScriptBox.GetValue()]
+            self.NameBox.SetValue(self.ScriptBox.GetValue())
+
+            ############### Placing Subroutine #################
+        for child in self.GetChildren():
+            if 'sv_' in child.GetName():
+                if 'en' in child.GetName() or 'cb' in child.GetName():
+                    child.SetValue(CurrScr.getboolean(child.GetName()))
+                else:
+                    child.SetValue(CurrScr[child.GetName()])
+            self.SetSizers(True)
+        self.ScriptBox.SetValue('Script:')

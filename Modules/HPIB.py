@@ -119,7 +119,7 @@ class HP:
     def SetVGS(self, dict, ptype):
         self.SetVgs(dict['VGstart'], dict['VGstop'], dict['VGstep'], ETF(dict['VD']), ETF(dict['Compliance']), ptype=ptype)
 
-    def SetVgs(self, VgStart, VgStop, VgStep, VdValue=0.1, Comp=1e-3, VdSweep=False, ptype=False, sat=False):
+    def SetVgs(self, VgStart, VgStop, VgStep, VdValue=0.025, Comp=1e-3, VdSweep=False, ptype=False, sat=False):
         
         if ptype:
                     VdValue=-VdValue
@@ -130,7 +130,7 @@ class HP:
         self.DisableAll()
         
         self.SetSMU('SMU1', 'VS', 'IS', 'COMM', 'CONS')
-        self.SetSMU('SMU3', 'VG', 'IG', 'V', 'VAR1', Comp=Comp)
+        self.SetSMU('SMU3', 'VG', 'IG', 'V', 'VAR1')
         self.SetSMU('SMU4', 'VB', 'IB', 'COMM', 'CONS')
 
         if VdSweep:
@@ -141,7 +141,7 @@ class HP:
             self.Var2=[f"{VdValue}"]
             self.Var2Name="VDS"
 
-        self.SetVar('VAR1', 'V', VgStart, VgStop, VgStep, 1e-3)
+        self.SetVar('VAR1', 'V', VgStart, VgStop, VgStep, Comp=Comp)
 
         self.SetAxis('X', 'VG', 'LIN', VgStart, VgStop)
         self.SetAxis('Y1', 'ID', 'LIN', 0, VgStop*1e-3)
@@ -175,11 +175,11 @@ class HP:
         self.DisableAll()
         
         self.SetSMU('SMU1', 'VS', 'IS', 'COMM', 'CONS')
-        self.SetSMU('SMU2', 'VD', 'ID', 'V', 'VAR1', Comp=Comp)
-        self.SetSMU('SMU3', 'VG', 'IG', 'V', 'VAR2', Comp=Comp)
+        self.SetSMU('SMU2', 'VD', 'ID', 'V', 'VAR1')
+        self.SetSMU('SMU3', 'VG', 'IG', 'V', 'VAR2')
         self.SetSMU('SMU4', 'VB', 'IB', 'COMM', 'CONS')
-        self.SetVar('VAR1', 'V', VdStart, VdStop, VdStep)
-        self.SetVar('VAR2', 'V', VgStart, VgStop, VgStep)
+        self.SetVar('VAR1', 'V', VdStart, VdStop, VdStep, Comp=Comp)
+        self.SetVar('VAR2', 'V', VgStart, VgStop, VgStep, Comp=Comp)
         sleep(0.5)
         self.SetAxis('X', 'VD', 'LIN', VdStart, VdStop)
         self.SetAxis('Y1', 'ID', 'LIN', 0, 1e-3)

@@ -36,10 +36,19 @@ class MainFrame(wx.Frame):
         
         menubar.Append(fileMenu, "Tools")
         
+        if not os.path.isfile('config.ini'):
+            config['Window']={}
+            config['Window']['Debug']='False'
+            config['Window']['Margin']='10'
+            config['Window']['SMUMY']='40'
+            config['Window']['SMUMX']='90'
+            config['Window']['PhotoMaxSizeX']='550'
+
         self.SetDebug = fileMenu.AppendCheckItem(wx.NewIdRef(), 'Enable Debug')
+        self.SetDebug.Check(config['Window'].getboolean('Debug'))
         self.Bind (wx.EVT_MENU, self.OnSetDebug, self.SetDebug)
-        reinit = fileMenu.Append(wx.NewIdRef(), 'REINIT')
-        self.Bind(wx.EVT_MENU, self.OnReinit, reinit)
+        self.reinit = fileMenu.Append(wx.NewIdRef(), 'Restore defaults')
+        self.Bind(wx.EVT_MENU, self.OnReinit, self.reinit)
 
         self.SetMenuBar ( menubar )
 
@@ -47,31 +56,69 @@ class MainFrame(wx.Frame):
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self.notebook, 1, wx.ALL|wx.EXPAND, 5)
         panel.SetSizer(sizer)
-        self.notebook.debug=False
 
         self.notebook.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.OnPageChanged)
         self.Layout()
         self.SetSize(1535,570)
         self.Move(wx.Point(-8,0))
         self.Maximize(False)
- 
+
+        self.Bind(wx.EVT_CLOSE, self.OnClose)
+
+        self.OnInit()
+
         self.Show()
 
         
     def OnSetDebug(self, event):
         self.SetDebug.Check(self.SetDebug.IsChecked())
-        self.notebook.debug = self.SetDebug.IsChecked()
-        print(self.notebook.debug)
+        config['Window']['Debug'] = str(self.SetDebug.IsChecked())
+        if config['Window']['Debug']:
+            print('Debug Mode On')
             
         return 0
 
-    def OnReinit(self, event):
-        for child in self.notebook.GetChildren()[0].GetChildren():
-            if 'sv_' in child.Name:
-                print(child.GetName())
-        print(self.notebook.GetPageText(0))
+    def OnInit(self):
+        config.read("config.ini")
+        for page in self.notebook.GetChildren():
+            for child in page.GetChildren():
+                if 'sv_' in child.GetName():
+                    if 'en' in child.GetName() or 'cb' in child.GetName():
+                        child.SetValue(config[page.__class__.__name__].getboolean(child.GetName()))
+                    else:
+                        child.SetValue(config[page.__class__.__name__][child.GetName()])
+            self.notebook.GetChildren()[0].SetSizers(True)
+            self.notebook.GetChildren()[1].DrawVgsVd(True)
+            self.notebook.GetChildren()[1].DrawVgsVdSat(True)
+            self.notebook.GetChildren()[1].DrawIspecDef(True)
         return 0
-		
+
+    def OnReinit(self, event):
+        config.read("defaults.ini")
+        for page in self.notebook.GetChildren():
+            for child in page.GetChildren():
+                if 'sv_' in child.GetName():
+                    if 'en' in child.GetName() or 'cb' in child.GetName():
+                        child.SetValue(config[page.__class__.__name__].getboolean(child.GetName()))
+                    else:
+                        child.SetValue(config[page.__class__.__name__][child.GetName()])
+            self.notebook.GetChildren()[0].SetSizers(True)
+            self.notebook.GetChildren()[1].DrawVgsVd(True)
+            self.notebook.GetChildren()[1].DrawVgsVdSat(True)
+            self.notebook.GetChildren()[1].DrawIspecDef(True)
+        return 0
+    
+    def OnClose(self, event):
+        for page in self.notebook.GetChildren():
+            config[page.__class__.__name__]={}
+            for child in page.GetChildren():
+                if 'sv_' in child.GetName():
+                    config[page.__class__.__name__][child.GetName()]=str(child.GetValue())
+        
+        with open('config.ini', 'w') as configfile:
+            config.write(configfile)
+            
+        event.Skip()
 
     def OnPageChanged(self, event):
         match event.GetSelection():
