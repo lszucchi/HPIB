@@ -82,7 +82,7 @@ class HP:
                 path = f"{path}/{self.term}-{datetime.datetime.now().strftime('%y%m%d %H%M%S')}.csv"
         except:
             return "Invalid Path"
-        try: df.to_csv(path)
+        try: df.to_csv(path, float_format='%.5E')
         except: return "Unable to write CSV"
         
         return path
@@ -149,12 +149,12 @@ class HP:
         self.save_list(['VG', 'IG', 'ID', 'IS'])
         self.beep()
         
-        if sat or (np.abs(VgStop)-np.abs(VdValue)<0.5):
+        if sat:
                     self.term='IdxVgs Sat'
         else:
                     self.term='IdxVgs'
                     
-        print("Set " + self.term)
+        print(f"Set {self.term}")
         print(f" Vg=({VgStart}, {VgStop}, {VgStep}), Vd={VdValue}, Ilim={Comp}")
         
         return 0
@@ -190,7 +190,7 @@ class HP:
         
         self.term='IdxVds'
         
-        print("Set " + self.term)
+        print(f"Set {self.term}")
         print(f"Vd=({VdStart}, {VdStop}, {VdStep}), Vg=({VgStart}, {VgStop}, {VgStep}), Ilim={Comp}")
         
         return 0
@@ -226,7 +226,7 @@ class HP:
 
         self.term='VpxVgs'
         
-        print("Set " + self.term)
+        print(f"Set {self.term}")
         print(f"Is={Is}, Vg=({VgStart}, {VgStop}, {VgStep}), Vlim={Comp}")
         
         return 0
@@ -265,7 +265,7 @@ class HP:
 
         self.term='Ex_Is'
         
-        print("Set " + self.term)
+        print(f"Set {self.term}")
         print(f" Vs=({VsStart}, {VsStop}, {VsStep}), Vg=({VgStart}, {VgStop}, {VgStep}), Vd={VdValue}")
         
         return 0
@@ -293,7 +293,7 @@ class HP:
 
         self.term="Diode"
         
-        print("Set " + self.term)
+        print(f"Set {self.term}")
         print(f"Vf=({VfStart}, {VfStop})")
 
         return 0
@@ -315,7 +315,7 @@ class HP:
 
         self.term="Diode"
         
-        print("Set " + self.term)
+        print(f"Set {self.term}")
         print(f"Vf=({VfStart}, {VfStop})")
 
         return 0
@@ -337,7 +337,7 @@ class HP:
 
         self.term='CV'
         
-        print("Set " + self.term)
+        print(f"Set {self.term}")
         print(f"V=({VStart}, {VStop}, {VStep}), Ilim={Comp})")
         
         return 0
@@ -359,7 +359,7 @@ class HP:
         
         self.term="2P"
         
-        print("Set " + self.term)
+        print(f"Set {self.term}")
         print(f"I=({IStart}, {IStop}), {Points} Points")
 
     def Set2PD(self, VStart, VStop, Points):
@@ -379,7 +379,7 @@ class HP:
         
         self.term="2PD"
         
-        print("Set " + self.term)
+        print(f"Set {self.term}")
         print(f"I=({VStart}, {VStop}), {Points} Points")
     
     def Set4P(self, IStart, IStop, Points):        
@@ -400,7 +400,7 @@ class HP:
         
         self.term="4P"
         
-        print("Set " + self.term)
+        print(f"Set {self.term}")
         print(f"I=({IStart}, {IStop}), {Points} Points")
 
         return 0
@@ -423,7 +423,7 @@ class HP:
         
         self.term="4PV"
         
-        print("Set " + self.term)
+        print(f"Set {self.term}")
         print(f"Vsource=({VStart}, {VStop}), {Points} Points")
         
         return 0

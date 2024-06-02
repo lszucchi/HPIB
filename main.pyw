@@ -36,13 +36,15 @@ class MainFrame(wx.Frame):
         
         menubar.Append(fileMenu, "Tools")
         
-        if not os.path.isfile('config.ini'):
+        try:
+            config.read("config.ini")
+        except:
             config['Window']={}
             config['Window']['Debug']='False'
             config['Window']['Margin']='10'
             config['Window']['SMUMY']='40'
             config['Window']['SMUMX']='90'
-            config['Window']['PhotoMaxSizeX']='550'
+            config['Window']['PhotoMaxSizeX']='610'
 
         self.SetDebug = fileMenu.AppendCheckItem(wx.NewIdRef(), 'Enable Debug')
         self.SetDebug.Check(config['Window'].getboolean('Debug'))
@@ -59,27 +61,12 @@ class MainFrame(wx.Frame):
 
         self.notebook.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.OnPageChanged)
         self.Layout()
-        self.SetSize(1535,570)
+        self.SetSize(1455,570)
         self.Move(wx.Point(-8,0))
         self.Maximize(False)
 
         self.Bind(wx.EVT_CLOSE, self.OnClose)
 
-        self.OnInit()
-
-        self.Show()
-
-        
-    def OnSetDebug(self, event):
-        self.SetDebug.Check(self.SetDebug.IsChecked())
-        config['Window']['Debug'] = str(self.SetDebug.IsChecked())
-        if config['Window']['Debug']:
-            print('Debug Mode On')
-            
-        return 0
-
-    def OnInit(self):
-        config.read("config.ini")
         for page in self.notebook.GetChildren():
             for child in page.GetChildren():
                 if 'sv_' in child.GetName():
@@ -91,6 +78,16 @@ class MainFrame(wx.Frame):
             self.notebook.GetChildren()[1].DrawVgsVd(True)
             self.notebook.GetChildren()[1].DrawVgsVdSat(True)
             self.notebook.GetChildren()[1].DrawIspecDef(True)
+
+        self.Show()
+
+        
+    def OnSetDebug(self, event):
+        self.SetDebug.Check(self.SetDebug.IsChecked())
+        config['Window']['Debug'] = str(self.SetDebug.IsChecked())
+        if config['Window']['Debug']:
+            print('Debug Mode On')
+            
         return 0
 
     def OnReinit(self, event):
@@ -123,16 +120,16 @@ class MainFrame(wx.Frame):
     def OnPageChanged(self, event):
         match event.GetSelection():
             case 0:
-                self.SetSize(1535,570)
+                self.SetSize(1455,570)
             case 1:
                 self.Maximize(False)
-                self.SetSize(1570,570)
+                self.SetSize(1435,570)
                 self.Move(wx.Point(-8,0))
             case 2:
                 self.Maximize(False)
-                self.SetSize(980,570)
+                self.SetSize(1040,570)
             case 3:
-                self.SetSize(980,570)
+                self.SetSize(1040,570)
                 
         event.Skip()
  

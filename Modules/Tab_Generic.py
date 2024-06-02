@@ -52,7 +52,7 @@ class GenericTab(wx.Panel):
  
         #========  Config Box ========#
         # BoxN = [[PosX, PoxY],[SizeX,SizeY]]
-        self.Box1=[[X, Y],[225,280]]
+        self.Box1=[[X, Y],[200,280]]
         self.Bx1=wx.StaticBox(self,label='Port and SM Config', pos=(self.Box1[0][0], self.Box1[0][1]),size=(self.Box1[1][0], self.Box1[1][1]))
         self.Sizer1=wx.BoxSizer()
         self.Sizer2=wx.BoxSizer()
@@ -99,12 +99,12 @@ class GenericTab(wx.Panel):
         self.COMEnable.Bind(wx.EVT_CHECKBOX, ToggleSizer)
 
         #Send HP config
-        self.Config_Btn = wx.Button(self, label='Send HP\nConfig', pos=(self.Box1[0][0]+110, cbpos[1]+10-40), size=(80, 40))
+        self.Config_Btn = wx.Button(self, label='Send HP\nConfig', pos=(self.Box1[0][0]+100, cbpos[1]+10-40), size=(80, 40))
         self.Sizer2.Add(self.Config_Btn)
         self.Config_Btn.Bind(wx.EVT_BUTTON, self.OnConfig)
 
         #Start button
-        self.Btn_Start = wx.Button(self, label='Start', pos=(self.Box1[0][0]+100, cbpos[1]+10+2*int(config['Window']['Margin'])),size=(100,60))
+        self.Btn_Start = wx.Button(self, label='Start', pos=(self.Box1[0][0]+90, cbpos[1]+10+2*int(config['Window']['Margin'])),size=(100,60))
         self.Sizer2.Add(self.Btn_Start)
         self.Btn_Start.Bind(wx.EVT_BUTTON, self.OnButton)
         
@@ -115,47 +115,25 @@ class GenericTab(wx.Panel):
 
     def DrawSMUConfig(self, X, Y):
         
-        self.Box1a=[[X, Y],[225,93]]
+        self.Box1a=[[X, Y],[200,93]]
         self.Bx1a=wx.StaticBox(self,label='SMU Config', pos=(self.Box1a[0][0], self.Box1a[0][1]),size=(self.Box1a[1][0], self.Box1a[1][1]))
         self.Sizer1a=wx.StaticBoxSizer(self.Bx1a)
 
-        self.SBoxTx = wx.StaticText(self, label='S:', pos=(X+1*int(config['Window']['Margin']), Y+2*int(config['Window']['Margin'])+3))
-        self.SBox  = wx.ComboBox(self, value='SMU1', pos=(X+3*int(config['Window']['Margin'])+5, Y+2*int(config['Window']['Margin'])), size=(60,40), choices=['SMU1','SMU2','SMU3','SMU4'], name='sv_SBox')
+        self.SBoxTx = wx.StaticText(self, label='S:', pos=(X+int(config['Window']['Margin']), Y+2*int(config['Window']['Margin'])+3))
+        self.SBox  = wx.ComboBox(self, value='SMU1', pos=(X+2*int(config['Window']['Margin'])+5, Y+2*int(config['Window']['Margin'])), size=(60,40), choices=['SMU1','SMU2','SMU3','SMU4'], name='sv_SBox')
         self.Sizer1a.Add(self.SBox)
 
         self.DBoxTx  = wx.StaticText(self, label='D:', pos=(X+2*int(config['Window']['Margin'])+int(config['Window']['SMUMX']), Y+2*int(config['Window']['Margin'])+3))
-        self.DBox = wx.ComboBox(self, value='SMU2', pos=(X+4*int(config['Window']['Margin'])+5+int(config['Window']['SMUMX']), Y+2*int(config['Window']['Margin'])), size=(60,40), choices=['SMU1','SMU2','SMU3','SMU4'], name='sv_DBox')
+        self.DBox = wx.ComboBox(self, value='SMU2', pos=(X+3*int(config['Window']['Margin'])+5+int(config['Window']['SMUMX']), Y+2*int(config['Window']['Margin'])), size=(60,40), choices=['SMU1','SMU2','SMU3','SMU4'], name='sv_DBox')
         self.Sizer1a.Add(self.DBox)
 
-        self.BBoxTx = wx.StaticText(self, label='B:', pos=(X+1*int(config['Window']['Margin']), Y+2*int(config['Window']['Margin'])+3+int(config['Window']['SMUMY'])))
-        self.BBox = wx.ComboBox(self, value='SMU4', pos=(X+3*int(config['Window']['Margin'])+5, Y+2*int(config['Window']['Margin'])+int(config['Window']['SMUMY'])), size=(60,40), choices=['SMU1','SMU2','SMU3','SMU4'], name='sv_BBox')
+        self.BBoxTx = wx.StaticText(self, label='B:', pos=(X+int(config['Window']['Margin']), Y+2*int(config['Window']['Margin'])+3+int(config['Window']['SMUMY'])))
+        self.BBox = wx.ComboBox(self, value='SMU4', pos=(X+2*int(config['Window']['Margin'])+5, Y+2*int(config['Window']['Margin'])+int(config['Window']['SMUMY'])), size=(60,40), choices=['SMU1','SMU2','SMU3','SMU4'], name='sv_BBox')
         self.Sizer1a.Add(self.BBox)
 
         self.GBoxTx = wx.StaticText(self, label='G:', pos=(X+2*int(config['Window']['Margin'])+int(config['Window']['SMUMX']),  Y+2*int(config['Window']['Margin'])+3+int(config['Window']['SMUMY'])))
-        self.GBox = wx.ComboBox(self, value='SMU3', pos=(X+4*int(config['Window']['Margin'])+5+int(config['Window']['SMUMX']), Y+2*int(config['Window']['Margin'])+int(config['Window']['SMUMY'])), size=(60,40), choices=['SMU1','SMU2','SMU3','SMU4'], name='sv_GBox')
+        self.GBox = wx.ComboBox(self, value='SMU3', pos=(X+3*int(config['Window']['Margin'])+5+int(config['Window']['SMUMX']), Y+2*int(config['Window']['Margin'])+int(config['Window']['SMUMY'])), size=(60,40), choices=['SMU1','SMU2','SMU3','SMU4'], name='sv_GBox')
         self.Sizer1a.Add(self.GBox)
-        
-    def Measure(self):
-        if self.HP.term == '':
-
-            self.ShowMessage(f'Error: No config sent', True)
-            
-        self.Progress.AppendText('\nMeasurement started!\n...')
-        try:
-            self.HP.SetIntTime(self.IntTimeBox.GetValue())
-            ReturnFlag = self.HP.SingleSave(self.SaveFilePath.GetValue(), timeout=180)
-        except:
-            ReturnFlag="No instrument\nSend config to open connection"
-            if self.ShowMessage(f'Error: {ReturnFlag}', True): raise Exception(ReturnFlag)
-
-        self.Progress.AppendText('\nMeasurement Done!')
-        
-        if os.path.isfile(ReturnFlag):
-            self.img_path.SetLabel(ReturnFlag)
-            Plot(self, ReturnFlag)
-            return ReturnFlag
-        
-        if self.ShowMessage(f'Error: {ReturnFlag}', True): raise Exception(ReturnFlag)
 
     def Stop(self, event):
         self.Stop_flag = True
@@ -227,11 +205,17 @@ class GenericTab(wx.Panel):
                 NewW = int(config['Window']['PhotoMaxSizeX'])
                 NewH = int(config['Window']['PhotoMaxSizeX']) * H / W
             else:
-                NewH = PhotoMaxSizeY # type: ignore
-                NewW = PhotoMaxSizeY * W / H # type: ignore
+                NewH = int(config['Window']['PhotoMaxSizeX'])
+                NewW = int(config['Window']['PhotoMaxSizeX']) * W / H
             img = img.Scale(int(NewW),int(NewH))
             self.imageCtrl.SetBitmap(wx.Bitmap(img))
             self.Refresh()                  
             return 0
+        
+    def CreateFonts(self):
+        self.SmFont=wx.Font(12, wx.DEFAULT, wx.NORMAL, wx.NORMAL, False)
+        self.MdFont=wx.Font(15, wx.DEFAULT, wx.NORMAL, wx.NORMAL, False)
+        self.MdSize=(70,30)
+        self.LgFont=wx.Font(17, wx.DEFAULT, wx.NORMAL, wx.NORMAL, False)
         
     

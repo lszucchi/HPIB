@@ -10,6 +10,8 @@ class FourPoint(GenericTab):
         self.DrawSaveBox(10, 0, 255)
 
         self.DrawConfigBox(10, 80)
+
+        self.CreateFonts()
         
         #SMU config
     
@@ -45,19 +47,19 @@ class FourPoint(GenericTab):
         self.IStopTx = wx.StaticText(self, label='I Stop', pos=(BoxVgs[0][0]+2*int(config['Window']['Margin']), BoxVgs[0][1]+30+70))
         self.IStopTx.SetFont(wx.Font(12, wx.DEFAULT, wx.NORMAL, wx.NORMAL, False))
         self.IStop= wx.TextCtrl(self, value='1m', pos=(BoxVgs[0][0]+int(config['Window']['Margin'])+10, BoxVgs[0][1]+50+70), size=(80,36), style=wx.TE_CENTRE, name='sv_IStop')
-        self.IStop.SetFont(wx.Font(17, wx.DEFAULT, wx.NORMAL, wx.NORMAL, False))
+        self.IStop.SetFont(self.LgFont)
         self.Sizer2.Add(self.IStop)
 
         self.IStartTx = wx.StaticText(self, label='I Start', pos=(BoxVgs[0][0]+2*int(config['Window']['Margin']), BoxVgs[0][1]+30))
         self.IStartTx.SetFont(wx.Font(12, wx.DEFAULT, wx.NORMAL, wx.NORMAL, False))
         self.IStart= wx.TextCtrl(self, value='-1m', pos=(BoxVgs[0][0]+int(config['Window']['Margin'])+10, BoxVgs[0][1]+50), size=(80,35), style=wx.TE_CENTRE, name='sv_IStart')
-        self.IStart.SetFont(wx.Font(17, wx.DEFAULT, wx.NORMAL, wx.NORMAL, False))
+        self.IStart.SetFont(self.LgFont)
         self.Sizer2.Add(self.IStart)
 
         self.IStepTx = wx.StaticText(self, label='I Points', pos=(BoxVgs[0][0]+2*int(config['Window']['Margin']), BoxVgs[0][1]+30+140))
         self.IStepTx.SetFont(wx.Font(12, wx.DEFAULT, wx.NORMAL, wx.NORMAL, False))
         self.IPoints= wx.SpinCtrlDouble(self, value='200', pos=(BoxVgs[0][0]+2*int(config['Window']['Margin']), BoxVgs[0][1]+50+140), min=10, max=2000, inc=10, size=(80,35), style=wx.SP_ARROW_KEYS|wx.TE_CENTRE, name='sv_IPoints')
-        self.IPoints.SetFont(wx.Font(17, wx.DEFAULT, wx.NORMAL, wx.NORMAL, False))
+        self.IPoints.SetFont(self.LgFont)
         self.Sizer2.Add(self.IPoints)
         
         ############################# Progress #############################
@@ -72,8 +74,8 @@ class FourPoint(GenericTab):
 
         #======== Image preview =========#
         img = wx.Image((int(config['Window']['PhotoMaxSizeX']),int(int(config['Window']['PhotoMaxSizeX'])*480/640)))
-        self.imageCtrl = wx.StaticBitmap(self, wx.ID_ANY, wx.Bitmap(img),pos=(385, 30), size=(int(config['Window']['PhotoMaxSizeX']),int(int(config['Window']['PhotoMaxSizeX'])*480/640)))
-        self.img_path = wx.StaticText(self, label="No measurements to show", pos=(385,10),size=(400,20))
+        self.imageCtrl = wx.StaticBitmap(self, wx.ID_ANY, wx.Bitmap(img),pos=(385, int(config['Window']['Margin'])), size=(int(config['Window']['PhotoMaxSizeX']),int(config['Window']['PhotoMaxSizeX'])*480/640))
+        self.img_path = wx.StaticText(self, label="No measurements to show", pos=(385,int(config['Window']['Margin'])),size=(400,20))
 
     def Measure(self):
         HP = HP4155("GPIB0::"+str(self.GPIBCH.GetValue()), read_termination = '\n', write_termination = '\n', timeout=None)
@@ -99,7 +101,7 @@ class FourPoint(GenericTab):
                 IStep=(ETF(self.IStop.GetValue())-ETF(self.IStart.GetValue()))/self.IPoints.GetValue()
                 self.HP.Set4P(ETF(self.IStart.GetValue()),ETF(self.IStop.GetValue()),IStep)
                 last_path=self.HP.SingleSave(Chn+1,self.SaveFilePath.GetValue(), IntTime=self.IntTimeBox.GetValue())
-                self.RefreshImg(Plot(last_path, "V", "I"))
+                self.RefreshImg(Plot(last_path, "V", "I", sizex=550))
 
         self.Progress.AppendText('End!\n')
         return 0                          

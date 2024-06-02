@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import os, csv
+px = 1/plt.rcParams['figure.dpi']
 
 Thr=10
 PointsMax=36
@@ -20,10 +21,17 @@ font = {'family': 'serif',
         'size': 16,
         }
 
-def getpd(df, trace):
-    return df[trace][df[trace].columns[0]].to_numpy()
+def getvar2(df, trace):
+    df2=pd.DataFrame(df.columns.tolist()[1:], columns=df.columns.tolist()[0])
+    try:
+        var2=df2[trace].to_numpy(dtype=float)
+        if var2[0]==var2[1]:
+            return var2[0]
+        return var2
+    except:
+        return None
 
-def Plot(df, X, Y):
+def Plot(df, X, Y, sizex=640):
 
     if isinstance(df, str):
         path=df
@@ -35,7 +43,7 @@ def Plot(df, X, Y):
     if len(Y)>2:
         return "Too many traces to plot"
     
-    fig, ax1=plt.subplots()
+    fig, ax1=plt.subplots(figsize=(sizex*px,(sizex*480/640)*px))
     plt.autoscale(tight=True)
     plt.subplots_adjust(left = 0.125,  # the left side of the subplots of the figure
                             right = 0.95,  # the right side of the subplots of the figure
@@ -50,6 +58,7 @@ def Plot(df, X, Y):
     ax1.set_xlabel(f"${X[0]}_"+'{'+X[1:]+'}$'+f" ({prefix[j]}{unit})")
 
     if Y[0][0]=='I': unit='A'
+    elif Y[0][0]=='C': unit='F'
     else: unit='V'
     
     ax1.set_ylabel(f"${Y[0][0]}_"+'{'+Y[0][1:]+'}$'+f" ({prefix[i]}{unit})", color='r')
@@ -164,7 +173,7 @@ def PlotDiode(path,draw=False):
 
     return save_path # type: ignore
 
-def PlotVgs(path,draw=False):
+def PlotVgs(path, sizex=640, draw=False):
 
     try: df=pd.read_csv(path, header=[0, 1])
     except: print("Error opening VGS\n")
@@ -172,11 +181,11 @@ def PlotVgs(path,draw=False):
     if df.columns.levels[1][0] != 'None':
         df.columns.levels[1][0] != ''
 
-    VG=getpd(df, 'VG')
-    ID=getpd(df, 'ID')
+    VG=df['VG']
+    ID=df['ID']
     
     if 'gm' not in df.columns:
-        gm=(np.diff(getpd(df,'ID').T)/np.diff(getpd(df,'VG').T)).T
+        gm=(np.diff(df['ID'].T)/np.diff(df['VG'].T)).T
         gm=np.append([gm[0]], gm)
     
         header=pd.MultiIndex.from_product([['gm'],
@@ -185,12 +194,12 @@ def PlotVgs(path,draw=False):
         df2=pd.DataFrame(data=gm, columns=header)
         df=pd.concat((df, df2), axis=1)
     
-        df.to_csv(path, index=False)
+        df.to_csv(path, index=False, float_format='%.5E')
     else:
-        gm=getpd(df, 'gm')
+        gm=df['gm']
     
     if 'dgm' not in df.columns:
-        dgm=(np.diff(getpd(df,'gm').T)/np.diff(getpd(df,'VG').T)).T
+        dgm=(np.diff(df['gm'].T)/np.diff(df['VG'].T)).T
         dgm=np.append(dgm, [dgm[-1]])
     
         header=pd.MultiIndex.from_product([['dgm'],
@@ -199,9 +208,9 @@ def PlotVgs(path,draw=False):
         df2=pd.DataFrame(data=dgm, columns=header)
         df=pd.concat((df, df2), axis=1)
     
-        df.to_csv(path, index=False)
+        df.to_csv(path, index=False, float_format='%.5E')
     else:
-        dgm=getpd(df, 'dgm')
+        dgm=df['dgm']
     
     VGfit=VG[np.argmax(gm)-2:np.argmax(gm)+3]
     IDfit=ID[np.argmax(gm)-2:np.argmax(gm)+3]
@@ -210,7 +219,7 @@ def PlotVgs(path,draw=False):
     Vth=-b/m
     fitID=m*VG[:np.argmax(gm)]+b
     
-    Plot(path, 'VG', ['ID', 'gm'])
+    Plot(path, 'VG', ['ID', 'gm'], sizex=sizex)
     
     return np.around(Vth, 3)
 
@@ -458,10 +467,11 @@ def GetConc(x, dop):
         
 def ScaleTrace(path, scaling, tracelist):
     df=pd.read_csv(path, header=[0, 1])
+    out_path="-raw".join(os.path.splitext(path))
+    df.to_csv(out_path, index=False, float_format='%.5E')
     for trace in tracelist:
         df[trace]=df[trace]*scaling
-    out_path="-scaled".join(os.path.splitext(path))
-    df.to_csv(out_path, index=False, float_format='%.5e')
+    df.to_csv(path, index=False, float_format='%.5E')
 
 ##C=[10,11,12,13,14,15,16,17,18,19,20,21]
 ##roP=np.log10([2.47610e5, 43606.3,4415.312387249216,442.0453159585842,44.4686935514397,4.582406466927884,0.527248940805391,0.08652951931265407,0.022535571622752913,0.005437594960591998, 8.48506e-4, 3.12902e-4])

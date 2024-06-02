@@ -11,6 +11,8 @@ class CVTab(GenericTab):
 
         self.DrawConfigBox(10, 80)
 
+        self.CreateFonts()
+
         #SMU config
 
         X=self.Box1[0][0]
@@ -44,19 +46,19 @@ class CVTab(GenericTab):
         self.VStopTx = wx.StaticText(self, label='V Stop', pos=(BoxVgs[0][0]+2*int(config['Window']['Margin']), BoxVgs[0][1]+30))
         self.VStopTx.SetFont(wx.Font(12, wx.DEFAULT, wx.NORMAL, wx.NORMAL, False))
         self.VStop= wx.SpinCtrlDouble(self, value=str (1), pos=(BoxVgs[0][0]+2*int(config['Window']['Margin']), BoxVgs[0][1]+50), size=(80,35), min=-100, max=100, inc=0.5,style=wx.SP_ARROW_KEYS|wx.TE_CENTRE, name='sv_VStop')
-        self.VStop.SetFont(wx.Font(17, wx.DEFAULT, wx.NORMAL, wx.NORMAL, False))
+        self.VStop.SetFont(self.LgFont)
         self.Sizer2.Add(self.VStop)
 
         self.VStartTx = wx.StaticText(self, label='V Start', pos=(BoxVgs[0][0]+2*int(config['Window']['Margin']), BoxVgs[0][1]+30+70))
         self.VStartTx.SetFont(wx.Font(12, wx.DEFAULT, wx.NORMAL, wx.NORMAL, False))
         self.VStart = wx.SpinCtrlDouble(self, value=str (-1), pos=(BoxVgs[0][0]+2*int(config['Window']['Margin']), BoxVgs[0][1]+50+70), size=(80,35), min=-100, max=100, inc=0.5, style=wx.SP_ARROW_KEYS|wx.TE_CENTRE, name='sv_VStart')
-        self.VStart.SetFont(wx.Font(17, wx.DEFAULT, wx.NORMAL, wx.NORMAL, False))
+        self.VStart.SetFont(self.LgFont)
         self.Sizer2.Add(self.VStart)
 
         self.VStepTx = wx.StaticText(self, label='V Points', pos=(BoxVgs[0][0]+2*int(config['Window']['Margin']), BoxVgs[0][1]+30+140))
         self.VStepTx.SetFont(wx.Font(12, wx.DEFAULT, wx.NORMAL, wx.NORMAL, False))
         self.VPoints= wx.SpinCtrlDouble(self, value=str (200), pos=(BoxVgs[0][0]+2*int(config['Window']['Margin']), BoxVgs[0][1]+50+140), min=10, max=2000, inc=10, size=(80,35), style=wx.SP_ARROW_KEYS|wx.TE_CENTRE, name='sv_Vpoints')
-        self.VPoints.SetFont(wx.Font(17, wx.DEFAULT, wx.NORMAL, wx.NORMAL, False))
+        self.VPoints.SetFont(self.LgFont)
         self.Sizer2.Add(self.VPoints)
 
         
@@ -73,7 +75,7 @@ class CVTab(GenericTab):
 
         #======== Image preview =========#
         img = wx.Image((int(config['Window']['PhotoMaxSizeX']),int(int(config['Window']['PhotoMaxSizeX'])*480/640)))
-        self.imageCtrl = wx.StaticBitmap(self, wx.ID_ANY, wx.Bitmap(img),pos=(385, 30), size=(int(config['Window']['PhotoMaxSizeX']),int(int(config['Window']['PhotoMaxSizeX'])*480/640)))
+        self.imageCtrl = wx.StaticBitmap(self, wx.ID_ANY, wx.Bitmap(img),pos=(385, int(config['Window']['Margin'])), size=(int(config['Window']['PhotoMaxSizeX']),int(config['Window']['PhotoMaxSizeX'])*480/640))
         self.img_path = wx.StaticText(self, label="No measurements to show", pos=(385,10),size=(400,20))
 
     def Measure(self):
@@ -85,9 +87,9 @@ class CVTab(GenericTab):
             if self.ShowMessage(f'Error: {ReturnFlag}', True): raise Exception(ReturnFlag)
         
         if os.path.isfile(ReturnFlag):
-            ScaleTrace(ReturnFlag, 10**(3-self.ScaleBox.GetSelection()), [value for value in ['C', 'S'] if value in self.data_variables])
+            ScaleTrace(ReturnFlag, 10**(-9-self.ScaleBox.GetSelection()), [value for value in ['C', 'S'] if value in self.data_variables])
             self.img_path.SetLabel(ReturnFlag)
-            self.RefreshImg(Plot(ReturnFlag, "Vf", [value for value in ['C', 'S'] if value in self.data_variables]))
+            self.RefreshImg(Plot(ReturnFlag, "Vf", [value for value in ['C', 'S'] if value in self.data_variables], sizex=550))
             return ReturnFlag
         
         if self.ShowMessage(f'Error: {ReturnFlag}', True): raise Exception(ReturnFlag)
