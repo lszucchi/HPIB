@@ -38,6 +38,18 @@ class MainFrame(wx.Frame):
         
         try:
             config.read("config.ini")
+            self.SetDebug.Check(config['Window'].getboolean('Debug'))
+            for page in self.notebook.GetChildren():
+                for child in page.GetChildren():
+                    if 'sv_' in child.GetName():
+                        if 'en' in child.GetName() or 'cb' in child.GetName():
+                            child.SetValue(config[page.__class__.__name__].getboolean(child.GetName()))
+                        else:
+                            child.SetValue(config[page.__class__.__name__][child.GetName()])
+            self.notebook.GetChildren()[0].SetSizers(True)
+            self.notebook.GetChildren()[1].DrawVgsVd(True)
+            self.notebook.GetChildren()[1].DrawVgsVdSat(True)
+            self.notebook.GetChildren()[1].DrawIspecDef(True)
         except:
             config['Window']={}
             config['Window']['Debug']='False'
@@ -47,7 +59,6 @@ class MainFrame(wx.Frame):
             config['Window']['PhotoMaxSizeX']='610'
 
         self.SetDebug = fileMenu.AppendCheckItem(wx.NewIdRef(), 'Enable Debug')
-        self.SetDebug.Check(config['Window'].getboolean('Debug'))
         self.Bind (wx.EVT_MENU, self.OnSetDebug, self.SetDebug)
         self.reinit = fileMenu.Append(wx.NewIdRef(), 'Restore defaults')
         self.Bind(wx.EVT_MENU, self.OnReinit, self.reinit)
@@ -66,18 +77,6 @@ class MainFrame(wx.Frame):
         self.Maximize(False)
 
         self.Bind(wx.EVT_CLOSE, self.OnClose)
-
-        for page in self.notebook.GetChildren():
-            for child in page.GetChildren():
-                if 'sv_' in child.GetName():
-                    if 'en' in child.GetName() or 'cb' in child.GetName():
-                        child.SetValue(config[page.__class__.__name__].getboolean(child.GetName()))
-                    else:
-                        child.SetValue(config[page.__class__.__name__][child.GetName()])
-            self.notebook.GetChildren()[0].SetSizers(True)
-            self.notebook.GetChildren()[1].DrawVgsVd(True)
-            self.notebook.GetChildren()[1].DrawVgsVdSat(True)
-            self.notebook.GetChildren()[1].DrawIspecDef(True)
 
         self.Show()
 
