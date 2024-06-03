@@ -44,29 +44,29 @@ class IVTab(GenericTab):
 
         ### Draw VGS SWEEP
         self.VdVgsTx = wx.StaticText(self, label='Vd (mV)', pos=(BoxVgs[0][0]+int(config['Window']['Margin']), BoxVgs[0][1]+40))
-        self.VdVgs = wx.SpinCtrlDouble(self, value='50', pos=(BoxVgs[0][0]+int(config['Window']['Margin']), BoxVgs[0][1]+60), size=self.MdSize, min=-1000, max=1000, inc=5, style=wx.SP_ARROW_KEYS, name='sv_VdVgs')
+        self.VdVgs = wx.SpinCtrlDouble(self, value='50', min=-1000, max=1000, pos=(BoxVgs[0][0]+int(config['Window']['Margin']), BoxVgs[0][1]+60), size=self.MdSize, inc=5, style=wx.SP_ARROW_KEYS, name='sv_VdVgs')
         self.VdVgs.SetFont(self.MdFont)
         #self.Sizer2.Add(self.VdVgs)
 
         ### Draw VGS sat SWEEP
         self.VdVgsSatTx = wx.StaticText(self, label='Vd Sat', pos=(BoxVgs[0][0]+int(config['Window']['Margin'])+int(config['Window']['SMUMX']), BoxVgs[0][1]+40))
-        self.VdVgsSat= wx.SpinCtrlDouble(self, value='1', pos=(BoxVgs[0][0]+int(config['Window']['Margin'])+int(config['Window']['SMUMX']), BoxVgs[0][1]+60), size=self.MdSize, inc=0.1, style=wx.SP_ARROW_KEYS, name='sv_VdVgsSat')
+        self.VdVgsSat= wx.SpinCtrlDouble(self, value='1', min=-100, max=100, pos=(BoxVgs[0][0]+int(config['Window']['Margin'])+int(config['Window']['SMUMX']), BoxVgs[0][1]+60), size=self.MdSize, inc=0.1, style=wx.SP_ARROW_KEYS, name='sv_VdVgsSat')
         self.VdVgsSat.SetFont(self.MdFont)
         #self.Sizer2.Add(self.VdVgsSat)
 
         # Vg Step
         self.VgVgsStartTx = wx.StaticText(self, label='Vg Start', pos=(BoxVgs[0][0]+int(config['Window']['Margin']), BoxVgs[0][1]+160))
-        self.VgVgsStart = wx.SpinCtrlDouble(self, value='0', pos=(BoxVgs[0][0]+int(config['Window']['Margin']), BoxVgs[0][1]+180), size=self.MdSize, inc=0.1, style=wx.SP_ARROW_KEYS, name='sv_VgVgsStart')
+        self.VgVgsStart = wx.SpinCtrlDouble(self, value='0', min=-100, max=100, pos=(BoxVgs[0][0]+int(config['Window']['Margin']), BoxVgs[0][1]+180), size=self.MdSize, inc=0.1, style=wx.SP_ARROW_KEYS, name='sv_VgVgsStart')
         self.VgVgsStart.SetFont(self.MdFont)
         self.Sizer2.Add(self.VgVgsStart)
 
         self.VgVgsStopTx = wx.StaticText(self, label='Vg Stop', pos=(BoxVgs[0][0]+int(config['Window']['Margin'])+int(config['Window']['SMUMX']), BoxVgs[0][1]+160))
-        self.VgVgsStop = wx.SpinCtrlDouble(self, value='1', pos=(BoxVgs[0][0]+int(config['Window']['Margin'])+int(config['Window']['SMUMX']), BoxVgs[0][1]+180), size=self.MdSize, inc=0.1, style=wx.SP_ARROW_KEYS, name='sv_VgVgsStep')
+        self.VgVgsStop = wx.SpinCtrlDouble(self, value='1', min=-100, max=100, pos=(BoxVgs[0][0]+int(config['Window']['Margin'])+int(config['Window']['SMUMX']), BoxVgs[0][1]+180), size=self.MdSize, inc=0.1, style=wx.SP_ARROW_KEYS, name='sv_VgVgsStep')
         self.VgVgsStop.SetFont(self.MdFont)
         self.Sizer2.Add(self.VgVgsStop)
 
         self.VgVgsStepTx = wx.StaticText(self, label='Vg Step', pos=(BoxVgs[0][0]+int(config['Window']['Margin']), BoxVgs[0][1]+210))
-        self.VgVgsStep = wx.SpinCtrlDouble(self, value='0.05', pos=(BoxVgs[0][0]+int(config['Window']['Margin']), BoxVgs[0][1]+230), size=(80, 30), inc=0.01, style=wx.SP_ARROW_KEYS, name='sv_VgVgsStop')
+        self.VgVgsStep = wx.SpinCtrlDouble(self, value='0.05', min=-100, max=100, pos=(BoxVgs[0][0]+int(config['Window']['Margin']), BoxVgs[0][1]+230), size=(80, 30), inc=0.01, style=wx.SP_ARROW_KEYS, name='sv_VgVgsStop')
         self.VgVgsStep.SetFont(self.MdFont)
         self.Sizer2.Add(self.VgVgsStep)
 
@@ -89,17 +89,17 @@ class IVTab(GenericTab):
 
         #Vd Sweep
         self.VdVdsStartTx = wx.StaticText(self, label='Vd Start', pos=(BoxVds[0][0]+int(config['Window']['Margin']), BoxVds[0][1]+40))
-        self.VdVdsStart = wx.SpinCtrlDouble(self, value='0', pos=(BoxVds[0][0]+int(config['Window']['Margin']), BoxVds[0][1]+60), size=self.MdSize, inc=0.1, style=wx.SP_ARROW_KEYS, name='sv_VdVdsStart')
+        self.VdVdsStart = wx.SpinCtrlDouble(self, value='0', min=-100, max=100, pos=(BoxVds[0][0]+int(config['Window']['Margin']), BoxVds[0][1]+60), size=self.MdSize, inc=0.1, style=wx.SP_ARROW_KEYS, name='sv_VdVdsStart')
         self.VdVdsStart.SetFont(self.MdFont)
         self.Sizer3.Add(self.VdVdsStart)
 
         self.VdVdsStopTx = wx.StaticText(self, label='Vd Stop', pos=(BoxVds[0][0]+int(config['Window']['Margin'])+int(config['Window']['SMUMX']), BoxVds[0][1]+40))
-        self.VdVdsStop = wx.SpinCtrlDouble(self, value='1', pos=(BoxVds[0][0]+int(config['Window']['Margin'])+int(config['Window']['SMUMX']), BoxVds[0][1]+60), size=self.MdSize, inc=0.1, style=wx.SP_ARROW_KEYS, name='sv_VdVdsStep')
+        self.VdVdsStop = wx.SpinCtrlDouble(self, value='1', min=-100, max=100, pos=(BoxVds[0][0]+int(config['Window']['Margin'])+int(config['Window']['SMUMX']), BoxVds[0][1]+60), size=self.MdSize, inc=0.1, style=wx.SP_ARROW_KEYS, name='sv_VdVdsStep')
         self.VdVdsStop.SetFont(self.MdFont)
         self.Sizer3.Add(self.VdVdsStop)
 
         self.VdVdsStepTx = wx.StaticText(self, label='Vd Step', pos=(BoxVds[0][0]+int(config['Window']['Margin']), BoxVds[0][1]+50+int(config['Window']['SMUMY'])))
-        self.VdVdsStep = wx.SpinCtrlDouble(self, value='0.05', pos=(BoxVds[0][0]+int(config['Window']['Margin']), BoxVds[0][1]+70+int(config['Window']['SMUMY'])), size=(80, 30), inc=0.01, style=wx.SP_ARROW_KEYS, name='sv_VdVdsStop')
+        self.VdVdsStep = wx.SpinCtrlDouble(self, value='0.05', min=-100, max=100, pos=(BoxVds[0][0]+int(config['Window']['Margin']), BoxVds[0][1]+70+int(config['Window']['SMUMY'])), size=(80, 30), inc=0.01, style=wx.SP_ARROW_KEYS, name='sv_VdVdsStop')
         self.VdVdsStep.SetFont(self.MdFont)
         self.Sizer3.Add(self.VdVdsStep)
 
@@ -108,17 +108,17 @@ class IVTab(GenericTab):
 
         # Vg Step
         self.VgVdsStartTx = wx.StaticText(self, label='Vg Start', pos=(BoxVds[0][0]+int(config['Window']['Margin']), BoxVds[0][1]+160))
-        self.VgVdsStart = wx.SpinCtrlDouble(self, value='0', pos=(BoxVds[0][0]+int(config['Window']['Margin']), BoxVds[0][1]+180), size=self.MdSize, inc=0.1, style=wx.SP_ARROW_KEYS, name='sv_VgVdsStart')
+        self.VgVdsStart = wx.SpinCtrlDouble(self, value='0', min=-100, max=100, pos=(BoxVds[0][0]+int(config['Window']['Margin']), BoxVds[0][1]+180), size=self.MdSize, inc=0.1, style=wx.SP_ARROW_KEYS, name='sv_VgVdsStart')
         self.VgVdsStart.SetFont(self.MdFont)
         self.Sizer3.Add(self.VgVdsStart)
 
         self.VgVdsStopTx = wx.StaticText(self, label='Vg Stop', pos=(BoxVds[0][0]+int(config['Window']['Margin'])+int(config['Window']['SMUMX']), BoxVds[0][1]+160))
-        self.VgVdsStop = wx.SpinCtrlDouble(self, value='1', pos=(BoxVds[0][0]+int(config['Window']['Margin'])+int(config['Window']['SMUMX']), BoxVds[0][1]+180), size=self.MdSize, inc=0.1, style=wx.SP_ARROW_KEYS, name='sv_VgVdsStep')
+        self.VgVdsStop = wx.SpinCtrlDouble(self, value='1', min=-100, max=100, pos=(BoxVds[0][0]+int(config['Window']['Margin'])+int(config['Window']['SMUMX']), BoxVds[0][1]+180), size=self.MdSize, inc=0.1, style=wx.SP_ARROW_KEYS, name='sv_VgVdsStep')
         self.VgVdsStop.SetFont(self.MdFont)
         self.Sizer3.Add(self.VgVdsStop)
 
         self.VgVdsStepTx = wx.StaticText(self, label='Vg Step', pos=(BoxVds[0][0]+int(config['Window']['Margin']), BoxVds[0][1]+210))
-        self.VgVdsStep = wx.SpinCtrlDouble(self, value='0.2', pos=(BoxVds[0][0]+int(config['Window']['Margin']), BoxVds[0][1]+230), size=(80, 30), inc=0.1, style=wx.SP_ARROW_KEYS, name='sv_VgVdsStop')
+        self.VgVdsStep = wx.SpinCtrlDouble(self, value='0.2', min=-100, max=100, pos=(BoxVds[0][0]+int(config['Window']['Margin']), BoxVds[0][1]+230), size=(80, 30), inc=0.1, style=wx.SP_ARROW_KEYS, name='sv_VgVdsStop')
         self.VgVdsStep.SetFont(self.MdFont)
         self.Sizer3.Add(self.VgVdsStep)
 
@@ -155,17 +155,17 @@ class IVTab(GenericTab):
 
         # Vg Step
         self.VgVpStartTx = wx.StaticText(self, label='Vg Start', pos=(BoxVp[0][0]+int(config['Window']['Margin']), BoxVp[0][1]+160))
-        self.VgVpStart = wx.SpinCtrlDouble(self, value='0', pos=(BoxVp[0][0]+int(config['Window']['Margin']), BoxVp[0][1]+180), size=self.MdSize, inc=0.1, style=wx.SP_ARROW_KEYS, name='sv_VgVpStart')
+        self.VgVpStart = wx.SpinCtrlDouble(self, value='0', min=-100, max=100, pos=(BoxVp[0][0]+int(config['Window']['Margin']), BoxVp[0][1]+180), size=self.MdSize, inc=0.1, style=wx.SP_ARROW_KEYS, name='sv_VgVpStart')
         self.VgVpStart.SetFont(self.MdFont)
         self.Sizer4.Add(self.VgVpStart)
 
         self.VgVpStopTx = wx.StaticText(self, label='Vg Stop', pos=(BoxVp[0][0]+int(config['Window']['Margin'])+int(config['Window']['SMUMX']), BoxVp[0][1]+160))
-        self.VgVpStop = wx.SpinCtrlDouble(self, value='1', pos=(BoxVp[0][0]+int(config['Window']['Margin'])+int(config['Window']['SMUMX']), BoxVp[0][1]+180), size=self.MdSize, inc=0.1, style=wx.SP_ARROW_KEYS, name='sv_VgVpStep')
+        self.VgVpStop = wx.SpinCtrlDouble(self, value='1', min=-100, max=100, pos=(BoxVp[0][0]+int(config['Window']['Margin'])+int(config['Window']['SMUMX']), BoxVp[0][1]+180), size=self.MdSize, inc=0.1, style=wx.SP_ARROW_KEYS, name='sv_VgVpStep')
         self.VgVpStop.SetFont(self.MdFont)
         self.Sizer4.Add(self.VgVpStop)
 
         self.VgVpStepTx = wx.StaticText(self, label='Vg Step', pos=(BoxVp[0][0]+int(config['Window']['Margin']), BoxVp[0][1]+220))
-        self.VgVpStep = wx.SpinCtrlDouble(self, value='0.05', pos=(BoxVp[0][0]+int(config['Window']['Margin']), BoxVp[0][1]+240), size=(80, 30), inc=0.01, style=wx.SP_ARROW_KEYS, name='sv_VgVpstop')
+        self.VgVpStep = wx.SpinCtrlDouble(self, value='0.05', min=-100, max=100, pos=(BoxVp[0][0]+int(config['Window']['Margin']), BoxVp[0][1]+240), size=(80, 30), inc=0.01, style=wx.SP_ARROW_KEYS, name='sv_VgVpstop')
         self.VgVpStep.SetFont(self.MdFont)
         self.Sizer4.Add(self.VgVpStep)
 
