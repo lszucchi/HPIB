@@ -36,6 +36,18 @@ class MainFrame(wx.Frame):
         
         menubar.Append(fileMenu, "Tools")
         
+        self.SetDebug = fileMenu.AppendCheckItem(wx.NewIdRef(), 'Enable Debug')
+        self.Bind (wx.EVT_MENU, self.OnSetDebug, self.SetDebug)
+        self.reinit = fileMenu.Append(wx.NewIdRef(), 'Restore defaults')
+        self.Bind(wx.EVT_MENU, self.OnReinit, self.reinit)
+
+        self.SetMenuBar ( menubar )
+
+        self.notebook = MainNotebook(panel)
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(self.notebook, 1, wx.ALL|wx.EXPAND, 5)
+        panel.SetSizer(sizer)
+
         try:
             config.read("config.ini")
             self.SetDebug.Check(config['Window'].getboolean('Debug'))
@@ -57,18 +69,6 @@ class MainFrame(wx.Frame):
             config['Window']['SMUMY']='40'
             config['Window']['SMUMX']='90'
             config['Window']['PhotoMaxSizeX']='610'
-
-        self.SetDebug = fileMenu.AppendCheckItem(wx.NewIdRef(), 'Enable Debug')
-        self.Bind (wx.EVT_MENU, self.OnSetDebug, self.SetDebug)
-        self.reinit = fileMenu.Append(wx.NewIdRef(), 'Restore defaults')
-        self.Bind(wx.EVT_MENU, self.OnReinit, self.reinit)
-
-        self.SetMenuBar ( menubar )
-
-        self.notebook = MainNotebook(panel)
-        sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(self.notebook, 1, wx.ALL|wx.EXPAND, 5)
-        panel.SetSizer(sizer)
 
         self.notebook.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.OnPageChanged)
         self.Layout()
