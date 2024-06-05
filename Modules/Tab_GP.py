@@ -373,9 +373,9 @@ class General(GenericTab):
 
         self.HP.save_list(data_variables)
 
-
-        for function in self.ufunc.GetValue().split(','):
-            self.HP.UFUNC(function.strip(' '))
+        if self.ufunc.GetValue():
+            for function in self.ufunc.GetValue().split(','):
+                self.HP.UFUNC(function.strip(' '))
         
         if config['Window'].getboolean('Debug'):
             print("\nTraces: ["+','.join(data_variables)+']')
@@ -390,6 +390,7 @@ class General(GenericTab):
         self.Progress.AppendText('\nMeasurement started!\n...')
         try:
             self.HP.SetIntTime(self.IntTimeBox.GetValue())
+            print('a')
             ReturnFlag = self.HP.SingleSave(self.SaveFilePath.GetValue(), timeout=1800)
         except:
             #ReturnFlag="No instrument\nSend config to open connection"
