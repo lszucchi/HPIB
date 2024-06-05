@@ -1,6 +1,5 @@
 import os, time
 
-
 for folder in os.listdir():
     if os.path.isdir(folder+'/csv/fig'):
         for fig in os.listdir(folder+'/csv/fig'):

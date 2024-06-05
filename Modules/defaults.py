@@ -1,4 +1,6 @@
 #################### Defaults ##############
+DefaultInst='HP4155'
+
 Stop_flag = False
 SourceSMU="SMU1"
 DrainSMU="SMU2"

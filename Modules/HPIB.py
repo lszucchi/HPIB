@@ -1,10 +1,8 @@
-import pyvisa
-import string
-import datetime
-
+import pyvisa, string, datetime
 from IPython.display import clear_output, display
-from HPIB_plot import *
 from time import sleep
+
+from .HPIB_plot import *
 
 ########## Tabelas para intruções HPIB ###########
 
@@ -65,7 +63,7 @@ class HP:
         if self.debug: return print(msg)
         return self.inst.write(msg)
 
-    def SingleSave(self, path=".", timeout=2):
+    def SingleSave(self, path=".", timeout=2, scaling=1):
         if self.term=="0": return "Parameters not set"
         
         print(self.term)
@@ -84,7 +82,7 @@ class HP:
                 path = f"{path}/{self.term}-{datetime.datetime.now().strftime('%y%m%d %H%M%S')}.csv"
         except:
             return "Invalid Path"
-        try: df.to_csv(path)
+        try: df.to_csv(path, float_format='%.5E')
         except: return "Unable to write CSV"
         
         return path
@@ -121,7 +119,7 @@ class HP:
     def SetVGS(self, dict, ptype):
         self.SetVgs(dict['VGstart'], dict['VGstop'], dict['VGstep'], ETF(dict['VD']), ETF(dict['Compliance']), ptype=ptype)
 
-    def SetVgs(self, VgStart, VgStop, VgStep, VdValue=0.1, Comp=1e-3, VdSweep=False, ptype=False, sat=False):
+    def SetVgs(self, VgStart, VgStop, VgStep, VdValue=0.025, Comp=1e-3, VdSweep=False, ptype=False, sat=False):
         
         if ptype:
                     VdValue=-VdValue
@@ -132,7 +130,7 @@ class HP:
         self.DisableAll()
         
         self.SetSMU('SMU1', 'VS', 'IS', 'COMM', 'CONS')
-        self.SetSMU('SMU3', 'VG', 'IG', 'V', 'VAR1', Comp=Comp)
+        self.SetSMU('SMU3', 'VG', 'IG', 'V', 'VAR1')
         self.SetSMU('SMU4', 'VB', 'IB', 'COMM', 'CONS')
 
         if VdSweep:
@@ -143,7 +141,7 @@ class HP:
             self.Var2=[f"{VdValue}"]
             self.Var2Name="VDS"
 
-        self.SetVar('VAR1', 'V', VgStart, VgStop, VgStep, 1e-3)
+        self.SetVar('VAR1', 'V', VgStart, VgStop, VgStep, Comp=Comp)
 
         self.SetAxis('X', 'VG', 'LIN', VgStart, VgStop)
         self.SetAxis('Y1', 'ID', 'LIN', 0, VgStop*1e-3)
@@ -151,12 +149,12 @@ class HP:
         self.save_list(['VG', 'IG', 'ID', 'IS'])
         self.beep()
         
-        if sat or (np.abs(VgStop)-np.abs(VdValue)<0.5):
+        if sat:
                     self.term='IdxVgs Sat'
         else:
                     self.term='IdxVgs'
                     
-        print("Set " + self.term)
+        print(f"Set {self.term}")
         print(f" Vg=({VgStart}, {VgStop}, {VgStep}), Vd={VdValue}, Ilim={Comp}")
         
         return 0
@@ -177,11 +175,11 @@ class HP:
         self.DisableAll()
         
         self.SetSMU('SMU1', 'VS', 'IS', 'COMM', 'CONS')
-        self.SetSMU('SMU2', 'VD', 'ID', 'V', 'VAR1', Comp=Comp)
-        self.SetSMU('SMU3', 'VG', 'IG', 'V', 'VAR2', Comp=Comp)
+        self.SetSMU('SMU2', 'VD', 'ID', 'V', 'VAR1')
+        self.SetSMU('SMU3', 'VG', 'IG', 'V', 'VAR2')
         self.SetSMU('SMU4', 'VB', 'IB', 'COMM', 'CONS')
-        self.SetVar('VAR1', 'V', VdStart, VdStop, VdStep)
-        self.SetVar('VAR2', 'V', VgStart, VgStop, VgStep)
+        self.SetVar('VAR1', 'V', VdStart, VdStop, VdStep, Comp=Comp)
+        self.SetVar('VAR2', 'V', VgStart, VgStop, VgStep, Comp=Comp)
         sleep(0.5)
         self.SetAxis('X', 'VD', 'LIN', VdStart, VdStop)
         self.SetAxis('Y1', 'ID', 'LIN', 0, 1e-3)
@@ -192,7 +190,7 @@ class HP:
         
         self.term='IdxVds'
         
-        print("Set " + self.term)
+        print(f"Set {self.term}")
         print(f"Vd=({VdStart}, {VdStop}, {VdStep}), Vg=({VgStart}, {VgStop}, {VgStep}), Ilim={Comp}")
         
         return 0
@@ -228,7 +226,7 @@ class HP:
 
         self.term='VpxVgs'
         
-        print("Set " + self.term)
+        print(f"Set {self.term}")
         print(f"Is={Is}, Vg=({VgStart}, {VgStop}, {VgStep}), Vlim={Comp}")
         
         return 0
@@ -267,7 +265,7 @@ class HP:
 
         self.term='Ex_Is'
         
-        print("Set " + self.term)
+        print(f"Set {self.term}")
         print(f" Vs=({VsStart}, {VsStop}, {VsStep}), Vg=({VgStart}, {VgStop}, {VgStep}), Vd={VdValue}")
         
         return 0
@@ -295,7 +293,7 @@ class HP:
 
         self.term="Diode"
         
-        print("Set " + self.term)
+        print(f"Set {self.term}")
         print(f"Vf=({VfStart}, {VfStop})")
 
         return 0
@@ -317,7 +315,7 @@ class HP:
 
         self.term="Diode"
         
-        print("Set " + self.term)
+        print(f"Set {self.term}")
         print(f"Vf=({VfStart}, {VfStop})")
 
         return 0
@@ -339,7 +337,7 @@ class HP:
 
         self.term='CV'
         
-        print("Set " + self.term)
+        print(f"Set {self.term}")
         print(f"V=({VStart}, {VStop}, {VStep}), Ilim={Comp})")
         
         return 0
@@ -361,7 +359,7 @@ class HP:
         
         self.term="2P"
         
-        print("Set " + self.term)
+        print(f"Set {self.term}")
         print(f"I=({IStart}, {IStop}), {Points} Points")
 
     def Set2PD(self, VStart, VStop, Points):
@@ -381,7 +379,7 @@ class HP:
         
         self.term="2PD"
         
-        print("Set " + self.term)
+        print(f"Set {self.term}")
         print(f"I=({VStart}, {VStop}), {Points} Points")
     
     def Set4P(self, IStart, IStop, Points):        
@@ -402,7 +400,7 @@ class HP:
         
         self.term="4P"
         
-        print("Set " + self.term)
+        print(f"Set {self.term}")
         print(f"I=({IStart}, {IStop}), {Points} Points")
 
         return 0
@@ -425,7 +423,7 @@ class HP:
         
         self.term="4PV"
         
-        print("Set " + self.term)
+        print(f"Set {self.term}")
         print(f"Vsource=({VStart}, {VStop}), {Points} Points")
         
         return 0

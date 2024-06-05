@@ -1,7 +1,7 @@
 import sys, os
-sys.path.append("../Modules")
+sys.path.append("../modules")
 
-from HPIB_plot import*
+from HPIB_plot import *
 
 def moving_average(x, n=3):
     return np.convolve(x, np.ones(n), 'valid') / n
