@@ -1,15 +1,14 @@
 import numpy as np
 import pandas as pd
 from scipy.constants import epsilon_0, e, k
+from tkinter import Tk     # from tkinter import Tk for Python 3.x
+from tkinter.filedialog import askopenfilename
 
 e_0=epsilon_0/100
 T=300
 e_si=11.9
 e_sio2=3.9
 ni=1.45e10
-
-from tkinter import Tk     # from tkinter import Tk for Python 3.x
-from tkinter.filedialog import askopenfilename
 
 def IsPType(CV):
     if np.average(CV['C'].to_numpy()[5:10]) > np.average(CV['C'].to_numpy()[-5:-10]):
