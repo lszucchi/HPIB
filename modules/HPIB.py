@@ -307,6 +307,7 @@ class HP:
         return 0
 
     def SingleDiode(self, VfStart, VfStop, VfStep, SMUP='SMU2', SMUN='SMU4', Comp=2e-3):
+        self.write(":PAGE:CHAN:UFUN:DEL:ALL")
         self.Var2=None
         self.Var2Name=None
         self.DisableAll()
@@ -355,6 +356,7 @@ class HP:
 
     def Set2P(self, Istart, Istop, Points, SMUP='SMU2', SMUN='SMU4', Comp=1.5):
         self.DisableAll()
+        self.write(":PAGE:CHAN:UFUN:DEL:ALL")
         self.Var2=None
         self.Var2Name=None
         
@@ -373,23 +375,23 @@ class HP:
         print(f"Set {self.term}")
         print(f"I=({Istart}, {Istop}), {Points} Points")
     
-    def Set4P(self, Istart, Istop, Points):        
+    def Set4P(self, Istart, Istop, Points, Ip='SMU2', Im='SMU1', Vp='VMU2', Vm='VMU1', Comp=1):        
         self.DisableAll()
         self.Var2=None
         self.Var2Name=None
         
-        self.SetSMU('SMU1', 'V1', 'I1')
-        self.SetSMU('SMU2', 'V2', 'I2', 'I', 'VAR1')
-        self.SetVsMU('VMU1', 'V3')
-        self.SetVsMU('VMU2', 'V4')
-        self.SetVar('VAR1', 'I', Istart, Istop, (Istop-Istart)/(Points-1))
+        self.SetSMU(Im, 'V1', 'I')
+        self.SetSMU(Ip, 'V2', 'I2', 'I', 'VAR1')
+        self.SetVSMU(Vm, 'V3')
+        self.SetVSMU(Vp, 'V4')
+        self.SetVar('VAR1', 'I', Istart, Istop, (Istop-Istart)/(Points-1), Comp=Comp)
         
-        self.UFUNC('V=VMU1-VMU2')
+        self.UFUNC('V=V3-V4')
 
-        self.SetAxis('X', 'V')
-        self.SetAxis('Y1', 'I1')
+        self.SetAxis('X', 'V', 1, -1e-2, 1e-2)
+        self.SetAxis('Y1', 'I', 1, Istart, Istop)
         
-        self.save_list(['I1', 'V'])
+        self.save_list(['I', 'V'])
         self.beep()
         
         self.term="4P"
@@ -404,17 +406,17 @@ class HP:
         self.Var2=None
         self.Var2Name=None
         
-        self.SetSMU('SMU1', 'V1', 'I1')
+        self.SetSMU('SMU1', 'V1', 'I')
         self.SetSMU('SMU2', 'V2', 'I2', 'V', 'VAR1')
-        self.SetVsMU('VMU1', 'V3')
-        self.SetVsMU('VMU2', 'V4')
+        self.SetVSMU('VMU1', 'V3')
+        self.SetVSMU('VMU2', 'V4')
         self.SetVar('VAR1', 'I', Vstart, Vstop, (Vstop-Vstart)/(Points-1))
-        self.UFUNC('V=VMU2-VMU1')
+        self.UFUNC('V=V4-V3')
 
         self.SetAxis('X', 'V')
-        self.SetAxis('Y1', 'I1')
+        self.SetAxis('Y1', 'I')
         
-        self.save_list(['I2', 'V'])
+        self.save_list(['I', 'V'])
         self.beep()
         
         self.term="4PV"

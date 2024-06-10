@@ -74,7 +74,7 @@ class HP4155(HP):
                 self.write("*ESE 1")
                 self.write("*OPC")
                 while(self.GetDR()):
-                    sleep(1000)
+                    continue
             else:
                 self.write(f":PAGE:MEAS:SAMP:PER {period}")
                 self.write(f":PAGE:MEAS:SAMP:POIN {points}")
