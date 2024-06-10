@@ -78,67 +78,31 @@ class FourPoint(GenericTab):
         self.img_path = wx.StaticText(self, label="No measurements to show", pos=(385,int(config['Window']['Margin'])),size=(400,20))
 
     def Measure(self):
-        HP = HP4155("GPIB0::"+str(self.GPIBCH.GetValue()), read_termination = '\n', write_termination = '\n', timeout=None)
 
-        self.HP.SMU=[self.IpBox.GetValue(), self.ImBox.GetValue(),self.VpBox.GetValue(),self.VmBox.GetValue()]
-
-        self.HP.reset()
+        if not self.COMEnable.GetValue():
+            self.HP.SetIntTime(self.IntTimeBox.GetValue())
+            last_path=self.HP.SingleSave(self.SaveFilePath.GetValue())
+            self.RefreshImg(Plot(last_path, "V", "I", sizex=550))
+            return 0
 
         ChSelect=[self.cb1.GetValue(),self.cb2.GetValue(),self.cb3.GetValue(),self.cb4.GetValue(),self.cb5.GetValue(),self.cb6.GetValue()]
 
         #print('Opening Arduino on: '+ self.COM.GetValue())
         #INO=pyfirmata.Arduino(self.COM.GetValue())
-
-        self.Progress.SetValue('Arduino Opened on: '+ self.COM.GetValue()+'\n')
-
+        
         for Chn in range(6):      
             if ChSelect[Chn]:
-                self.Progress.AppendText('Channel: ' +str(Chn+1) + ' Measurements:\n')
-                #opench(Chn-1)
-                self.Progress.AppendText(str('ChnOpen')+ '  ')
-
-                self.Progress.AppendText(str('4-Point I-V')+ '  ')
-                IStep=(ETF(self.IStop.GetValue())-ETF(self.IStart.GetValue()))/self.IPoints.GetValue()
-                self.HP.Set4P(ETF(self.IStart.GetValue()),ETF(self.IStop.GetValue()),IStep)
-                last_path=self.HP.SingleSave(Chn+1,self.SaveFilePath.GetValue(), IntTime=self.IntTimeBox.GetValue())
+                INO.opench(Chn-1)
+                last_path=self.HP.SingleSave(self.SaveFilePath.GetValue())
                 self.RefreshImg(Plot(last_path, "V", "I", sizex=550))
-
-        self.Progress.AppendText('End!\n')
+                
         return 0                          
-    
-    def Stop(self, event):
-            self.timer.Stop()
-            self.Btn_Start.Enable()
-            self.ToggleAll(True)
-            self.Btn_Start.SetLabel("Start")
-            global Stop_flag
-            Stop_flag = True
-            print("Stop")
-            self.RefreshImg(PlotVgs('C:/Users/lszuc/Dropbox/Cryochip/Programas Switch Matrix/W3-CTI-ptype/Ch 4-IdxVgs.csv'))
 
-    def OnButton(self, event):
-        global Stop_flag
-        Stop_flag = False
-        self.testThread = Thread(target=self.Measure)
-        self.testThread.start()
-        self.Btn_Start.SetLabel("Running\n.")
-        self.Btn_Start.Disable()
-        self.ToggleAll(False)
-        self.Bind(wx.EVT_TIMER, self.PollThread)
-        self.timer.Start(20, oneShot=True)
-        event.Skip()
-
-    def PollThread(self, event):
-            if self.testThread.is_alive():
-                    self.Bind(wx.EVT_TIMER, self.PollThread)
-                    self.timer.Start(200, oneShot=True)
-                    self.Btn_Start.SetLabel(self.Btn_Start.GetLabel() + ".")
-                    if(len(self.Btn_Start.GetLabel())>25):
-                            self.Btn_Start.SetLabel("Running\n.")
-            else:
-                    self.Btn_Start.Enable()
-                    self.ToggleAll(True)
-                    self.Btn_Start.SetLabel("Start")
+    def Configure(self):
+        self.OpenHP(self.GPIBCH.GetValue(), self.Inst.GetValue())
+        self.HP.beep()
+        self.HP.DisableAll()
+        self.HP.Set4P(ETF(self.IStart.GetValue()),ETF(self.IStop.GetValue()),int(self.IPoints.GetValue())+1,self.IpBox.GetValue(), self.ImBox.GetValue(),self.VpBox.GetValue(),self.VmBox.GetValue())
 
     def ToggleSizer(self, Sizer, State):
         children = Sizer.GetChildren()
