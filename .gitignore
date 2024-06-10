@@ -1,0 +1,15 @@
+.vscode/launch.json
+modules/__pycache__/defaults.cpython-311.pyc
+modules/__pycache__/HPIB_plot.cpython-311.pyc
+modules/__pycache__/HPIB.cpython-311.pyc
+modules/__pycache__/HPIB4145.cpython-311.pyc
+modules/__pycache__/HPIB4155.cpython-311.pyc
+modules/__pycache__/INOSerial.cpython-311.pyc
+modules/__pycache__/Tab_4P.cpython-311.pyc
+modules/__pycache__/Tab_CV.cpython-311.pyc
+modules/__pycache__/Tab_Generic.cpython-311.pyc
+modules/__pycache__/Tab_GP.cpython-311.pyc
+modules/__pycache__/Tab_IV.cpython-311.pyc
+mycsvfile.csv
+.~lock.mycsvfile.csv#
+config.ini
