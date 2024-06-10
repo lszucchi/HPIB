@@ -139,9 +139,9 @@ def PlotMatrix(ax, df, X, Y):
 
 def PlotDiode(path,draw=False):
     df = pd.read_csv(path)
-    VS=df['VF']
-    IS=df['IS']
-    ID=df['ID']
+    VS=df['Vf']
+    IS=df['Is']
+    ID=df['Id']
     
     fig, ax1 = plt.subplots()
     ax2 = ax1.twinx()
@@ -160,7 +160,7 @@ def PlotDiode(path,draw=False):
     else:
        ax1.set_ylim(-0.05*np.max(ID), 1.1*np.max(ID))
         
-    ax2.set_ylabel('IS', color='r')
+    ax2.set_ylabel('Is', color='r')
     
     if(np.abs(np.min(IS))>np.abs(np.max(IS))):
        ax1.set_ylim(1.1*np.min(IS), -0.05*np.min(IS))
@@ -181,15 +181,15 @@ def PlotVgs(path, sizex=640, draw=False):
     if df.columns.levels[1][0] != 'None':
         df.columns.levels[1][0] != ''
 
-    VG=df['VG']
-    ID=df['ID']
+    VG=df['Vg']
+    ID=df['Id']
     
     if 'gm' not in df.columns:
-        gm=(np.diff(df['ID'].T)/np.diff(df['VG'].T)).T
+        gm=(np.diff(df['Id'].T)/np.diff(df['Vg'].T)).T
         gm=np.append([gm[0]], gm)
     
         header=pd.MultiIndex.from_product([['gm'],
-                                    df['VG'].columns])
+                                    df['Vg'].columns])
     
         df2=pd.DataFrame(data=gm, columns=header)
         df=pd.concat((df, df2), axis=1)
@@ -199,11 +199,11 @@ def PlotVgs(path, sizex=640, draw=False):
         gm=df['gm']
     
     if 'dgm' not in df.columns:
-        dgm=(np.diff(df['gm'].T)/np.diff(df['VG'].T)).T
+        dgm=(np.diff(df['gm'].T)/np.diff(df['Vg'].T)).T
         dgm=np.append(dgm, [dgm[-1]])
     
         header=pd.MultiIndex.from_product([['dgm'],
-                                    df['VG'].columns])
+                                    df['Vg'].columns])
     
         df2=pd.DataFrame(data=dgm, columns=header)
         df=pd.concat((df, df2), axis=1)
@@ -219,7 +219,7 @@ def PlotVgs(path, sizex=640, draw=False):
     Vth=-b/m
     fitID=m*VG[:np.argmax(gm)]+b
     
-    Plot(path, 'VG', ['ID', 'gm'], sizex=sizex)
+    Plot(path, 'Vg', ['Id', 'gm'], sizex=sizex)
     
     return np.around(Vth, 3)
 
@@ -230,8 +230,8 @@ def PlotSubVt(path):
     if df.columns.levels[1][0] != 'None':
         df.columns.levels[1][0] != ''
         
-    VG=df['VG'][df.columns.levels[1][0]].to_numpy()
-    ID=np.clip(df['ID'][df.columns.levels[1][0]].to_numpy(), 1e-15, 1)
+    VG=df['Vg'][df.columns.levels[1][0]].to_numpy()
+    ID=np.clip(df['Id'][df.columns.levels[1][0]].to_numpy(), 1e-15, 1)
 
     median=int(len(VG)/2)
     th=5
@@ -270,12 +270,12 @@ def Plot2P(path):
     try: df=pd.read_csv(path, header=[0, 1])
     except: print("Error opening CSV\n")
 
-    V=df['V2'][df.columns.levels[1][0]].to_numpy()
-    I=df['I2'][df.columns.levels[1][0]].to_numpy()
+    V=df['Vf'][df.columns.levels[1][0]].to_numpy()
+    I=df['If'][df.columns.levels[1][0]].to_numpy()
 
     m, b = np.polyfit(I, V, 1)
 
-    Plot(path, "V2", "I2")
+    Plot(path, "Vf", "If")
     
     return m
 
@@ -370,7 +370,7 @@ def CalcIs(path, temp, ptype=False):
     except: VG=[np.around(float(x), 2) for x in df.columns.levels[1][:-1]]
         
     VS=df['VS'][df['VS'].columns[0]].to_numpy()
-    ID=df['ID'].to_numpy()
+    ID=df['Id'].to_numpy()
     
     if ptype:
         VS=-VS

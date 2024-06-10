@@ -43,14 +43,23 @@ class MainFrame(wx.Frame):
 
         self.SetMenuBar ( menubar )
 
+        try:
+            config.read("config.ini")
+            self.SetDebug.Check(config['Window'].getboolean('Debug'))
+        except:
+            config['Window']={}
+            config['Window']['Debug']='False'
+            config['Window']['Margin']='10'
+            config['Window']['SMUMY']='40'
+            config['Window']['SMUMX']='90'
+            config['Window']['PhotoMaxSizeX']='610'
+
         self.notebook = MainNotebook(panel)
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self.notebook, 1, wx.ALL|wx.EXPAND, 5)
         panel.SetSizer(sizer)
 
         try:
-            config.read("config.ini")
-            self.SetDebug.Check(config['Window'].getboolean('Debug'))
             for page in self.notebook.GetChildren():
                 for child in page.GetChildren():
                     if 'sv_' in child.GetName():
@@ -62,13 +71,7 @@ class MainFrame(wx.Frame):
             self.notebook.GetChildren()[1].DrawVgsVd(True)
             self.notebook.GetChildren()[1].DrawVgsVdSat(True)
             self.notebook.GetChildren()[1].DrawIspecDef(True)
-        except:
-            config['Window']={}
-            config['Window']['Debug']='False'
-            config['Window']['Margin']='10'
-            config['Window']['SMUMY']='40'
-            config['Window']['SMUMX']='90'
-            config['Window']['PhotoMaxSizeX']='610'
+        except: pass
 
         self.notebook.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.OnPageChanged)
         self.Layout()

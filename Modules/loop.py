@@ -6,13 +6,7 @@ from HPIB4155 import *
 from HPIB_plot import*
 from IPython.display import clear_output, display
 
-if os.path.isdir('C:/Users/Zucchi/Documents/Medidas'):
-    path='C:/Users/Zucchi/Documents/Medidas/Warmup'
-else: 
-    path="C:/Users/Zucchi-Note/Dropbox/Cryochip/Medidas/Warmup"
-
-def printf(msg, start, output=False):
-
+def printf(msg, path, output=True):
     os.makedirs(path, exist_ok=True)
 
     path+=f"/log.txt"

@@ -1,9 +1,16 @@
-from .HPIB import *
+try:
+    from .HPIB import *
+except:
+    from HPIB import *
 
 class HP4155(HP):
 
     def reset(self):
-        return self.write("*RST")
+        self.write("*RST")
+        print(self.ask("*IDN?"))
+        self.write(":STAT:MEAS:ENAB 8")
+        self.write(":PAGE:MEAS:MSET:ITIM MED")
+        return 0
 
     def stop(self):
         return self.write(":PAGE:SCON:STOP")
@@ -37,6 +44,12 @@ class HP4155(HP):
         self.write(f":PAGE:MEAS:HTIM {HoldTime}")
         return 0
 
+    def SetStop(self, Condition="OFF"):
+        if Condition not in ['ABN', 'COMP', 'OFF']:
+            return "Invalid condition"
+        self.write(f":PAGE:MEAS:SST {Condition}")
+        return 0
+    
     def UFUNC(self, ufunc):
     
         if ufunc[0]=='V':
@@ -60,6 +73,8 @@ class HP4155(HP):
                 self.write(":PAGE:SCON:MEAS:SING")
                 self.write("*ESE 1")
                 self.write("*OPC")
+                while(self.GetDR()):
+                    sleep(1000)
             else:
                 self.write(f":PAGE:MEAS:SAMP:PER {period}")
                 self.write(f":PAGE:MEAS:SAMP:POIN {points}")
@@ -90,6 +105,48 @@ class HP4155(HP):
         
         return np.column_stack(np.split(np.array(self.ask(f":DATA? \'{trace}\'").split(',')), len(self.Var2)))
 
+    def RealDataOutput(self, trace, TrigComp):
+        if self.debug:
+            self.out=self.out/10
+
+            return np.column_stack(np.split(self.out, len(self.Var2)))
+        out=[x for x in self.inst.query_binary_values(f":DATA? \'{trace}\'", datatype='d', is_big_endian=True) if not np.isnan(x)]
+        if TrigComp: out=out[:-1]
+        return np.column_stack(np.split(np.array(out), len(self.Var2)))
+
+    def get_realdata(self):
+        if not (isinstance(self.Var2, list) or isinstance(self.Var2, np.ndarray)):
+            self.Var2=[self.Var2]
+        TrigComp=0
+        
+        if self.debug:
+            self.out=np.arange(0, 100*len(self.Var2))
+            header=self.data_variables
+            
+        elif int(self.ask('*OPC?')):
+            header = self.ask(":PAGE:DISP:LIST?").split(',')
+            
+        self.write(":FORM:DATA REAL")
+
+        if self.ask(":STAT:MEAS?"):
+            TrigComp=1
+
+        lastdata=self.RealDataOutput(header[0], TrigComp)
+        
+        # recursively get data for each variable
+        for i, listvar in enumerate(header[1:]):
+            lastdata = np.column_stack((lastdata, self.RealDataOutput(listvar, TrigComp)))
+        
+        header = pd.MultiIndex.from_product([self.data_variables,
+                                    [f"{str(x)}" for x in self.Var2]],
+                                    names=["Trace", f"{self.Var2Name}"])
+        
+        df = pd.DataFrame(data=lastdata, columns=header)
+        self.write(":PAGE:DISP:MODE GRAP")
+        self.write(":FORM:DATA ASC")
+        
+        return df
+    
     def get_data(self):
         if not (isinstance(self.Var2, list) or isinstance(self.Var2, np.ndarray)):
             self.Var2=[self.Var2]
