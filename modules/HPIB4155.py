@@ -25,6 +25,7 @@ class HP4155(HP):
         
     def DisableAll(self):
         self.write(":PAGE:CHAN:ALL:DIS")
+        self.write(":PAGE:CHAN:UFUN:DEL:ALL")
         self.beep()
         return 0
 
