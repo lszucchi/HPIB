@@ -161,7 +161,7 @@ class HP:
                     self.term='IdxVgs'
                     
         print(f"Set {self.term}")
-        print(f" Vg=({VgStart}, {VgStop}, {VgStep}), Vd={VdValue}, Ilim={Comp}")
+        print(f"Vg=({VgStart}, {VgStop}, {VgStep}), Vd={VdValue}, Ilim={Comp}")
         
         return 0
     
@@ -215,7 +215,7 @@ class HP:
         self.DisableAll()
         
         self.SetSMU('SMU3', 'Vg', 'Ig', 'V', 'VAR1')
-        self.SetSMU('SMU1', 'Vs', 'Is', 'I', 'CONS', Comp=Comp, Value=format(Is, '.2e'))
+        self.SetSMU('SMU1', 'Vs', 'Is', 'I', 'CONS', Comp=Comp, Value=format(Is, '.3e'))
         self.SetSMU('SMU2', 'Vd', 'Id', 'V', 'VARD')
         self.SetSMU('SMU4', 'Vb', 'Ib')
         
@@ -233,7 +233,7 @@ class HP:
         self.term='VpxVgs'
         
         print(f"Set {self.term}")
-        print(f"Is={Is}, Vg=({VgStart}, {VgStop}, {VgStep}), Vlim={Comp}")
+        print(f"Is={format(Is, '.3e')}, Vg=({VgStart}, {VgStop}, {VgStep}), Vlim={Comp}")
         
         return 0
 
@@ -272,7 +272,7 @@ class HP:
         self.term='Ex_Is'
         
         print(f"Set {self.term}")
-        print(f" Vs=({VsStart}, {VsStop}, {VsStep}), Vg=({VgStart}, {VgStop}, {VgStep}), Vd={VdValue}")
+        print(f"Vs=({VsStart}, {VsStop}, {VsStep}), Vg=({VgStart}, {VgStop}, {VgStep}), Vd={VdValue}")
         
         return 0
 
@@ -285,18 +285,18 @@ class HP:
         
         self.DisableAll()
         
-        self.SetSMU('SMU4', 'Vb', 'If', 'V', 'VAR1', Comp=2.4e-3)
+        self.SetSMU('SMU4', 'Vb', 'Ib', 'V', 'VAR1', Comp=2.4e-3)
         self.SetSMU('SMU1', 'Vs', 'Is', 'V', 'CONS', Comp=1.2e-3)
         self.SetSMU('SMU2', 'Vd', 'Id', 'V', 'CONS', Comp=1.2e-3)
 
         self.SetVar('VAR1', 'V', VfStart, VfStop, VfStep)
-        self.UFUNC("V=-Vb")
+        self.UFUNC("Vf=-Vb")
         
-        self.SetAxis('X', 'V', 'LIN', VfStart, VfStop)
+        self.SetAxis('X', 'Vf', 'LIN', VfStart, VfStop)
         self.SetAxis('Y1', 'Is', 'LIN', -1e-3, 1e-3)
         self.SetAxis('Y2', 'Id', 'LIN', -1e-3, 1e-3)
 
-        self.save_list(['V', 'Is', 'Id'])
+        self.save_list(['Vf', 'Is', 'Id'])
         self.beep()
 
         self.term="Diode"

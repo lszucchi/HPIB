@@ -1,7 +1,13 @@
+import os, csv
+
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import os, csv
+
+from scipy.constants import e, k
+from scipy.special import lambertw
+from scipy.optimize import least_squares
+
 px = 1/plt.rcParams['figure.dpi']
 
 Thr=10
@@ -10,8 +16,8 @@ PointsDer=4
 
 EarlyLimitDraw=-200
 
-Ut=25e-3
-Ut4=25e-3*3.1/300
+Ut=k*300/e
+Ut4=k*4/e
 
 prefix=['f','p','n','u','m','','k','M','G','T','P']
 
@@ -20,6 +26,23 @@ font = {'family': 'serif',
         'weight': 'normal',
         'size': 16,
         }
+
+def getpd(df, trace):
+    return df[trace][df[trace].columns[0]].to_numpy()
+
+def Id(p, VG, T):
+    I0, theta, K, n = p
+    x=(1+theta*VG)
+    return (I0/x)*lambertw(K*x*np.exp(VG/(n*k*T/e)))
+
+def Vg(p, ID, T):
+    I0, theta, K, n = p
+    vth=k*T/e
+    
+    return (n*vth*np.log(ID)+(n*vth/I0)*ID-n*vth*np.log(K*I0))/(1-((n*vth*theta)/I0)*ID)
+
+def fun(p, ID, VG, T):
+    return Vg(p, ID, T)-VG
 
 def getvar2(df, trace):
     df2=pd.DataFrame(df.columns.tolist()[1:], columns=df.columns.tolist()[0])
@@ -31,8 +54,10 @@ def getvar2(df, trace):
     except:
         return None
 
-def Plot(df, X, Y, sizex=640):
-
+def Plot(df, X, Y, sizex=640, bar='none'):
+    if bar not in ['none', 'hori', 'vert', 'both']:
+        return 'Invalid bar'
+    
     if isinstance(df, str):
         path=df
         df=pd.read_csv(df, header=[0, 1])
@@ -51,6 +76,13 @@ def Plot(df, X, Y, sizex=640):
                             top = 0.9)     # the top of the subplots of the figure)
     
     j, i=PlotMatrix(ax1, df, X, Y[0])
+
+    if bar in ['both', 'hori']:
+        ax1.plot([0 for x in getpd(df, Y[0])], getpd(df, Y[0]), 'k')
+
+    if bar in ['both', 'vert']:
+        ax1.plot(getpd(df, X), [0 for x in getpd(df, X)], 'k')
+
 
     if X[0]=='I': unit='A'
     else: unit='V'
@@ -137,7 +169,7 @@ def PlotMatrix(ax, df, X, Y):
     
     return (j, i)
 
-def PlotDiode(path,draw=False):
+def PlotDiode(path, draw=False):
     df = pd.read_csv(path)
     VS=df['Vf']
     IS=df['Is']
@@ -180,9 +212,11 @@ def PlotVgs(path, sizex=640, draw=False):
         
     if df.columns.levels[1][0] != 'None':
         df.columns.levels[1][0] != ''
-
-    VG=df['Vg']
-    ID=df['Id']
+    
+    VG=getpd(df, 'Vg')
+    VD=float(df.columns.levels[1][0])
+    ID=getpd(df, 'Id')
+    
     
     if 'gm' not in df.columns:
         gm=(np.diff(df['Id'].T)/np.diff(df['Vg'].T)).T
@@ -196,7 +230,7 @@ def PlotVgs(path, sizex=640, draw=False):
     
         df.to_csv(path, index=False, float_format='%.5E')
     else:
-        gm=df['gm']
+        gm=getpd(df, 'gm')
     
     if 'dgm' not in df.columns:
         dgm=(np.diff(df['gm'].T)/np.diff(df['Vg'].T)).T
@@ -210,18 +244,47 @@ def PlotVgs(path, sizex=640, draw=False):
     
         df.to_csv(path, index=False, float_format='%.5E')
     else:
-        dgm=df['dgm']
+        dgm=getpd(df, 'dgm')
     
-    VGfit=VG[np.argmax(gm)-2:np.argmax(gm)+3]
-    IDfit=ID[np.argmax(gm)-2:np.argmax(gm)+3]
+    VGfit=VG[np.argmax(gm)-2:np.argmax(gm)+2]
+    IDfit=ID[np.argmax(gm)-2:np.argmax(gm)+2]
     
     m, b= np.polyfit(VGfit, IDfit, 1)
-    Vth=-b/m
+    LIN=-b/m+VD/2
     fitID=m*VG[:np.argmax(gm)]+b
     
     Plot(path, 'Vg', ['Id', 'gm'], sizex=sizex)
     
-    return np.around(Vth, 3)
+    for n, V in enumerate(VG):
+        if V > LIN:
+            break
+    
+    Vgfit=VG[n-20:n+50]
+    Idfit=ID[n-20:n+50]
+    
+    p0=[1e-6, 0, 1, 1]
+    res=least_squares(fun, p0, args=(Idfit, Vgfit, 300), loss='huber')
+    
+    dgmfit=np.diff(Id(res.x, Vgfit, 300), n=2)/(np.diff(Vgfit)[:-1]**2)
+        
+    fig1, ax1=plt.subplots()
+    fig2, ax2=plt.subplots()
+    fig3, ax3=plt.subplots()
+    
+    ax1.plot(VG, ID)
+    ax1.set_ylim(0, ax1.get_ylim()[1])
+    ax1.plot(VG, VG*m+b, '--r')
+    
+    
+    ax2.plot(VG, ID)
+    ax2.plot(Vg(res.x, Idfit, 300), Idfit, '--r')
+    
+    ax3.plot(VG, dgm)
+    ax3.plot(Vgfit[1:-1], np.diff(Id(res.x, Vgfit, 300), n=2)/(np.diff(Vgfit)[:-1]**2), 'r--')
+    
+    DGM=Vgfit[np.argmax(dgmfit)]
+    
+    return [np.around(LIN, 3), DGM]
 
 def PlotSubVt(path):
 
@@ -265,6 +328,21 @@ def PlotSubVt(path):
     plt.savefig(save_path)    
 
     return np.around((1/p[0])*1000, 0)
+
+def PlotVp(path):
+    try: df=pd.read_csv(path, header=[0, 1])
+    except: print("Error opening VGS\n")
+        
+    if df.columns.levels[1][0] != 'None':
+        df.columns.levels[1][0] != ''
+    
+    VG=getpd(df, 'Vg')
+    VS=getpd(df, 'Vs')
+
+    Plot(path, 'Vg', 'Vs', bar='both')
+    
+    return VG[np.argmin(np.abs(VS))]
+    
 
 def Plot2P(path):
     try: df=pd.read_csv(path, header=[0, 1])
@@ -363,14 +441,14 @@ def Early():
     print(Early)
     print(EarlyAvg)
 
-def CalcIs(path, temp, ptype=False):
+def CalcIs(path, T, ptype=False):
     
     df = pd.read_csv(path, header=[0, 1])
     try: VG=[np.around(float(x), 2) for x in df.columns.levels[1][1:]]
     except: VG=[np.around(float(x), 2) for x in df.columns.levels[1][:-1]]
         
-    VS=df['VS'][df['VS'].columns[0]].to_numpy()
-    ID=df['Id'].to_numpy()
+    VS=df['Vs']
+    ID=df['Id']
     
     if ptype:
         VS=-VS
@@ -382,13 +460,15 @@ def CalcIs(path, temp, ptype=False):
 
     fig, ax=plt.subplots()
     
-    for n, Y in enumerate(ID.T[-3:]):
-
-        ax.plot(VS, Y, label=VG[n])
+    for n, key in enumerate(VG):
+    
+        Y=ID[ID.columns[n]]
+        X=VS[ID.columns[n]]
+        ax.plot(X, Y, label=key)
         
         y=Y
-        y=y[y>np.max(y)/(2+0.5*n)]
-        x=VS[:len(y)]
+        y=y[y>np.max(y)/(2+0.3*n)]
+        x=X[:len(y)]
         
         ax.plot(x, y, '--')
         m, b= np.polyfit(x, y, 1)
@@ -400,11 +480,11 @@ def CalcIs(path, temp, ptype=False):
     ax.set_xlabel("$V_S$  (V)")
     ax.set_title("$\sqrt{I_D}$ vs $V_S$")
 
-    Is=(np.array(slope)*2*Ut*temp/300)**2
+    Is=(np.array(slope)*2*k*T/e)**2
     if not ptype: Is=-Is
-    print(Is)
+    # print(Is)
     
-    print(f"Is={format(np.average(Is), '.2e')}   AbsDev: {np.sum(np.abs((Is-np.average(Is))))}")
+    # print(f"Is={format(np.average(Is), '.2e')}   R2: {np.sum((Is-np.average(Is))**2)}")
     fig.savefig(os.path.splitext(path)[0])
     
     return np.average(Is)
@@ -449,8 +529,6 @@ def ETF(value):
             return float(str(value)+'e-15')
         
     return "Invalid expoent"
-
-
 
 def GetConc(x, dop):
         if dop=='n':
