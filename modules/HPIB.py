@@ -307,7 +307,7 @@ class HP:
         return 0
 
     def SingleDiode(self, VfStart, VfStop, VfStep, SMUP='SMU2', SMUN='SMU4', Comp=2e-3):
-        self.write(":PAGE:CHAN:UFUN:DEL:ALL")
+        
         self.Var2=None
         self.Var2Name=None
         self.DisableAll()
@@ -356,7 +356,7 @@ class HP:
 
     def Set2P(self, Istart, Istop, Points, SMUP='SMU2', SMUN='SMU4', Comp=1.5):
         self.DisableAll()
-        self.write(":PAGE:CHAN:UFUN:DEL:ALL")
+        
         self.Var2=None
         self.Var2Name=None
         
