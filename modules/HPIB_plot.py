@@ -10,14 +10,7 @@ from scipy.optimize import least_squares
 
 px = 1/plt.rcParams['figure.dpi']
 
-Thr=10
-PointsMax=36
-PointsDer=4
-
 EarlyLimitDraw=-200
-
-Ut=k*300/e
-Ut4=k*4/e
 
 prefix=['f','p','n','u','m','','k','M','G','T','P']
 
@@ -30,10 +23,16 @@ font = {'family': 'serif',
 def getpd(df, trace):
     return df[trace][df[trace].columns[0]].to_numpy()
 
+def IdT(p, VG):
+    return Id(p[:-1], VG, p[-1])
+
 def Id(p, VG, T):
     I0, theta, K, n = p
     x=(1+theta*VG)
     return (I0/x)*lambertw(K*x*np.exp(VG/(n*k*T/e)))
+    
+def VgT(p, ID):
+    return Vg(p[:-1], ID, p[-1])
 
 def Vg(p, ID, T):
     I0, theta, K, n = p
@@ -43,6 +42,9 @@ def Vg(p, ID, T):
 
 def fun(p, ID, VG, T):
     return Vg(p, ID, T)-VG
+
+def fun2(p, ID, VG):
+    return Vg(p[:-1], ID, p[-1])-VG
 
 def getvar2(df, trace):
     df2=pd.DataFrame(df.columns.tolist()[1:], columns=df.columns.tolist()[0])
@@ -254,18 +256,67 @@ def PlotVgs(path, sizex=640, draw=False):
     fitID=m*VG[:np.argmax(gm)]+b
     
     Plot(path, 'Vg', ['Id', 'gm'], sizex=sizex)
+
+    return np.around(LIN, 3)
+
+def SecDer(path, T):
+    try: df=pd.read_csv(path, header=[0, 1])
+    except: print("Error opening VGS\n")
+        
+    if df.columns.levels[1][0] != 'None':
+        df.columns.levels[1][0] != ''
+    
+    VG=getpd(df, 'Vg')
+    VD=float(df.columns.levels[1][0])
+    ID=getpd(df, 'Id')
+    
+    
+    if 'gm' not in df.columns:
+        gm=(np.diff(df['Id'].T)/np.diff(df['Vg'].T)).T
+        gm=np.append([gm[0]], gm)
+    
+        header=pd.MultiIndex.from_product([['gm'],
+                                    df['Vg'].columns])
+    
+        df2=pd.DataFrame(data=gm, columns=header)
+        df=pd.concat((df, df2), axis=1)
+    
+        df.to_csv(path, index=False, float_format='%.5E')
+    else:
+        gm=getpd(df, 'gm')
+    
+    if 'dgm' not in df.columns:
+        dgm=(np.diff(df['gm'].T)/np.diff(df['Vg'].T)).T
+        dgm=np.append(dgm, [dgm[-1]])
+    
+        header=pd.MultiIndex.from_product([['dgm'],
+                                    df['Vg'].columns])
+    
+        df2=pd.DataFrame(data=dgm, columns=header)
+        df=pd.concat((df, df2), axis=1)
+    
+        df.to_csv(path, index=False, float_format='%.5E')
+    else:
+        dgm=getpd(df, 'dgm')
+    
+    VGfit=VG[np.argmax(gm)-2:np.argmax(gm)+2]
+    IDfit=ID[np.argmax(gm)-2:np.argmax(gm)+2]
+    
+    m, b= np.polyfit(VGfit, IDfit, 1)
+    LIN=-b/m+VD/2
+    fitID=m*VG[:np.argmax(gm)]+b
     
     for n, V in enumerate(VG):
         if V > LIN:
             break
     
-    Vgfit=VG[n-20:n+50]
-    Idfit=ID[n-20:n+50]
+    Vgfit=VG[int(n/2):]
+    Idfit=ID[int(n/2):]
     
     p0=[1e-6, 0, 1, 1]
-    res=least_squares(fun, p0, args=(Idfit, Vgfit, 300), loss='huber')
+    res=least_squares(fun, p0, args=(Idfit, Vgfit, T))
     
-    dgmfit=np.diff(Id(res.x, Vgfit, 300), n=2)/(np.diff(Vgfit)[:-1]**2)
+    dgmfit=np.diff(Id(res.x, Vgfit, T), n=2)/(np.diff(Vgfit)[:-1]**2)
         
     fig1, ax1=plt.subplots()
     fig2, ax2=plt.subplots()
@@ -280,11 +331,11 @@ def PlotVgs(path, sizex=640, draw=False):
     ax2.plot(Vg(res.x, Idfit, 300), Idfit, '--r')
     
     ax3.plot(VG, dgm)
-    ax3.plot(Vgfit[1:-1], np.diff(Id(res.x, Vgfit, 300), n=2)/(np.diff(Vgfit)[:-1]**2), 'r--')
+    ax3.plot(Vgfit[1:-1], np.diff(Id(res.x, Vgfit, T), n=2)/(np.diff(Vgfit)[:-1]**2), 'r--')
     
     DGM=Vgfit[np.argmax(dgmfit)]
-    
-    return [np.around(LIN, 3), DGM]
+
+    return DGM
 
 def PlotSubVt(path):
 
@@ -404,6 +455,9 @@ def PlotSi4P(path,dop,draw=False):
     return save_path
 
 def Early():
+    PointsMax=36
+    PointsDer=4
+    
     VDS=0
     VGS=0
     IDS=0
@@ -467,8 +521,8 @@ def CalcIs(path, T, ptype=False):
         ax.plot(X, Y, label=key)
         
         y=Y
-        y=y[y>np.max(y)/(2+0.3*n)]
-        x=X[:len(y)]
+        y=y[:5]
+        x=X[:5]
         
         ax.plot(x, y, '--')
         m, b= np.polyfit(x, y, 1)
