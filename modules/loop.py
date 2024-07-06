@@ -1,6 +1,3 @@
-import sys
-sys.path.append("Modules")
-
 from INOSerial import *
 from HPIB4155 import *
 from HPIB_plot import*

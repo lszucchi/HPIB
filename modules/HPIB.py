@@ -17,15 +17,6 @@ Varlist=['0', 'R', 'P']
 Intlist=['0', 'SHOR', 'MED', 'LONG']
 Scalelist=['0', 'LIN', 'LOG']
 
-Id='Id'
-Vd='Vd'
-Vs='Vs'
-Vg='Vg'
-Vb='Vb'
-
-current='I'
-voltage='V'
-
 
 ## Classe genérica HP com código compartilhado
 
@@ -51,7 +42,6 @@ class HP:
             self.write(":STAT:MEAS:ENAB 8")
             print(self.ask("*IDN?"))
 
-
     def beep(self):
         if '4155' in self.ask("*IDN?"): 
             return 0
@@ -66,6 +56,9 @@ class HP:
     def write(self, msg):
         if self.debug: return print(msg)
         return self.inst.write(msg)
+
+    def close(self):
+        self.inst.close()
 
     def SingleSave(self, path=".", timeout=2, real=False):
         if self.term=="0": return "Parameters not set"
@@ -191,7 +184,7 @@ class HP:
         self.SetAxis('Y1', 'Id', 'LIN', 0, 1e-3)
         self.Var2Name="Vgs"
 
-        self.save_list(['Vd', 'Id', 'Ig', 'Is'])
+        self.save_list(['Vd', 'Id', 'Ig', 'Is', 'Ib'])
         self.beep()
         
         self.term='IdxVds'
