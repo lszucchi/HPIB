@@ -26,6 +26,9 @@ def getpd(df, trace):
 def IdT(p, VG):
     return Id(p[:-1], VG, p[-1])
 
+def IdT(p, VG):
+    return Id(p[:-1], VG, p[-1])
+
 def Id(p, VG, T):
     I0, theta, K, n = p
     x=(1+theta*VG)
@@ -33,6 +36,11 @@ def Id(p, VG, T):
     
 def VgT(p, ID):
     return Vg(p[:-1], ID, p[-1])
+
+def lmfitVg(x, I0, theta, K, n, T):
+    vth=k*T/e
+    
+    return (n*vth*np.log(x)+(n*vth/I0)*x-n*vth*np.log(K*I0))/(1-((n*vth*theta)/I0)*x)
 
 def Vg(p, ID, T):
     I0, theta, K, n = p
@@ -312,26 +320,35 @@ def SecDer(path, T):
     
     Vgfit=VG[int(n/2):]
     Idfit=ID[int(n/2):]
+    Vgfit=VG[int(n/2):]
+    Idfit=ID[int(n/2):]
     
-    p0=[1e-6, 0, 1, 1]
-    res=least_squares(fun, p0, args=(Idfit, Vgfit, T))
+    p0=[1e-7, 0.4, 1e-5, 1.4]
+    res=least_squares(fun, p0, args=(Idfit, Vgfit, T), xtol=None, loss='cauchy', max_nfev=3000)
+    print(T, res.x, res.nfev)
     
     dgmfit=np.diff(Id(res.x, Vgfit, T), n=2)/(np.diff(Vgfit)[:-1]**2)
         
-    fig1, ax1=plt.subplots()
+    # fig1, ax1=plt.subplots()
     fig2, ax2=plt.subplots()
-    fig3, ax3=plt.subplots()
+    # fig3, ax3=plt.subplots()
     
-    ax1.plot(VG, ID)
-    ax1.set_ylim(0, ax1.get_ylim()[1])
-    ax1.plot(VG, VG*m+b, '--r')
-    
-    
+    # ax1.plot(VG, ID)
+    # ax1.set_ylim(0, ax1.get_ylim()[1])
+    # ax1.plot(VG, VG*m+b, '--r')
+
     ax2.plot(VG, ID)
-    ax2.plot(Vg(res.x, Idfit, 300), Idfit, '--r')
+    ax2.plot(Vg(res.x, Idfit, T), Idfit, '--r')
+    ax2.set_title(f'{T} K')
+    fig2.savefig(f"{path.rsplit('/', 1)[0]}/{T} K.png")
+
+    with open(f"{path.rsplit('/', 1)[0]}/fitparams.csv", 'a') as myfile:
+        myfile.write(f"{T}, {res.x}, {res.nfev}\n")
+
+    plt.close('all')
     
-    ax3.plot(VG, dgm)
-    ax3.plot(Vgfit[1:-1], np.diff(Id(res.x, Vgfit, T), n=2)/(np.diff(Vgfit)[:-1]**2), 'r--')
+    # ax3.plot(VG, dgm)
+    # ax3.plot(Vgfit[1:-1], np.diff(Id(res.x, Vgfit, T), n=2)/(np.diff(Vgfit)[:-1]**2), 'r--')
     
     DGM=Vgfit[np.argmax(dgmfit)]
 

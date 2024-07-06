@@ -1,5 +1,10 @@
 import sys, os
-sys.path.append("../modules")
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import tkinter as tk
+from tkinter import filedialog
+sys.path.append("./modules")
 
 from HPIB_plot import *
 
@@ -8,6 +13,11 @@ def moving_average(x, n=3):
 
 def getpd(df, trace):
     return df[trace][df[trace].columns[0]].to_numpy()
+
+root = tk.Tk()
+root.withdraw()
+
+path = filedialog.askdirectory()
 
 avg=8
 
@@ -21,7 +31,7 @@ eps=3.9
 COX=eps*eps0/tox
 
 W=3e-4
-L=180e-7
+L=240e-7
 
 VD=25e-3
 
@@ -32,16 +42,16 @@ f1, ax1 = plt.subplots(figsize=(11, 9.6))
 f2, ax2 = plt.subplots(figsize=(11, 9.6))
 f3, ax3 = plt.subplots(figsize=(11, 9.6))
 
-with open('./Rampup.csv', 'w') as myfile:
+with open(f'{path}/Rampup.csv', 'w') as myfile:
                 myfile.write("Temp, Vth, SS, Ion, Ioff, gm, Mob\n")
 
-for file in os.listdir():
-    if os.path.isfile(file):
-        if os.path.splitext(file)[1] in include:
+for file in os.listdir(path):
+    if os.path.isfile(f'{path}\\{file}'):
+        if os.path.splitext(f'{path}\\{file}')[1] in include:
             try:
-                df=pd.read_csv(file, header=[0, 1])
-                VG=np.abs(getpd(df, 'VG'))
-                ID=np.abs(getpd(df, 'ID'))
+                df=pd.read_csv(f'{path}\\{file}', header=[0, 1])
+                VG=np.abs(getpd(df, 'Vg'))
+                ID=np.abs(getpd(df, 'Id'))
             except: continue
 
             gm=np.diff(ID)/np.diff(VG)
@@ -65,7 +75,7 @@ for file in os.listdir():
             j=0
 
             for idx, val in enumerate(ID):
-                if val >= 1e-11:
+                if val >= 3e-10:
                     j=idx
                     break
 
@@ -74,33 +84,31 @@ for file in os.listdir():
                     ion=ID[idx]
                     break
                     
-            Vfit=VG[j:j+5]
-            Ifit=ID[j:j+5]
+            Vfit=VG[j:j+4]
+            Ifit=ID[j:j+4]
 
             m, b = np.polyfit(np.log10(Ifit), Vfit, 1)
 
             ax3.plot(VG, ID, label=f"{os.path.splitext(file)[0]} - SS={format(m*1e3, '.2f')} mV/dec")
             ax3.plot(Vfit, Ifit, '.')
-            with open('./Rampup.csv', 'a') as myfile:
-                myfile.write(f"{os.path.splitext(file)[0]}, {format(Vt, '.3f')} V , {format(m*1e3, '.2f')} mV/dec,{format(ion, '.2e')} A, {format(ID[0], '.2e')} A, {format(np.max(gm), '.2e')} S, {format(mi, '.2f')} cm2.v-1.s-1\n")
+            with open(f'{path}/Rampup.csv', 'a') as myfile:
+                myfile.write(f"{os.path.splitext(file)[0]}, {format(Vt, '.3f')} V, {format(m*1e3, '.2f')} mV/dec,{format(ion, '.2e')} A, {format(ID[0], '.2e')} A, {format(np.max(gm), '.2e')} S, {format(mi, '.2f')} cm2.v-1.s-1\n")
             print(f"{os.path.splitext(file)[0]}, {format(Vt, '.3f')} V, {format(mi, '.2f')} cm2.v-1.s-1, {format(m*1e3, '.2f')} mV/dec, {format(ID[0], '.2e')} A")
 
-prefix='TN2 - L=180 nm W=3 $\mu$m'
+prefix='TN3 - L=240 nm W=3 $\mu$m'
 ##prefix=input()
 
 ax1.set_title(prefix+" - $I_D$ x $V_{GS}$ - Temperature - $V_{DS}$=25 mV")
-f1.legend(title="Temperature", loc='upper left', bbox_to_anchor=(0.13, 0.88))
+# f1.legend(title="Temperature", loc='upper left', bbox_to_anchor=(0.13, 0.88))
 ax1.grid(True)
 
 ax1.set_ylabel("$I_D$ ($\mu A$)")
 ax1.set_xlabel("$V_G$ (V)")
 
 ax1.set_xlim((0, 1.5))
-
-ax1.text(0.02, 61, "Zt (T>108 K) = 0.95 V \nZt (T<67 K) = 0.9 V")
             
 ax2.set_title(prefix+" - $g_m$ x $V_{GS}$ - Temperature - $V_{DS}$=25 mV")
-f2.legend(title="Temperature", loc='upper left', bbox_to_anchor=(0.13, 0.88))
+# f2.legend(title="Temperature", loc='upper left', bbox_to_anchor=(0.13, 0.88))
 ax2.grid(True)
 
 ax2.set_ylabel("$g_m$ ($\mu S$)")
@@ -111,7 +119,7 @@ ax2.set_xlim((0, 1.5))
 ax2.text(0.3, 101, "8-point rolling average")
 
 ax3.set_title(prefix+" - $I_D$ (log) x $V_{GS}$ - Temperature - $V_{DS}$=25 mV")            
-f3.legend(title= "Temperature", loc='lower right', bbox_to_anchor=(0.8, 0.3))
+# f3.legend(title= "Temperature", loc='lower right', bbox_to_anchor=(0.8, 0.3))
 ax3.grid(True)
 
 ax3.set_ylabel("$I_D$ (A)")
@@ -122,19 +130,10 @@ ax3.set_yscale('log')
 ax3.set_xlim((0, 1.5))
 
             
-##f1.show()
-##f1.savefig("IdxVgs (T).png")
-##
-##f2.show()
-##f2.savefig("gmxVgs (T).png")
-##
-##f3.show()
-##f3.savefig("IdxVgs log (T).png")
-f1.close()
-f2.close()
-f3.close()
+f1.savefig(f"{path}\\IdxVgs (T).png")
 
-df=pd.read_csv("Rampup.txt", header=[0])
-##for column in enumerate(df.to_csv()[1:]):
-##    fig=plt.figure()
-    
+f2.savefig(f"{path}\\gmxVgs (T).png")
+
+f3.savefig(f"{path}\\IdxVgs log (T).png")
+
+plt.show()
