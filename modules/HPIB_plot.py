@@ -191,29 +191,35 @@ def PlotDiode(path, draw=False):
 
     ax1.plot(VS, ID, 'b')
 
-    ax2.plot(VS, IS, 'r--')
+    ax2.plot(VS, IS, 'r')
     
     ax1.set_xlabel('V')
     ax1.set_xlim(np.min(VS), np.max(VS))
-    ax1.set_ylabel('I_D', color='b')
+    ax1.set_ylabel('$I_D$', color='b')
 
     if(np.abs(np.min(ID))>np.abs(np.max(ID))):
        ax1.set_ylim(1.1*np.min(ID), -0.05*np.min(ID))
     else:
        ax1.set_ylim(-0.05*np.max(ID), 1.1*np.max(ID))
         
-    ax2.set_ylabel('Is', color='r')
+    ax2.set_ylabel('$I_S$', color='r')
     
     if(np.abs(np.min(IS))>np.abs(np.max(IS))):
        ax1.set_ylim(1.1*np.min(IS), -0.05*np.min(IS))
     else:
        ax1.set_ylim(-0.05*np.max(IS), 1.1*np.max(IS))
+
+    ax1.set_yscale('log')
+    ax2.set_yscale('log')
     
     if(draw):
         plt.draw()
         plt.pause(0.001)
 
-    return save_path # type: ignore
+    save_path=f"{path.rsplit('.',1)[0]}.png"
+    plt.savefig(save_path) 
+
+    return 0
 
 def PlotVgs(path, sizex=640, draw=False):
 
@@ -320,8 +326,6 @@ def SecDer(path, T):
     
     Vgfit=VG[int(n/2):]
     Idfit=ID[int(n/2):]
-    Vgfit=VG[int(n/2):]
-    Idfit=ID[int(n/2):]
     
     p0=[1e-7, 0.4, 1e-5, 1.4]
     res=least_squares(fun, p0, args=(Idfit, Vgfit, T), xtol=None, loss='cauchy', max_nfev=3000)
@@ -340,10 +344,7 @@ def SecDer(path, T):
     ax2.plot(VG, ID)
     ax2.plot(Vg(res.x, Idfit, T), Idfit, '--r')
     ax2.set_title(f'{T} K')
-    fig2.savefig(f"{path.rsplit('/', 1)[0]}/{T} K.png")
-
-    with open(f"{path.rsplit('/', 1)[0]}/fitparams.csv", 'a') as myfile:
-        myfile.write(f"{T}, {res.x}, {res.nfev}\n")
+    fig2.savefig(save_path=f"{path.rsplit('.',1)[0]}.SecDer.png")
 
     plt.close('all')
     
@@ -511,6 +512,87 @@ def Early():
 
     print(Early)
     print(EarlyAvg)
+
+def CalcIsSat(path, T, ptype=False):
+    try: df=pd.read_csv(path, header=[0, 1])
+    except: print("Error opening VGS\n")
+        
+    if df.columns.levels[1][0] != 'None':
+        df.columns.levels[1][0] != ''
+    
+    VD=float(df.columns.levels[1][0])
+    VG=getpd(df, 'Vg')
+    ID=getpd(df, 'Id')
+    
+    if np.average(ID) < 0:
+        VD=-VD
+        VG=-VG
+        ID=-ID
+    
+    if 'gm' not in df.columns:
+        gm=(np.diff(df['Id'].T)/np.diff(df['Vg'].T)).T
+        gm=np.append([gm[0]], gm)
+    
+        header=pd.MultiIndex.from_product([['gm'],
+                                    df['Vg'].columns])
+    
+        df2=pd.DataFrame(data=gm, columns=header)
+        df=pd.concat((df, df2), axis=1)
+    
+        df.to_csv(path, index=False, float_format='%.5E')
+    else:
+        gm=getpd(df, 'gm')
+    
+    if 'dgm' not in df.columns:
+        dgm=(np.diff(df['gm'].T)/np.diff(df['Vg'].T)).T
+        dgm=np.append(dgm, [dgm[-1]])
+    
+        header=pd.MultiIndex.from_product([['dgm'],
+                                    df['Vg'].columns])
+    
+        df2=pd.DataFrame(data=dgm, columns=header)
+        df=pd.concat((df, df2), axis=1)
+    
+        df.to_csv(path, index=False, float_format='%.5E')
+    else:
+        dgm=getpd(df, 'dgm')
+    
+    plt.close('all')
+
+    PlotVgs(path)
+
+    try:
+        y=ID/(gm*k*T/e)
+        x=ID
+        
+        m, b = np.polyfit(np.log10(x[-7:]), np.log10(y[-7:]), 1, w=np.sqrt(y[-7:]))
+        
+        Ispec=10**((-b)/m)
+        # print(format(Ispec, '.3e'))
+        n=np.nanmin(y[y>0])
+        # print(format(n, '.3f'))
+
+        fig = plt.figure()
+        ax=plt.gca() 
+        ax.set_yscale('log')
+        ax.set_xscale('log')
+        
+        ax.plot(x, np.array([n for c in x]), '--k')
+        ax.plot(x, y[-1]/(b * np.power(x[-1], m))*(b * np.power(x, m)), '--r')
+        ax.plot(x, y, '.b')
+        
+        ax.set_ylabel('$I_D/(g_m.U_T)$ (log)')
+        ax.set_xlabel('$I_D$ (log)')
+        
+        ax.set_ylim((1, 1.2*y[-1]))
+    
+        save_path=f"{path.rsplit('.',1)[0]}.ExIs.png"
+        plt.savefig(save_path) 
+        
+        return n, Ispec
+        
+    except:
+        return 0, 0
 
 def CalcIs(path, T, ptype=False):
     

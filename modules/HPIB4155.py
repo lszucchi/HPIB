@@ -10,6 +10,8 @@ class HP4155(HP):
         print(self.ask("*IDN?"))
         self.write(":STAT:MEAS:ENAB 8")
         self.write(":PAGE:MEAS:MSET:ITIM MED")
+        self.write(":PAGE:MEAS:MSET:ITIM:LONG 2")
+        HP.write(":PAGE:MEAS:DEL 1e-3")
         return 0
 
     def stop(self):
@@ -26,6 +28,7 @@ class HP4155(HP):
     def DisableAll(self):
         self.write(":PAGE:CHAN:ALL:DIS")
         self.write(":PAGE:CHAN:UFUN:DEL:ALL")
+        self.write(":PAGE:DISP:GRAP:Y2:DEL")
         self.beep()
         return 0
 

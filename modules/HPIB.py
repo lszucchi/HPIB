@@ -107,12 +107,13 @@ class HP:
             #prog_bar.update(progress)
             
             sleep(delay)
-        
             if self.Stop_flag:
+                print('')
                 return 1
             if self.GetDR()==state:
+                print('')
                 return 0
-
+        print('')
         return 1
     
     def SetVgS(self, dict, ptype):
@@ -200,10 +201,11 @@ class HP:
     def SetVp(self, Is, VgStart, VgStop, VgStep, Comp=1.5, ptype=False):       
         
         if ptype:
-                Is=-Is
-                VgStart=-VgStart
-                VgStop=-VgStop
-                VgStep=-VgStep
+            VgStart=-VgStart
+            VgStop=-VgStop
+            VgStep=-VgStep
+        else:
+            Is=-Is
             
         self.DisableAll()
         
