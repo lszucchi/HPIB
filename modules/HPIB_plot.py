@@ -14,7 +14,7 @@ EarlyLimitDraw=-200
 
 prefix=['f','p','n','u','m','','k','M','G','T','P']
 
-font = {'family': 'serif',
+font = {'family': 'Times New Roman',
         'color':  'black',
         'weight': 'normal',
         'size': 16,
@@ -103,7 +103,7 @@ def Plot(df, X, Y, sizex=640, bar='none'):
     elif Y[0][0]=='C': unit='F'
     else: unit='V'
     
-    ax1.set_ylabel(f"${Y[0][0]}_"+'{'+Y[0][1:]+'}$'+f" ({prefix[i]}{unit})", color='r')
+    ax1.set_ylabel(f"${Y[0][0]}_"+'{'+Y[0][1:]+'}$'+f" ({prefix[i]}{unit})")
 
     ax1.set_title(f"${Y[0][0]}_"+'{'+Y[0][1:]+'}$' + ' vs ' + f"${X[0]}_"+'{'+X[1:]+'}$')
     
