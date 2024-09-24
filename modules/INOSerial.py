@@ -13,13 +13,22 @@ class Arduino:
         def write(self, msg):
             self.inst.write(str(msg).encode())
 
+        def read(self):
+            return self.inst.readline().decode()
+
+        def ask(self, msg):
+            self.write(msg)
+            time.sleep(0.01)
+            return self.read()
+
         def opench(self, i):
             self.write(0)
             if i >= 0 and i <=6:
-                    self.write(i)
-                    print('Open INO: ch' + str(i))
+                self.write(i)
+                print('Open INO: ch', end='')
+                print(self.inst.readline().decode())
             else:
-                    raise RuntimeError('Invalid channel')
+                raise RuntimeError('Invalid channel')
 
         def close(self):
             self.inst.close()

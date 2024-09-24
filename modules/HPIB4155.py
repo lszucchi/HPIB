@@ -11,7 +11,7 @@ class HP4155(HP):
         self.write(":STAT:MEAS:ENAB 8")
         self.write(":PAGE:MEAS:MSET:ITIM MED")
         self.write(":PAGE:MEAS:MSET:ITIM:LONG 2")
-        HP.write(":PAGE:MEAS:DEL 1e-3")
+        self.write(":PAGE:MEAS:DEL 1e-3")
         return 0
 
     def stop(self):

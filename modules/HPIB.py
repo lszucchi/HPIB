@@ -63,7 +63,7 @@ class HP:
     def SingleSave(self, path=".", timeout=2, real=False):
         if self.term=="0": return "Parameters not set"
         
-        print(self.term)
+        print(f"Starting {self.term}")
         self.measure()
         
         Poll=self.PollDR(1, 1, timeout)
@@ -443,6 +443,32 @@ class HP:
         print(f"Set {self.term}")
         print(f"I=({Istart}, {Istop}), {Points} Points")
 
+        return 0
+
+    def SetCrossTest(self, SMUPos, IStart, IStop, IStep, Comp=1):
+        self.DisableAll()
+        
+        self.SetSMU('SMU1', 'Vs', 'Is', 'COMM')
+        self.SetSMU('SMU2', 'Vd', 'Id', 'COMM')
+        self.SetSMU('SMU3', 'Vg', 'Ig', 'COMM')
+        self.SetSMU('SMU4', 'Vb', 'Ib', 'COMM')
+        self.SetSMU(SMUPos, 'Vf', 'If', 'I', 'VAR1')
+
+        
+        self.SetVar('VAR1', 'V', IStart, IStop, IStep)
+
+        self.SetAxis('X', 'Vf', 'LIN', -0.1, 0.1)
+        self.SetAxis('Y1', 'If', 'LIN', IStart, IStop)
+
+        self.save_list(['Vf', 'If', 'Ib', 'Is'])
+        
+        self.beep()
+
+        self.term='CrossTest'
+        
+        print(f"Set {self.term}")
+        print(f"If=({IStart}, {IStop}, {IStep})")
+        
         return 0
 
 def DebugOut(inst, varlist, Var2):
