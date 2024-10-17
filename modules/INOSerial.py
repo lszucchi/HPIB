@@ -23,14 +23,16 @@ class Arduino:
 
         def opench(self, i):
             self.write(0)
-            if i >= 0 and i <=6:
+            if i == 0:
+                return 'Closed'
+            if i >= 1 and i <=6:
                 self.write(i)
-                print('Open INO: ch', end='')
-                print(self.inst.readline().decode())
+                return 'Open INO: ch'+self.inst.readline().decode()
             else:
                 raise RuntimeError('Invalid channel')
 
         def close(self):
+            self.write(0)
             self.inst.close()
                 
 

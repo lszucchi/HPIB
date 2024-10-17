@@ -1,12 +1,11 @@
 import pyvisa, string, datetime
-from IPython.display import clear_output, display
 from time import sleep
 try:
     from .HPIB_plot import *
 except:
     from HPIB_plot import *
 
-########## Tabelas para intruções HPIb ###########
+########## Tabelas para intruções HPIB ###########
 
 striplc = str.maketrans('', '', string.ascii_lowercase)
 
@@ -16,7 +15,6 @@ Funclist=['0', 'VAR1', 'VAR2', 'CONS', 'VARD']
 Varlist=['0', 'R', 'P']
 Intlist=['0', 'SHOR', 'MED', 'LONG']
 Scalelist=['0', 'LIN', 'LOG']
-
 
 ## Classe genérica HP com código compartilhado
 
@@ -63,7 +61,7 @@ class HP:
     def SingleSave(self, path=".", timeout=2, real=False):
         if self.term=="0": return "Parameters not set"
         
-        print(f"Starting {self.term}")
+        print(f"Starting {self.term}. Duration: ", end='')
         self.measure()
         
         Poll=self.PollDR(1, 1, timeout)
@@ -92,26 +90,19 @@ class HP:
             sleep(2*delay)
             print("Debug DR")
             return 0
-        minute=False
-        progress=''
-        #prog_bar=display(progress, display_id=True)
-        
-        for i in range(60*maxpoll):
-            progress+='+'
-            if len(progress)>=30:
-                progress="+"
-                print("30s", end=' ')
-                if minute:
-                    print("|", end=' ')
-                minute=not minute
-            #prog_bar.update(progress)
+        start=datetime.datetime.now()  
+        for i in range(1, 60*maxpoll):
+            if i*delay % 30 == 0:
+                print('30s', end=' ')
+            if i*delay % 60 == 0:
+                print('|', end=' ')
             
             sleep(delay)
             if self.Stop_flag:
                 print('')
                 return 1
             if self.GetDR()==state:
-                print('')
+                print(f'\rStarting {self.term}. Duration: {(datetime.datetime.now()-start).seconds} s')
                 return 0
         print('')
         return 1
@@ -128,6 +119,7 @@ class HP:
                     VgStep=-VgStep
 
         self.DisableAll()
+        
         
         self.SetSMU('SMU1', 'Vs', 'Is', 'COMM', 'CONS')
         self.SetSMU('SMU3', 'Vg', 'Ig', 'V', 'VAR1')
@@ -302,7 +294,6 @@ class HP:
         return 0
 
     def SingleDiode(self, VfStart, VfStop, VfStep, SMUP='SMU2', SMUN='SMU4', Comp=2e-3):
-        
         self.Var2=None
         self.Var2Name=None
         self.DisableAll()
@@ -320,8 +311,7 @@ class HP:
 
         self.term="Diode"
         
-        print(f"Set {self.term}")
-        print(f"Vf=({VfStart}, {VfStop})")
+        print(f"Diode=({VfStart}, {VfStop}, {VfStep})")
 
         return 0
 
@@ -375,13 +365,13 @@ class HP:
         self.Var2=None
         self.Var2Name=None
         
-        self.SetSMU(Im, 'V1', 'I')
+        self.SetSMU(Im, 'V1', 'If')
         self.SetSMU(Ip, 'V2', 'I2', 'I', 'VAR1')
         self.SetVSMU(Vm, 'V3')
         self.SetVSMU(Vp, 'V4')
         self.SetVar('VAR1', 'I', Istart, Istop, (Istop-Istart)/(Points-1), Comp=Comp)
         
-        self.UFUNC('V=V3-V4')
+        self.UFUNC('Vf=V3-V4')
 
         self.SetAxis('X', 'V', 1, -1e-2, 1e-2)
         self.SetAxis('Y1', 'I', 1, Istart, Istop)

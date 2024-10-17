@@ -5,8 +5,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from scipy.constants import e, k
-from scipy.special import lambertw
-from scipy.optimize import least_squares
+
+from lmfit.models import Pearson4Model
 
 px = 1/plt.rcParams['figure.dpi']
 
@@ -261,99 +261,50 @@ def PlotVgs(path, sizex=640, draw=False):
         df.to_csv(path, index=False, float_format='%.5E')
     else:
         dgm=getpd(df, 'dgm')
-    
-    VGfit=VG[np.argmax(gm)-2:np.argmax(gm)+2]
-    IDfit=ID[np.argmax(gm)-2:np.argmax(gm)+2]
-    
-    m, b= np.polyfit(VGfit, IDfit, 1)
-    LIN=-b/m+VD/2
-    fitID=m*VG[:np.argmax(gm)]+b
+
+    try:
+        VGfit=VG[np.argmax(gm)-2:np.argmax(gm)+2]
+        IDfit=ID[np.argmax(gm)-2:np.argmax(gm)+2]
+        
+        m, b= np.polyfit(VGfit, IDfit, 1)
+        LIN=-b/m+VD/2
+        fitID=m*VG[:np.argmax(gm)]+b
+    except:
+        LIN=0
     
     Plot(path, 'Vg', ['Id', 'gm'], sizex=sizex)
 
     return np.around(LIN, 3)
 
-def SecDer(path, T):
-    try: df=pd.read_csv(path, header=[0, 1])
-    except: print("Error opening VGS\n")
+def SecDer(path):
+    try:
+        df=pd.read_csv(path, header=[0, 1])
         
-    if df.columns.levels[1][0] != 'None':
-        df.columns.levels[1][0] != ''
-    
-    VG=getpd(df, 'Vg')
-    VD=float(df.columns.levels[1][0])
-    ID=getpd(df, 'Id')
-    
-    
-    if 'gm' not in df.columns:
-        gm=(np.diff(df['Id'].T)/np.diff(df['Vg'].T)).T
-        gm=np.append([gm[0]], gm)
-    
-        header=pd.MultiIndex.from_product([['gm'],
-                                    df['Vg'].columns])
-    
-        df2=pd.DataFrame(data=gm, columns=header)
-        df=pd.concat((df, df2), axis=1)
-    
-        df.to_csv(path, index=False, float_format='%.5E')
-    else:
-        gm=getpd(df, 'gm')
-    
-    if 'dgm' not in df.columns:
-        dgm=(np.diff(df['gm'].T)/np.diff(df['Vg'].T)).T
-        dgm=np.append(dgm, [dgm[-1]])
-    
-        header=pd.MultiIndex.from_product([['dgm'],
-                                    df['Vg'].columns])
-    
-        df2=pd.DataFrame(data=dgm, columns=header)
-        df=pd.concat((df, df2), axis=1)
-    
-        df.to_csv(path, index=False, float_format='%.5E')
-    else:
-        dgm=getpd(df, 'dgm')
-    
-    VGfit=VG[np.argmax(gm)-2:np.argmax(gm)+2]
-    IDfit=ID[np.argmax(gm)-2:np.argmax(gm)+2]
-    
-    m, b= np.polyfit(VGfit, IDfit, 1)
-    LIN=-b/m+VD/2
-    fitID=m*VG[:np.argmax(gm)]+b
-    
-    for n, V in enumerate(VG):
-        if V > LIN:
-            break
-    
-    Vgfit=VG[int(n/2):]
-    Idfit=ID[int(n/2):]
-    
-    p0=[1e-7, 0.4, 1e-5, 1.4]
-    res=least_squares(fun, p0, args=(Idfit, Vgfit, T), xtol=None, loss='cauchy', max_nfev=3000)
-    print(T, res.x, res.nfev)
-    
-    dgmfit=np.diff(Id(res.x, Vgfit, T), n=2)/(np.diff(Vgfit)[:-1]**2)
+        Id=df['Id'][df['Id'].columns[0]].to_numpy()
+        Vg=df['Vg'][df['Vg'].columns[0]].to_numpy()
+    except:
+        df=pd.read_csv(path)
         
-    # fig1, ax1=plt.subplots()
-    fig2, ax2=plt.subplots()
-    # fig3, ax3=plt.subplots()
+        Id=df['Id'].to_numpy()
+        Vg=df['Vg'].to_numpy()
+    Vd=25e-3
     
-    # ax1.plot(VG, ID)
-    # ax1.set_ylim(0, ax1.get_ylim()[1])
-    # ax1.plot(VG, VG*m+b, '--r')
-
-    ax2.plot(VG, ID)
-    ax2.plot(Vg(res.x, Idfit, T), Idfit, '--r')
-    ax2.set_title(f'{T} K')
-    fig2.savefig(save_path=f"{path.rsplit('.',1)[0]}.SecDer.png")
-
-    plt.close('all')
+    gm=np.diff(Id)/np.diff(Vg)
+    dgm=np.diff(gm)/np.diff(Vg[1:])
     
-    # ax3.plot(VG, dgm)
-    # ax3.plot(Vgfit[1:-1], np.diff(Id(res.x, Vgfit, T), n=2)/(np.diff(Vgfit)[:-1]**2), 'r--')
+    Vgfit=Vg[int(np.argmax(gm)/2):-1]
+    dgmfit=dgm[int(np.argmax(gm)/2)-1:]
     
-    DGM=Vgfit[np.argmax(dgmfit)]
-
-    return DGM
+    gmodel=Pearson4Model()
+    res=gmodel.fit(data=dgmfit, x=Vgfit)
+    
+    fig, ax=plt.subplots()
+    
+    ax.plot(Vg[1:-1], dgm)
+    ax.plot(Vgfit, res.best_fit, '--r')
+    fig.savefig(f"{path.rsplit('.',1)[0]}.SecDer.png")
+    
+    return res.params['center'].value
 
 def PlotSubVt(path):
 
@@ -416,14 +367,17 @@ def PlotVp(path):
 def Plot2P(path):
     try: df=pd.read_csv(path, header=[0, 1])
     except: print("Error opening CSV\n")
-
-    V=df['Vf'][df.columns.levels[1][0]].to_numpy()
-    I=df['If'][df.columns.levels[1][0]].to_numpy()
-
-    m, b = np.polyfit(I, V, 1)
-
-    Plot(path, "Vf", "If")
+    try:
+        V=df['Vf'][df.columns.levels[1][0]].to_numpy()
+        I=df['If'][df.columns.levels[1][0]].to_numpy()
+        Plot(path, "Vf", "If")
+    except:
+        V=df['V'][df.columns.levels[1][0]].to_numpy()
+        I=df['I'][df.columns.levels[1][0]].to_numpy()
+        Plot(path, "V", "I")
     
+    m, b = np.polyfit(I, V, 1)        
+        
     return m
 
 def PlotSi4P(path,dop,draw=False):
