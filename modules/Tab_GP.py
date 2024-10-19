@@ -394,8 +394,7 @@ class General(GenericTab):
         self.Progress.AppendText('\nMeasurement started!\n...')
         try:
             self.HP.SetIntTime(self.IntTimeBox.GetValue())
-            print('a')
-            ReturnFlag = self.HP.SingleSave(self.SaveFilePath.GetValue(), timeout=1800)
+            ReturnFlag = self.HP.SingleSave(self.SaveFilePath.GetValue(), timeout=int(float(self.Timeout.GetValue())*60))
         except:
             #ReturnFlag="No instrument\nSend config to open connection"
             if self.ShowMessage(f'Error: {ReturnFlag}', True): raise Exception(ReturnFlag)
@@ -404,7 +403,7 @@ class General(GenericTab):
         
         if os.path.isfile(ReturnFlag):
             self.img_path.SetLabel(ReturnFlag)
-            self.RefreshImg(Plot(ReturnFlag, self.X1.GetValue(), self.YAxis, sizex=550))
+            self.RefreshImg(Plot(ReturnFlag, self.X1.GetValue(), self.YAxis, sizex=int(config['Window']['PhotoMaxSizeX'])))
             return ReturnFlag
         
         if self.ShowMessage(f'Error: {ReturnFlag}', True): raise Exception(ReturnFlag)
