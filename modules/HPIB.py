@@ -102,7 +102,7 @@ class HP:
                 print('')
                 return 1
             if self.GetDR()==state:
-                print(f'\rStarting {self.term}. Duration: {(datetime.datetime.now()-start).seconds} s')
+                print(f'\rStarting {self.term}. Duration: {(datetime.datetime.now()-start).seconds} s                                    ')
                 return 0
         print('')
         return 1

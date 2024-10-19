@@ -189,13 +189,6 @@ class General(GenericTab):
         self.EnableVS2.Bind(wx.EVT_CHECKBOX, self.SetSizers)
 
         self.sizers=[self.SizerSMU1, self.SizerSMU2, self.SizerSMU3, self.SizerSMU4, self.SizerVS1, self.SizerVS2]
-
-        for sizer in self.sizers:
-            children=sizer.GetChildren()
-            for n, child in enumerate(children):
-                if n==5:
-                    break
-                child.GetWindow().Bind(wx.EVT_TEXT, self.VarSet)
         
         #========  Var Config ========#
         # BoxN = [[PosX, PoxY],[SizeX,SizeY]]
@@ -249,11 +242,11 @@ class General(GenericTab):
 
         self.SizerAxis=wx.BoxSizer()
         
-        self.XTx = wx.StaticText(self, label='X (Var1)', pos=(Box4[0][0]+39, Box4[0][1]+2*int(config['Window']['Margin'])))       
+        self.XTx = wx.StaticText(self, label='X', pos=(Box4[0][0]+39, Box4[0][1]+2*int(config['Window']['Margin'])))       
         self.Y1Tx = wx.StaticText(self, label='Y1', pos=(Box4[0][0]+92+12, Box4[0][1]+2*int(config['Window']['Margin'])))
         self.Y2Tx = wx.StaticText(self, label='Y2', pos=(Box4[0][0]+140+12, Box4[0][1]+2*int(config['Window']['Margin'])))
         self.X1 = wx.TextCtrl(self, value='V2', pos=(Box4[0][0]+39, Box4[0][1]+SpacingRow), size=(SizeIVcol,SizeRow), style=wx.TE_CENTRE, name='sv_X1')
-        self.X1.Disable()
+        
         self.Y1 = wx.TextCtrl(self, value='I2', pos=(Box4[0][0]+92, Box4[0][1]+SpacingRow), size=(SizeIVcol,SizeRow), style=wx.TE_CENTRE, name='sv_Y1')
         self.Y2 = wx.TextCtrl(self, value='', pos=(Box4[0][0]+140, Box4[0][1]+SpacingRow), size=(SizeIVcol,SizeRow), style=wx.TE_CENTRE, name='sv_Y2')
         self.SizerAxis.Add(self.X1)
@@ -262,13 +255,11 @@ class General(GenericTab):
         self.X1Min = wx.TextCtrl(self, value='0', pos=(Box4[0][0]+39, Box4[0][1]+2*SpacingRow-int(config['Window']['Margin'])), size=(SizeIVcol,SizeRow), style=wx.TE_CENTRE, name='sv_X1Min')
         self.Y1Min = wx.TextCtrl(self, value='0', pos=(Box4[0][0]+92, Box4[0][1]+2*SpacingRow-int(config['Window']['Margin'])), size=(SizeIVcol,SizeRow), style=wx.TE_CENTRE, name='sv_Y1Min')
         self.Y2Min = wx.TextCtrl(self, value='', pos=(Box4[0][0]+140, Box4[0][1]+2*SpacingRow-int(config['Window']['Margin'])), size=(SizeIVcol,SizeRow), style=wx.TE_CENTRE, name='sv_Y2Min')
-        self.X1Min.Disable()
 
         self.MaxTx = wx.StaticText(self, label='Max', pos=(Box4[0][0]+int(config['Window']['Margin']), Box4[0][1]+3*SpacingRow-15))
         self.X1Max = wx.TextCtrl(self, value='1', pos=(Box4[0][0]+39, Box4[0][1]+3*SpacingRow-2*int(config['Window']['Margin'])), size=(SizeIVcol,SizeRow), style=wx.TE_CENTRE, name='sv_X1Max')
         self.Y1Max = wx.TextCtrl(self, value='1m', pos=(Box4[0][0]+92, Box4[0][1]+3*SpacingRow-2*int(config['Window']['Margin'])), size=(SizeIVcol,SizeRow), style=wx.TE_CENTRE, name='sv_Y1Max')
         self.Y2Max = wx.TextCtrl(self, value='', pos=(Box4[0][0]+140, Box4[0][1]+3*SpacingRow-2*int(config['Window']['Margin'])), size=(SizeIVcol,SizeRow), style=wx.TE_CENTRE, name='sv_Y2Max')
-        self.X1Max.Disable()
 
         self.Traces = wx.TextCtrl(self, value='I1, I3, I4', pos=(Box4[0][0]+int(config['Window']['Margin']), Box4[0][1]+4*SpacingRow-3*int(config['Window']['Margin'])+5), size=(Box4[1][0]-2*int(config['Window']['Margin']),SizeRow), name='sv_Traces')
         self.ufunc = wx.TextCtrl(self, value='VM=VMU2-VMU1', pos=(Box4[0][0]+int(config['Window']['Margin']), Box4[0][1]+5*SpacingRow-4*int(config['Window']['Margin'])+5), size=(Box4[1][0]-2*int(config['Window']['Margin']),SizeRow), name='sv_ufunc')
@@ -302,12 +293,12 @@ class General(GenericTab):
         self.OpenHP(self.GPIBCH.GetValue(), self.Inst.GetValue())
 
         SMUfuncs=[self.SMU1F.GetValue(), self.SMU2F.GetValue(), self.SMU3F.GetValue(), self.SMU4F.GetValue(), self.VS1F.GetValue(), self.VS2F.GetValue()]
-        EnableChan=[self.EnableSMU1.GetValue(),self.EnableSMU2.GetValue(),self.EnableSMU3.GetValue(),self.EnableSMU4.GetValue(),self.EnableVS1.GetValue(),self.EnableVS2.GetValue()]
+        self.EnableChan=[self.EnableSMU1.GetValue(),self.EnableSMU2.GetValue(),self.EnableSMU3.GetValue(),self.EnableSMU4.GetValue(),self.EnableVS1.GetValue(),self.EnableVS2.GetValue()]
 
-        Funcs=[val for n, val in enumerate(SMUfuncs) if EnableChan[n]]
+        Funcs=[val for n, val in enumerate(SMUfuncs) if self.EnableChan[n]]
 
         if Funcs.count('VAR1') != 1:
-            self.ShowMessage('Var1 error', True)
+            self.ShowMessage('Invalid Var1', True)
             return 1
 
         self.Progress.AppendText('\nSetting Channels, ')
@@ -328,8 +319,16 @@ class General(GenericTab):
         ########### Setting Vars
         
         self.Progress.AppendText('Vars, ')
+        
+        if self.CheckVar1() != 1:
+            data_variables=self.CheckVar1()
+            
+        else:
+            self.ShowMessage("Invalid Var1", True)
+            return 1
+        
         self.HP.SetVar("VAR1", "V", ETF(self.VAR1Start.GetValue()), ETF(self.VAR1Stop.GetValue()), ETF(self.VAR1Step.GetValue()), ETF(Comps[Funcs.index('VAR1')]))
-
+        
         if "VAR2" in Funcs:
             self.HP.SetVar("VAR2", "V", ETF(self.VAR2Start.GetValue()), ETF(self.VAR2Stop.GetValue()), ETF(self.VAR2Step.GetValue()))
 
@@ -349,7 +348,8 @@ class General(GenericTab):
         
         self.HP.SetAxis("Y1", self.YAxis[0], scale, ETF(self.Y1Min.GetValue()), ETF(self.Y1Max.GetValue()))
 
-        data_variables=[self.X1.GetValue()] + self.YAxis
+        if self.Y1.GetValue() not in data_variables:
+            data_variables += [self.Y1.GetValue()]
         
         if self.Y2.GetValue():
             self.YAxis+=[self.Y2.GetValue()]
@@ -363,13 +363,17 @@ class General(GenericTab):
                 self.Y2Max.SetValue('1')
             
             self.HP.SetAxis("Y2", self.YAxis[1], scale, ETF(self.Y2Min.GetValue()), ETF(self.Y2Max.GetValue()))
-            data_variables=data_variables+[self.Y2.GetValue()]
+            if self.Y2.GetValue() not in data_variables:
+                data_variables += [self.Y2.GetValue()]
         
         if self.Traces.GetValue() and 'Unavailable' not in self.Traces.GetValue():
             for trace in self.Traces.GetValue().split(','):
-                data_variables+=[trace.strip(' ')]
-
-        data_variables=[data_variables[0]]+sorted(data_variables[1:])
+                trace=trace.strip(' ')
+                if trace not in data_variables:
+                    data_variables+=[trace]
+        print(data_variables)
+        data_variables=data_variables[:2]+sorted(data_variables[2:])
+        print(data_variables)
 
         self.HP.save_list(data_variables)
 
@@ -421,27 +425,15 @@ class General(GenericTab):
         self.VS1M.Disable()
         self.VS2M.Disable()
 
-    def VarSet(self, evt):
-        
-        SMUfuncs=[self.SMU1F.GetValue(), self.SMU2F.GetValue(), self.SMU3F.GetValue(), self.SMU4F.GetValue(), self.VS1F.GetValue(), self.VS2F.GetValue()]
-        EnableChan=[self.EnableSMU1.GetValue(),self.EnableSMU2.GetValue(),self.EnableSMU3.GetValue(),self.EnableSMU4.GetValue(),self.EnableVS1.GetValue(),self.EnableVS2.GetValue()]
-
-        Funcs=[val for n, val in enumerate(SMUfuncs) if EnableChan[n]]
-        
-        if Funcs.count('VAR1') != 1:
-            self.X1.SetValue('---')
-            return 1
+    def CheckVar1(self):
         
         for n, SMU in enumerate(self.sizers):
-            if SMU.GetChildren()[3].GetWindow().GetValue()=='VAR1' and EnableChan[n]:
+            if SMU.GetChildren()[3].GetWindow().GetValue()=='VAR1' and self.EnableChan[n]:
                 if SMU.GetChildren()[2].GetWindow().GetValue()=='V':
-                    self.X1.SetValue(SMU.GetChildren()[0].GetWindow().GetValue())
-                    return 0
+                    return [SMU.GetChildren()[0].GetWindow().GetValue(), SMU.GetChildren()[1].GetWindow().GetValue()]
                 elif SMU.GetChildren()[2].GetWindow().GetValue()=='I':
-                    self.X1.SetValue(SMU.GetChildren()[1].GetWindow().GetValue())
-                    return 0
+                    return [SMU.GetChildren()[1].GetWindow().GetValue(), SMU.GetChildren()[0].GetWindow().GetValue()]
                 else:
-                    self.X1.SetValue('---')
                     return 1
     
     def ScriptMenu(self, event):
