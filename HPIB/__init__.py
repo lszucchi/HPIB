@@ -1,9 +1,8 @@
-import pyvisa, string, datetime
+import pyvisa, string
 from time import sleep
-try:
-    from .HPIB_plot import *
-except:
-    from HPIB_plot import *
+from datetime import datetime
+from os.path import splitext
+import numpy as np
 
 ########## Tabelas para intruções HPIB ###########
 
@@ -43,7 +42,8 @@ class HP:
     def beep(self):
         if '4155' in self.ask("*IDN?"): 
             return 0
-        else: raise Exception("Comm lost")
+        else:
+            return "Comm Lost"
         
     def ask(self, msg):
         if self.debug: 
@@ -53,7 +53,7 @@ class HP:
     
     def write(self, msg):
         if self.debug: return print(msg)
-        return self.inst.write(msg)
+        return 1
 
     def close(self):
         self.inst.close()
@@ -74,12 +74,14 @@ class HP:
             df=self.get_data()
         
         try:
-            _, ext = os.path.splitext(path)
+            _, ext = splitext(path)
             if ext != ".csv":
-                path = f"{path}/{self.term}-{datetime.datetime.now().strftime('%y%m%d %H%M%S')}.csv"
+                path = f"{path}/{self.term}-{datetime.now().strftime('%y%m%d %H%M%S')}.csv"
         except:
             return "Invalid Path"
+        
         try: df.to_csv(path, float_format='%+.6E')
+        
         except: return "Unable to write CSV"
         
         return path
@@ -88,9 +90,9 @@ class HP:
     def PollDR(self, state, delay=1, maxpoll=2):
         if self.debug:
             sleep(2*delay)
-            print("Debug DR")
+            print("Debug DataReady")
             return 0
-        start=datetime.datetime.now()  
+        start=datetime.now()  
         for i in range(1, 60*maxpoll):
             if i*delay % 30 == 0:
                 print('30s', end=' ')
@@ -102,7 +104,7 @@ class HP:
                 print('')
                 return 1
             if self.GetDR()==state:
-                print(f'\rStarting {self.term}. Duration: {(datetime.datetime.now()-start).seconds} s                                    ')
+                print(f'\rStarting {self.term}. Duration: {(datetime.now()-start).seconds} s                                    ')
                 return 0
         print('')
         return 1

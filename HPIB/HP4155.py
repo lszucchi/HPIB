@@ -1,13 +1,13 @@
-try:
-    from .HPIB import *
-except:
-    from HPIB import *
+from HPIB import HP, striplc
+from HPIB.HPT import ETF
+from time import sleep
+import numpy as np
+import pandas as pd
 
 class HP4155(HP):
 
     def reset(self):
         self.write("*RST")
-        print(self.ask("*IDN?"))
         self.write(":STAT:MEAS:ENAB 8")
         self.write(":PAGE:MEAS:MSET:ITIM MED")
         self.write(":PAGE:MEAS:MSET:ITIM:LONG 4")
@@ -37,7 +37,7 @@ class HP4155(HP):
     def SetIntTime(self, IntTime="MEDium"):
         IntTime=IntTime.translate(striplc)
         
-        if IntTime in Intlist:
+        if IntTime in ['SHOR', 'MED', 'LONG']:
             self.write(f":PAGE:MEAS:MSET:ITIM {IntTime}")
 
             return 0

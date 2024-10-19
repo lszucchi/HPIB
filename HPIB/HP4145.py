@@ -1,5 +1,4 @@
-from .HPIB import *
-
+from HPIB import HP
 class HP4145(HP):
 
     def stop(self):

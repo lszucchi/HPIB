@@ -5,10 +5,9 @@ from threading import Thread
 config=configparser.ConfigParser()
 config.read("config.ini")
 
-from .HPIB import *
-from .HPIB4145 import HP4145
-from .HPIB4155 import HP4155
-from .HPIB_plot import *
+from .HP4145 import HP4145
+from .HP4155 import HP4155
+from .HPT import *
 from .INOSerial import *
 
 class GenericTab(wx.Panel):
@@ -36,8 +35,6 @@ class GenericTab(wx.Panel):
         else:
             if self.ShowMessage('Input error:\nInvalid Instrument', True): raise RuntimeError('Invalid Instrument')
             return 1
-        print(self.HP.ask("*IDN?"))
-        self.HP.reset()
         
     def DrawSaveBox(self, X, Y, length):
         Bx0=wx.StaticBox(self, pos=(X,Y), size=(length+115,70),label='Save:')

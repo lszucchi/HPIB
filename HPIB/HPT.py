@@ -1,5 +1,5 @@
-import os, csv
-
+from os import mkdir
+from os.path import splitext, isdir
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -341,8 +341,8 @@ def PlotSubVt(path):
 
     ax1.set_yscale('log')
     
-    if not os.path.isdir(path.rsplit('/',1)[0]+'/fig/'):
-        os.mkdir(path.rsplit('/',1)[0]+'/fig/')
+    if not isdir(path.rsplit('/',1)[0]+'/fig/'):
+        mkdir(path.rsplit('/',1)[0]+'/fig/')
     save_path=path.rsplit('/',1)[0]+'/fig/'+path.rsplit('/',1)[1].rsplit('.',1)[0]+'.png'
     
     plt.savefig(save_path)    
@@ -415,8 +415,8 @@ def PlotSi4P(path,dop,draw=False):
     plt.plot(X,Y,'bx')
     plt.plot(X, X*fit[0]+fit[1], 'r')
 
-    if not os.path.isdir(path.rsplit('/',1)[0]+'/fig/'):
-        os.mkdir(path.rsplit('/',1)[0]+'/fig/')
+    if not isdir(path.rsplit('/',1)[0]+'/fig/'):
+        mkdir(path.rsplit('/',1)[0]+'/fig/')
     save_path=path.rsplit('/',1)[0]+'/fig/'+path.rsplit('/',1)[1].rsplit('.',1)[0]+'.png'
     plt.savefig(save_path)    
     
@@ -592,7 +592,7 @@ def CalcIs(path, T, ptype=False):
     # print(Is)
     
     # print(f"Is={format(np.average(Is), '.2e')}   R2: {np.sum((Is-np.average(Is))**2)}")
-    fig.savefig(os.path.splitext(path)[0])
+    fig.savefig(splitext(path)[0])
     
     return np.average(Is)
 
@@ -652,7 +652,7 @@ def GetConc(x, dop):
         
 def ScaleTrace(path, scaling, tracelist):
     df=pd.read_csv(path, header=[0, 1])
-    out_path="-raw".join(os.path.splitext(path))
+    out_path="-raw".join(splitext(path))
     df.to_csv(out_path, index=False, float_format='%.5E')
     for trace in tracelist:
         df[trace]=df[trace]*scaling

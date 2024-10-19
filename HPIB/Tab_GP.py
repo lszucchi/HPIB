@@ -371,9 +371,7 @@ class General(GenericTab):
                 trace=trace.strip(' ')
                 if trace not in data_variables:
                     data_variables+=[trace]
-        print(data_variables)
         data_variables=data_variables[:2]+sorted(data_variables[2:])
-        print(data_variables)
 
         self.HP.save_list(data_variables)
 
@@ -395,9 +393,8 @@ class General(GenericTab):
         try:
             self.HP.SetIntTime(self.IntTimeBox.GetValue())
             ReturnFlag = self.HP.SingleSave(self.SaveFilePath.GetValue(), timeout=int(float(self.Timeout.GetValue())*60))
-        except:
-            #ReturnFlag="No instrument\nSend config to open connection"
-            if self.ShowMessage(f'Error: {ReturnFlag}', True): raise Exception(ReturnFlag)
+        except Exception as error:
+            if self.ShowMessage('Measurement Failed', True): raise error
 
         self.Progress.AppendText('\nMeasurement Done!')
         
