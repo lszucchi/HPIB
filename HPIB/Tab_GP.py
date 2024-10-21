@@ -338,6 +338,10 @@ class General(GenericTab):
         ########### Setting Axis
         self.Progress.AppendText('Axis')
 
+        if self.ufunc.GetValue():
+            for function in self.ufunc.GetValue().split(','):
+                self.HP.UFUNC(function.strip(' '))
+
         self.HP.SetAxis("X", self.X1.GetValue(), 'LIN', ETF(self.VAR1Start.GetValue()), ETF(self.VAR1Stop.GetValue()))
         
         self.YAxis=[self.Y1.GetValue()]
@@ -371,13 +375,12 @@ class General(GenericTab):
                 trace=trace.strip(' ')
                 if trace not in data_variables:
                     data_variables+=[trace]
+
+        print(data_variables)
         data_variables=data_variables[:2]+sorted(data_variables[2:])
+        print(data_variables)
 
         self.HP.save_list(data_variables)
-
-        if self.ufunc.GetValue():
-            for function in self.ufunc.GetValue().split(','):
-                self.HP.UFUNC(function.strip(' '))
         
         if config['Window'].getboolean('Debug'):
             print("\nTraces: ["+','.join(data_variables)+']')

@@ -92,6 +92,7 @@ class HP4155(HP):
             return 0
 
     def save_list(self, trace_list):
+        self.beep()
         self.data_variables=trace_list
         self.write(":PAGE:DISP:MODE LIST")
         self.write(":PAGE:DISP:LIST:DEL:ALL")

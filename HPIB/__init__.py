@@ -53,6 +53,7 @@ class HP:
     
     def write(self, msg):
         if self.debug: return print(msg)
+        self.inst.write(msg)
         return 1
 
     def close(self):
