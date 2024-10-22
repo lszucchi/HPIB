@@ -1,8 +1,12 @@
-from modules.Tab_Generic import *
-from modules.Tab_4P import FourPoint
-from modules.Tab_CV import CVTab
-from modules.Tab_GP import General
-from modules.Tab_IV import IVTab
+import wx, configparser
+
+config=configparser.ConfigParser()
+config.read("config.ini")
+
+from HPIB.Tab_4P import FourPoint
+from HPIB.Tab_CV import CVTab
+from HPIB.Tab_GP import General
+from HPIB.Tab_IV import IVTab
 
 ########################################################################
 class MainNotebook(wx.Notebook):
