@@ -287,7 +287,10 @@ def SecDer(path):
         
         Id=df['Id'].to_numpy()
         Vg=df['Vg'].to_numpy()
-    Vd=25e-3
+
+    if np.average(Id) < 0:
+        Vg=-Vg
+        Id=-Id
     
     gm=np.diff(Id)/np.diff(Vg)
     dgm=np.diff(gm)/np.diff(Vg[1:])

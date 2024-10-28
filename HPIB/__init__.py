@@ -266,7 +266,7 @@ class HP:
         
         return 0
 
-    def SetDiode(self, VfStart, VfStop, VfStep):
+    def SetDiode(self, VfStart, VfStop, VfStep, Comp=1.2e-3):
         self.Var2=None
         self.Var2Name=None
         VfStart=-VfStart
@@ -275,9 +275,9 @@ class HP:
         
         self.DisableAll()
         
-        self.SetSMU('SMU4', 'Vb', 'Ib', 'V', 'VAR1', Comp=2.4e-3)
-        self.SetSMU('SMU1', 'Vs', 'Is', 'V', 'CONS', Comp=1.2e-3)
-        self.SetSMU('SMU2', 'Vd', 'Id', 'V', 'CONS', Comp=1.2e-3)
+        self.SetSMU('SMU4', 'Vb', 'Ib', 'V', 'VAR1', Comp=10e-3)
+        self.SetSMU('SMU1', 'Vs', 'Is', 'V', 'CONS', Comp=Comp)
+        self.SetSMU('SMU2', 'Vd', 'Id', 'V', 'CONS', Comp=Comp)
 
         self.SetVar('VAR1', 'V', VfStart, VfStop, VfStep)
         self.UFUNC("Vf=-Vb")
