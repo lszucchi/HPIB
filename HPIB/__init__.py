@@ -21,7 +21,6 @@ class HP:
 
     def __init__(self, addr, read_termination = '\n', write_termination = '\n', timeout=5000, debug=False):
 
-        self.analyzer_mode="SWEEP"
         self.term=""
         self.read_termination=read_termination
         self.timeout=timeout
@@ -37,8 +36,13 @@ class HP:
             self.inst = self.rm.open_resource(addr)
             self.inst.timeout=self.timeout
             self.write(":STAT:MEAS:ENAB 8")
-            print(self.ask("*IDN?"))
+            self.Mode="SWEEP"
+            print(self.IDN)
 
+    @property
+    def IDN(self):
+        return self.ask("*IDN?")
+    
     def beep(self):
         if '4155' in self.ask("*IDN?"): 
             return 0
@@ -139,9 +143,9 @@ class HP:
         self.SetVar('VAR1', 'V', VgStart, VgStop, VgStep, Comp=Comp)
 
         self.SetAxis('X', 'Vg', 'LIN', VgStart, VgStop)
-        self.SetAxis('Y1', 'Id', 'LIN', 0, VgStop*1e-3)
+        self.SetAxis('Y1', 'Id', 'LIN', 0, -1e-5 if ptype else 1e-5)
 
-        self.save_list(['Vg', 'Ig', 'Id', 'Is'])
+        self.save_list=['Vg', 'Ig', 'Id', 'Is']
         self.beep()
         
         if sat:
@@ -177,10 +181,10 @@ class HP:
         self.SetVar('VAR2', 'V', VgStart, VgStop, VgStep, Comp=Comp)
         sleep(0.5)
         self.SetAxis('X', 'Vd', 'LIN', VdStart, VdStop)
-        self.SetAxis('Y1', 'Id', 'LIN', 0, 1e-3)
+        self.SetAxis('Y1', 'Id', 'LIN', 0, -1e-3 if ptype else 1e-3)
         self.Var2Name="Vgs"
 
-        self.save_list(['Vd', 'Id', 'Ig', 'Is', 'Ib'])
+        self.save_list=['Vd', 'Id', 'Ig', 'Is', 'Ib']
         self.beep()
         
         self.term='IdxVds'
@@ -217,7 +221,7 @@ class HP:
         self.SetAxis('X', 'Vd', 'LIN', VgStart, VgStop)
         self.SetAxis('Y1', 'Vs', 'LIN', 0, 1)
 
-        self.save_list(['Vg', 'Ig', 'Vs', 'Id'])
+        self.save_list=['Vg', 'Ig', 'Vs', 'Id']
         self.beep()
 
         self.term='VpxVgs'
@@ -255,7 +259,7 @@ class HP:
         self.SetAxis('X', 'Vs', 'LIN', VsStart, VsStop)
         self.SetAxis('Y1', 'Id', 'LIN', 0, 1)
 
-        self.save_list(['Vs', 'Id', 'Ig'])
+        self.save_list=['Vs', 'Id', 'Ig']
         
         self.beep()
 
@@ -286,7 +290,7 @@ class HP:
         self.SetAxis('Y1', 'Is', 'LIN', -1e-3, 1e-3)
         self.SetAxis('Y2', 'Id', 'LIN', -1e-3, 1e-3)
 
-        self.save_list(['Vf', 'Is', 'Id'])
+        self.save_list=['Vf', 'Is', 'Id']
         self.beep()
 
         self.term="Diode"
@@ -309,7 +313,7 @@ class HP:
         self.SetAxis('X', 'Vf', 'LIN', VfStart, VfStop)
         self.SetAxis('Y1', 'If', 'LIN', -Comp, Comp)
 
-        self.save_list(['Vf', 'If'])
+        self.save_list=['Vf', 'If']
         self.beep()
 
         self.term="Diode"
@@ -332,7 +336,7 @@ class HP:
         self.SetAxis('Y1', 'C', 'LIN', 0, 2)
         self.SetAxis('Y2', 'I', 'LIN', 0, 1e-3)
 
-        self.save_list(['V', 'C', 'I'])
+        self.save_list=['V', 'C', 'I']
         self.beep()
 
         self.term='CV'
@@ -355,7 +359,7 @@ class HP:
         self.SetAxis('Y1', 'If')
         self.SetAxis('X', 'Vf')
 
-        self.save_list(['Vf', 'If'])
+        self.save_list=['Vf', 'If']
         self.beep()
         
         self.term=f"2P - {SMUN[-1]}{SMUP[-1]}"
@@ -379,7 +383,7 @@ class HP:
         self.SetAxis('X', 'V', 1, -1e-2, 1e-2)
         self.SetAxis('Y1', 'I', 1, Istart, Istop)
         
-        self.save_list(['I', 'V'])
+        self.save_list=['I', 'V']
         self.beep()
         
         self.term="4P"
@@ -404,7 +408,7 @@ class HP:
         self.SetAxis('X', 'V')
         self.SetAxis('Y1', 'I')
         
-        self.save_list(['I', 'V'])
+        self.save_list=['I', 'V']
         self.beep()
         
         self.term="4PV"
@@ -428,7 +432,7 @@ class HP:
         self.SetAxis('X', 'V3')
         self.SetAxis('Y1', 'I1')
         
-        self.save_list(['I1', 'V3'])
+        self.save_list=['I1', 'V3']
         self.beep()
         
         self.term="4P"
@@ -453,7 +457,7 @@ class HP:
         self.SetAxis('X', 'Vf', 'LIN', -0.1, 0.1)
         self.SetAxis('Y1', 'If', 'LIN', IStart, IStop)
 
-        self.save_list(['Vf', 'If', 'Ib', 'Is'])
+        self.save_list=['Vf', 'If', 'Ib', 'Is']
         
         self.beep()
 

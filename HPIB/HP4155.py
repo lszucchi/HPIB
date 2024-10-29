@@ -26,35 +26,78 @@ class HP4155(HP):
         return 0
         
     def DisableAll(self):
+        self.analyzer_mode="SWEEP"
         self.write(":PAGE:CHAN:ALL:DIS")
-        sleep(1)
-        self.write(":PAGE:CHAN:UFUN:DEL:ALL")
-        sleep(1)
+        self.beep()
         self.write(":PAGE:DISP:GRAP:Y2:DEL")
         self.beep()
-        return 0
-
-    def SetIntTime(self, IntTime="MEDium"):
-        IntTime=IntTime.translate(striplc)
-        
-        if IntTime in ['SHOR', 'MED', 'LONG']:
-            self.write(f":PAGE:MEAS:MSET:ITIM {IntTime}")
-
-            return 0
+        self.write(":PAGE:CHAN:UFUN:DEL:ALL")
         self.beep()
-        return 'Invalid Integration Time'
-
-    def SetHoldTime(self, HoldTime=1):
-        if HoldTime < 0 or HoldTime > 650:
-            return 'Hold Time Outside of allowed range'
-        self.write(f":PAGE:MEAS:HTIM {HoldTime}")
         return 0
 
-    def SetStop(self, Condition="OFF"):
+    @property
+    def Mode(self):
+        return self.ask(":PAGE:CHAN:MODE?")
+
+    @Mode.setter
+    def Mode(self, Value):
+        if Value.upper() not in ['SWE', 'SWEEP', 'SAMP', 'SAMPLING']:
+            raise ValueError("Invalid Mode")
+        self.write(f":PAGE:CHAN:MODE {Value.upper()}")
+    
+    @property
+    def IntTime(self):
+        return self.ask(":PAGE:MEAS:MSET:ITIM?")
+        
+    @IntTime.setter
+    def IntTime(self, Value="MEDium"):
+        Value=Value.translate(striplc)
+        
+        if Value not in ['SHOR', 'MED', 'LONG']:
+            raise ValueError("Invalid IntTime")
+            
+        self.write(f":PAGE:MEAS:MSET:ITIM {Value}")
+
+    @property
+    def HoldTime(self):
+        return self.ask(":PAGE:MEAS:HTIM?")
+
+    @HoldTime.setter
+    def HoldTime(self, Value=1):
+        if Value < 0 or Value > 650:
+            raise ValueError("Invalid Hold Time")
+        
+        self.write(f":PAGE:MEAS:HTIM {Value}")
+
+    @property
+    def StopCond(self):
+        return self.ask(":PAGE:MEAS:SST?")
+        
+    @StopCond.setter
+    def StopCond(self, Condition="OFF"):
         if Condition not in ['ABN', 'COMP', 'OFF']:
-            return "Invalid condition"
+            raise ValueError("Invalid condition")
         self.write(f":PAGE:MEAS:SST {Condition}")
-        return 0
+
+    @property
+    def save_list(self):
+        return self.ask(":PAGE:DISP:LIST?")
+
+    @save_list.setter
+    def save_list(self, trace_list):
+        self.write(":PAGE:DISP:MODE LIST")
+        self.write(":PAGE:DISP:LIST:DEL:ALL")
+        
+        if not isinstance(trace_list, list):
+            raise TypeError('Invalid trace list')
+
+        if len(trace_list) > 8:
+            raise RuntimeError('Maximum of 8 variables allowed')
+            
+        for name in trace_list:
+                self.write(f":PAGE:DISP:LIST \'{name}\'")
+            
+        self.write(":PAGE:DISP:MODE GRAP")
     
     def UFUNC(self, ufunc):
     
@@ -76,36 +119,14 @@ class HP4155(HP):
     def GetDR(self):
         return int(self.ask("*ESR?"))&1
     
-    def measure(self, period="INF", points=100):
-            if self.analyzer_mode == "SWEEP":
-                self.write(":PAGE:GLIS")
-                self.write(":PAGE:SCON:MEAS:SING")
-                self.write("*ESE 1")
-                self.write("*OPC")
-                while(self.GetDR()):
-                    continue
-            else:
-                self.write(f":PAGE:MEAS:SAMP:PER {period}")
-                self.write(f":PAGE:MEAS:SAMP:POIN {points}")
-                self.write(":PAGE:SCON:MEAS:SING; *OPC?")
+    def measure(self):
+        self.write(":PAGE:SCON:MEAS:SING")
+        self.write("*ESE 1")
+        self.write("*OPC")
+        while(self.GetDR()):
+            sleep(0.5)
 
-            return 0
-
-    def save_list(self, trace_list):
-        self.beep()
-        self.data_variables=trace_list
-        self.write(":PAGE:DISP:MODE LIST")
-        self.write(":PAGE:DISP:LIST:DEL:ALL")
-        
-        if isinstance(trace_list, list):
-            if len(trace_list) > 8:
-                raise RuntimeError('Maximum of 8 variables allowed')
-            for name in trace_list:
-                self.write(f":PAGE:DISP:LIST \'{name}\'")
-        else:
-            raise TypeError('Invalid trace list')
-        self.write(":PAGE:DISP:MODE GRAP")
-        self.beep()
+        return 0
 
     def DataOutput(self, trace):
         if self.debug:
@@ -220,7 +241,7 @@ class HP4155(HP):
         
         return 1
         
-    def SetSMU(self, SMUno, VNAME, INAME, Mode="COMM", Func="CONS", Comp="1e-3", SRES="0OHM", Value=0):
+    def SetSMU(self, SMUno, VNAME, INAME, Mode="COMM", Func="CONS", Value=0, Comp="1e-3", SRES="0OHM"):
 
         SMUno=SMUno.upper()
         if SMUno not in ['SMU1', 'SMU2','SMU3','SMU4']:
@@ -252,14 +273,17 @@ class HP4155(HP):
 
             return 0
         
-        if Func == "CONS":
+        if Func == "CONS" and self.analyzer_mode == "SWEEP":
             # print(f"{Value}, {Comp}")
             # self.write(f":PAGE:MEAS")
             # sleep(3)
             self.write(f":PAGE:MEAS:CONS:{SMUno} {Value}")
             self.write(f":PAGE:MEAS:CONS:{SMUno}:COMP {Comp}")
             return 0
-        
+
+        elif Func == "CONS" and self.analyzer_mode == "SAMPLING":
+            self.write(f":PAGE:MEAS:SAMP:CONS:{SMUno} {Value}")
+            self.write(f":PAGE:MEAS:SAMP:CONS:{SMUno}:COMP {Comp}")
         return 1
 
     def SetVar(self, VARno, Func, Start, Stop, Step=0, Comp='0.01'):
@@ -305,3 +329,22 @@ class HP4155(HP):
             return 0
         
         return 1
+
+    def SetDiodeConsI(self, I=1e-3, Comp=2, SMUp='SMU2', SMUn='SMU4', interval=10e-3, points=5):
+        self.DisableAll()
+
+        self.Mode = "SAMPLING"
+        
+        self.SetSMU(SMUp, 'Vf', 'If', 'I', 'CONS', Value=I, Comp=Comp)
+        self.SetSMU(SMUn, 'Vb', 'Ib', 'COMM')
+
+        self.write(f":PAGE:MEAS:SAMP:IINT {interval}")
+        self.write(f":PAGE:MEAS:SAMP:POIN {points}")
+
+        self.save_list=['Vf', 'If']
+        self.beep()
+        
+        self.term='CCDiode'
+        
+        print(f"Set {self.term}")
+        print(f"I={I}, Vlim={Comp},  interval={interval}, points={points}")
