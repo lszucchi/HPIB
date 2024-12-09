@@ -1,5 +1,5 @@
 from HPIB import HP, striplc
-from HPIB.HPT import ETF
+from HPIB.HPT import ETF, frange
 from time import sleep
 import numpy as np
 import pandas as pd
@@ -12,6 +12,7 @@ class HP4155(HP):
         self.write(":PAGE:MEAS:MSET:ITIM MED")
         self.write(":PAGE:MEAS:MSET:ITIM:LONG 4")
         self.write(":PAGE:MEAS:DEL 1e-3")
+        self.write(":PAGE:MEAS:HTIM 1e-3")
         return 0
 
     def stop(self):
@@ -26,7 +27,7 @@ class HP4155(HP):
         return 0
         
     def DisableAll(self):
-        self.analyzer_mode="SWEEP"
+        self.Mode="SWEEP"
         self.write(":PAGE:CHAN:ALL:DIS")
         self.beep()
         self.write(":PAGE:DISP:GRAP:Y2:DEL")
@@ -60,14 +61,18 @@ class HP4155(HP):
 
     @property
     def HoldTime(self):
+        if self.Mode=='SAMP':
+            return self.ask(":PAGE:MEAS:SAMP:HTIMe?")
         return self.ask(":PAGE:MEAS:HTIM?")
 
     @HoldTime.setter
     def HoldTime(self, Value=1):
         if Value < 0 or Value > 650:
             raise ValueError("Invalid Hold Time")
-        
-        self.write(f":PAGE:MEAS:HTIM {Value}")
+        if self.Mode=='SWE':
+            self.write(f":PAGE:MEAS:HTIM {Value}")
+        elif self.Mode=='SAMP':
+            self.write(f":PAGE:MEAS:SAMP:HTIM {Value}")
 
     @property
     def StopCond(self):
@@ -81,10 +86,14 @@ class HP4155(HP):
 
     @property
     def save_list(self):
-        return self.ask(":PAGE:DISP:LIST?")
+        if self.debug: return self.save_debug
+        return self.ask(":PAGE:DISP:LIST?").split(',')
 
     @save_list.setter
     def save_list(self, trace_list):
+        if self.debug: 
+            self.save_debug=trace_list
+            return 0
         self.write(":PAGE:DISP:MODE LIST")
         self.write(":PAGE:DISP:LIST:DEL:ALL")
         
@@ -152,10 +161,10 @@ class HP4155(HP):
         
         if self.debug:
             self.out=np.arange(0, 100*len(self.Var2))
-            header=self.data_variables
+            header=self.save_list
             
         elif int(self.ask('*OPC?')):
-            header = self.ask(":PAGE:DISP:LIST?").split(',')
+            header = self.save_list
             
         self.write(":FORM:DATA REAL")
 
@@ -168,7 +177,7 @@ class HP4155(HP):
         for i, listvar in enumerate(header[1:]):
             lastdata = np.column_stack((lastdata, self.RealDataOutput(listvar, TrigComp)))
         
-        header = pd.MultiIndex.from_product([self.data_variables,
+        header = pd.MultiIndex.from_product([self.save_list,
                                     [f"{str(x)}" for x in self.Var2]],
                                     names=["Trace", f"{self.Var2Name}"])
         
@@ -184,10 +193,10 @@ class HP4155(HP):
             
         if self.debug:
             self.out=np.arange(0, 100*len(self.Var2))
-            header=self.data_variables
+            header=self.save_list
             
         elif int(self.ask('*OPC?')):
-            header = self.ask(":PAGE:DISP:LIST?").split(',')
+            header = self.save_list
             
         self.write(":FORM:DATA ASC")
 
@@ -197,7 +206,7 @@ class HP4155(HP):
         for i, listvar in enumerate(header[1:]):
             lastdata = np.column_stack((lastdata, self.DataOutput(listvar)))
         
-        header = pd.MultiIndex.from_product([self.data_variables,
+        header = pd.MultiIndex.from_product([self.save_list,
                                     [f"{str(x)}" for x in self.Var2]],
                                     names=["Trace", f"{self.Var2Name}"])
         
@@ -273,7 +282,7 @@ class HP4155(HP):
 
             return 0
         
-        if Func == "CONS" and self.analyzer_mode == "SWEEP":
+        if Func == "CONS" and self.Mode == "SWE":
             # print(f"{Value}, {Comp}")
             # self.write(f":PAGE:MEAS")
             # sleep(3)
@@ -281,7 +290,7 @@ class HP4155(HP):
             self.write(f":PAGE:MEAS:CONS:{SMUno}:COMP {Comp}")
             return 0
 
-        elif Func == "CONS" and self.analyzer_mode == "SAMPLING":
+        elif Func == "CONS" and self.Mode == "SAMP":
             self.write(f":PAGE:MEAS:SAMP:CONS:{SMUno} {Value}")
             self.write(f":PAGE:MEAS:SAMP:CONS:{SMUno}:COMP {Comp}")
         return 1
@@ -330,10 +339,11 @@ class HP4155(HP):
         
         return 1
 
-    def SetDiodeConsI(self, I=1e-3, Comp=2, SMUp='SMU2', SMUn='SMU4', interval=10e-3, points=5):
+    def SetDiodeConsI(self, I=10e-6, Comp=2, SMUp='SMU2', SMUn='SMU4', interval=10e-3, points=6):
         self.DisableAll()
 
         self.Mode = "SAMPLING"
+        self.HoldTime=100e-3
         
         self.SetSMU(SMUp, 'Vf', 'If', 'I', 'CONS', Value=I, Comp=Comp)
         self.SetSMU(SMUn, 'Vb', 'Ib', 'COMM')

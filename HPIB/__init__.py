@@ -66,7 +66,7 @@ class HP:
     def SingleSave(self, path=".", timeout=2, real=False):
         if self.term=="0": return "Parameters not set"
         
-        print(f"Starting {self.term}. Duration: ", end='')
+        print(f"Measuring {self.term} ", end='')
         self.measure()
         
         Poll=self.PollDR(1, 1, timeout)
@@ -99,17 +99,23 @@ class HP:
             return 0
         start=datetime.now()  
         for i in range(1, 60*maxpoll):
-            if i*delay % 30 == 0:
-                print('30s', end=' ')
+            if i*delay % 15 == 0:
+                print(f" 15s", end='')
+
             if i*delay % 60 == 0:
-                print('|', end=' ')
+                print(f" |", end='')
+            
+            if i % 2:
+                print(f"\rMeasuring {self.term} +", end='')
+            else:
+                print(f"\rMeasuring {self.term}  ", end='')
             
             sleep(delay)
             if self.Stop_flag:
                 print('')
                 return 1
             if self.GetDR()==state:
-                print(f'\rStarting {self.term}. Duration: {(datetime.now()-start).seconds} s                                    ')
+                print(f'\rDone {self.term}. Duration: {(datetime.now()-start).seconds} s                                     ')
                 return 0
         print('')
         return 1

@@ -223,56 +223,72 @@ def PlotDiode(path, draw=False):
 
 def PlotVgs(path, sizex=640, draw=False):
 
-    try: df=pd.read_csv(path, header=[0, 1])
-    except: print("Error opening VGS\n")
+    try:
+        df=pd.read_csv(path, header=[0, 1])
         
-    if df.columns.levels[1][0] != 'None':
-        df.columns.levels[1][0] != ''
-    
-    VG=getpd(df, 'Vg')
-    VD=float(df.columns.levels[1][0])
-    ID=getpd(df, 'Id')
-    
-    
-    if 'gm' not in df.columns:
-        gm=(np.diff(df['Id'].T)/np.diff(df['Vg'].T)).T
-        gm=np.append([gm[0]], gm)
-    
-        header=pd.MultiIndex.from_product([['gm'],
-                                    df['Vg'].columns])
-    
-        df2=pd.DataFrame(data=gm, columns=header)
-        df=pd.concat((df, df2), axis=1)
-    
-        df.to_csv(path, index=False, float_format='%.5E')
-    else:
-        gm=getpd(df, 'gm')
-    
-    if 'dgm' not in df.columns:
-        dgm=(np.diff(df['gm'].T)/np.diff(df['Vg'].T)).T
-        dgm=np.append(dgm, [dgm[-1]])
-    
-        header=pd.MultiIndex.from_product([['dgm'],
-                                    df['Vg'].columns])
-    
-        df2=pd.DataFrame(data=dgm, columns=header)
-        df=pd.concat((df, df2), axis=1)
-    
-        df.to_csv(path, index=False, float_format='%.5E')
-    else:
-        dgm=getpd(df, 'dgm')
+        Id=df['Id'][df['Id'].columns[0]].to_numpy()
+        Vg=df['Vg'][df['Vg'].columns[0]].to_numpy()
+        Vd=float(df.columns[2][1])
+    except:
+        df=pd.read_csv(path)
+        
+        Id=df['Id'].to_numpy()
+        Vg=df['Vg'].to_numpy()
+
+    if np.average(Id) < 0:
+        Vg=-Vg
+        Vd=-Vd
+        Id=-Id
+        ptype=True
+
+    gm=np.diff(Id)/np.diff(Vg)
+    maxgm=np.argmax(gm)
+
+    i=0
+    j=0
+
+    while np.max(np.abs(Id)) < 0.3:
+        i+=1
+        Id=Id*1e3
+
+    while np.max(np.abs(gm)) < 0.3:
+        j+=1
+        gm=gm*1e3
 
     try:
-        VGfit=VG[np.argmax(gm)-2:np.argmax(gm)+2]
-        IDfit=ID[np.argmax(gm)-2:np.argmax(gm)+2]
+        VGfit=Vg[maxgm-2:maxgm+2]
+        IDfit=Id[maxgm-2:maxgm+2]
         
         m, b= np.polyfit(VGfit, IDfit, 1)
-        LIN=-b/m+VD/2
-        fitID=m*VG[:np.argmax(gm)]+b
-    except:
+        LIN=-b/m+Vd/2
+    except Exception as e:
+        print(f">>> Error: {e}")
         LIN=0
-    
-    Plot(path, 'Vg', ['Id', 'gm'], sizex=sizex)
+
+    fig, ax=plt.subplots()
+
+
+    prefix=['f','p','n','u','m','']
+
+    ax.plot(Vg, Id, 'b', label=f'Vd={int(np.around(Vd*1e3))} mV')
+    ax.set_ylim(bottom=0)
+
+    if LIN != 0:
+        Vgfit=np.linspace(-b/m, Vg[np.argmax(gm)])
+        ax.plot(Vgfit, m*Vgfit+b, 'k', alpha=0.5, label="Vth LinFit")
+
+    ax.set_title("$I_D$ x $V_{GS}$" +f" - $V_D$={Vd} mV")
+    ax.set_xlabel("-$V_{GS}$ (V)" if 'ptype' in locals() else "-$V_{GS}$")
+    ax.set_ylabel(f"-$I_D$ ({prefix[-i]}A)" if 'ptype' in locals() else f"$I_D$ ({prefix[-i]}A)")
+
+    ax2=ax.twinx()
+    ax2.plot(Vg[1:], gm, 'r--', label="$g_m$")
+    ax2.set_ylim(bottom=0)
+
+    ax2.set_ylabel(f"$g_m$ ({prefix[-j]}S)")
+    fig.legend(loc='upper left', bbox_to_anchor=(0.12, 0.89))
+
+    fig.savefig(f"{path.replace('csv', 'png')}")
 
     return np.around(LIN, 3)
 
@@ -548,7 +564,8 @@ def CalcIsSat(path, T, ptype=False):
         
         return n, Ispec
         
-    except:
+    except Exception as e:
+        print(f">>> Error: {e}")
         return 0, 0
 
 def CalcIs(path, T, ptype=False):
