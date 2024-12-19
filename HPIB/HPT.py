@@ -220,6 +220,34 @@ def PlotDiode(path, draw=False):
     plt.savefig(save_path) 
 
     return 0
+    
+def PlotDiode4P(path, draw=False):
+    df = pd.read_csv(path)
+    V=df['V']
+    I=df['If']*1e3
+    
+    fig, ax1 = plt.subplots()
+    
+    ax1.plot(V, I)
+    
+    ax1.set_xlabel('$V_f$ (V)')
+    ax1.set_ylabel('$I_f$ (mA)')
+
+    plt.savefig(path.replace('csv','png'))
+    
+    ax1.set_yscale('log')
+
+    RCB=[V[np.argmin(np.abs(I-0.1))], V[np.argmin(np.abs(I-0.01))]]
+    
+    if(draw):
+        plt.draw()
+        plt.pause(0.001)
+
+    plt.savefig(path.replace('.csv',' log.png')) 
+
+    return RCB
+
+
 
 def PlotVgs(path, sizex=640, draw=False):
 
@@ -261,8 +289,8 @@ def PlotVgs(path, sizex=640, draw=False):
         
         m, b= np.polyfit(VGfit, IDfit, 1)
         LIN=-b/m+Vd/2
-    except Exception as e:
-        print(f">>> Error: {e}")
+    except Exception as err:
+        print(f">>> Error: {err}")
         LIN=0
 
     fig, ax=plt.subplots()
@@ -486,7 +514,9 @@ def Early():
     print(Early)
     print(EarlyAvg)
 
-def CalcIsSat(path, T, ptype=False):
+def CalcIsSat(path, T):
+    global e, k
+    
     try: df=pd.read_csv(path, header=[0, 1])
     except: print("Error opening VGS\n")
         
@@ -501,36 +531,9 @@ def CalcIsSat(path, T, ptype=False):
         VD=-VD
         VG=-VG
         ID=-ID
-    
-    if 'gm' not in df.columns:
-        gm=(np.diff(df['Id'].T)/np.diff(df['Vg'].T)).T
-        gm=np.append([gm[0]], gm)
-    
-        header=pd.MultiIndex.from_product([['gm'],
-                                    df['Vg'].columns])
-    
-        df2=pd.DataFrame(data=gm, columns=header)
-        df=pd.concat((df, df2), axis=1)
-    
-        df.to_csv(path, index=False, float_format='%.5E')
-    else:
-        gm=getpd(df, 'gm')
-    
-    if 'dgm' not in df.columns:
-        dgm=(np.diff(df['gm'].T)/np.diff(df['Vg'].T)).T
-        dgm=np.append(dgm, [dgm[-1]])
-    
-        header=pd.MultiIndex.from_product([['dgm'],
-                                    df['Vg'].columns])
-    
-        df2=pd.DataFrame(data=dgm, columns=header)
-        df=pd.concat((df, df2), axis=1)
-    
-        df.to_csv(path, index=False, float_format='%.5E')
-    else:
-        dgm=getpd(df, 'dgm')
-    
-    plt.close('all')
+
+    gm=(np.diff(getpd(df, 'Id').T)/np.diff(getpd(df, 'Vg').T)).T
+    gm=np.append([gm[0]], gm)
 
     PlotVgs(path)
 
@@ -564,8 +567,8 @@ def CalcIsSat(path, T, ptype=False):
         
         return n, Ispec
         
-    except Exception as e:
-        print(f">>> Error: {e}")
+    except Exception as err:
+        print(f">>> Error: {err}")
         return 0, 0
 
 def CalcIs(path, T, ptype=False):

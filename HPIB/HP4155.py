@@ -60,6 +60,21 @@ class HP4155(HP):
         self.write(f":PAGE:MEAS:MSET:ITIM {Value}")
 
     @property
+    def LongNPLC(self):
+        try:
+            return float(self.ask(":PAGE:MEAS:MSET:ITIM:LONG?"))
+        except:
+            raise RuntimeError("Invalid response on Long NPLC query")
+
+    @LongNPLC.setter
+    def LongNPLC(self, Value=None):
+        if type(Value) != int:
+            raise ValueError("Long NPLC must be an integer")
+        while np.abs(self.LongNPLC - Value) > 0.1:
+            self.write(f":PAGE:MEAS:MSET:ITIM:LONG {Value}")
+            sleep(1)
+
+    @property
     def HoldTime(self):
         if self.Mode=='SAMP':
             return self.ask(":PAGE:MEAS:SAMP:HTIMe?")
@@ -339,19 +354,23 @@ class HP4155(HP):
         
         return 1
 
-    def SetDiodeConsI(self, I=10e-6, Comp=2, SMUp='SMU2', SMUn='SMU4', interval=10e-3, points=6):
+    def SetDiodeConsI(self, I=10e-6, Comp=2, SMUP='SMU2', SMUN='SMU1', SMUp='SMU3', SMUn='SMU4', interval=10e-3, points=6):
         self.DisableAll()
 
         self.Mode = "SAMPLING"
         self.HoldTime=100e-3
         
-        self.SetSMU(SMUp, 'Vf', 'If', 'I', 'CONS', Value=I, Comp=Comp)
-        self.SetSMU(SMUn, 'Vb', 'Ib', 'COMM')
+        self.SetSMU(SMUP, 'Vf', 'If', 'I', 'CONS', Value=I, Comp=Comp)
+        self.SetSMU(SMUN, 'Vb', 'Ib', 'COMM')
+        self.setSMU(SMUp, 'V2', 'I2', 'I', 'CONS', Value=0, Comp=2)
+        self.setSMU(SMUn, 'V1', 'I1', 'I', 'CONS', Value=0, Comp=2)
+
+        self.UFUNC("V=V2-V1")
 
         self.write(f":PAGE:MEAS:SAMP:IINT {interval}")
         self.write(f":PAGE:MEAS:SAMP:POIN {points}")
 
-        self.save_list=['Vf', 'If']
+        self.save_list=['Vf', 'V', 'If']
         self.beep()
         
         self.term='CCDiode'

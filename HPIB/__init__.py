@@ -328,6 +328,31 @@ class HP:
 
         return 0
 
+    def Diode4P(self, VfStart, VfStop, VfStep, SMUP='SMU2', SMUN='SMU1', SMUp='SMU3', SMUn='SMU4', Comp=2e-3):
+        self.Var2=None
+        self.Var2Name=None
+        self.DisableAll()
+        
+        self.SetSMU(SMUN, 'Vb', 'Ib', 'COMM', Comp=Comp)
+        self.SetSMU(SMUP, 'Vf', 'If', 'V', 'VAR1', Comp=Comp)
+        self.SetSMU(SMUp, 'V3', 'I3', 'I', 'CONS', Value=0, Comp=1.5)
+        self.SetSMU(SMUn, 'V4', 'I4', 'I', 'CONS', Value=0, Comp=1.5)
+        self.UFUNC("V=V3-V4")
+
+        self.SetVar('VAR1', 'V', VfStart, VfStop, VfStep, Comp=Comp)
+        
+        self.SetAxis('X', 'V', 'LIN', VfStart, VfStop)
+        self.SetAxis('Y1', 'If', 'LIN', -Comp, Comp)
+
+        self.save_list=['Vf', 'V', 'If']
+        self.beep()
+
+        self.term="Diode4P"
+        
+        print(f"Diode=({VfStart}, {VfStop}, {VfStep})")
+
+        return 0
+    
     def SetCap(self, Vstart, Vstop, Vstep, Comp):
         self.Var2=None
         self.Var2Name=None
