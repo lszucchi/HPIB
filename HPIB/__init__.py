@@ -335,8 +335,8 @@ class HP:
         
         self.SetSMU(SMUN, 'Vb', 'Ib', 'COMM', Comp=Comp)
         self.SetSMU(SMUP, 'Vf', 'If', 'V', 'VAR1', Comp=Comp)
-        self.SetSMU(SMUp, 'V3', 'I3', 'I', 'CONS', Value=0, Comp=1.5)
-        self.SetSMU(SMUn, 'V4', 'I4', 'I', 'CONS', Value=0, Comp=1.5)
+        self.SetSMU(SMUp, 'V3', 'I3', 'I', 'CONS', Value=0, Comp=2)
+        self.SetSMU(SMUn, 'V4', 'I4', 'I', 'CONS', Value=0, Comp=2)
         self.UFUNC("V=V3-V4")
 
         self.SetVar('VAR1', 'V', VfStart, VfStop, VfStep, Comp=Comp)
@@ -377,7 +377,7 @@ class HP:
         
         return 0
 
-    def Set2P(self, Istart, Istop, Points, SMUP='SMU2', SMUN='SMU4', Comp=1.5):
+    def Set2P(self, Istart, Istop, Points, SMUP='SMU2', SMUN='SMU1', Comp=1.5):
         self.DisableAll()
         
         self.Var2=None
@@ -387,8 +387,8 @@ class HP:
         self.SetSMU(SMUP, 'Vf', 'If', 'I', 'VAR1')
         self.SetVar('VAR1', 'I', Istart, Istop, (Istop-Istart)/(Points-1), Comp=Comp)
         
-        self.SetAxis('Y1', 'If')
-        self.SetAxis('X', 'Vf')
+        self.SetAxis('Y1', 'If', 1, Istart, Istop)
+        self.SetAxis('X', 'Vf', 1, -Comp, Comp)
 
         self.save_list=['Vf', 'If']
         self.beep()
@@ -403,18 +403,20 @@ class HP:
         self.Var2=None
         self.Var2Name=None
         
-        self.SetSMU(Im, 'V1', 'If')
+        self.SetSMU(Im, 'V1', 'I1')
         self.SetSMU(Ip, 'V2', 'I2', 'I', 'VAR1')
         self.SetVSMU(Vm, 'V3')
         self.SetVSMU(Vp, 'V4')
-        self.SetVar('VAR1', 'I', Istart, Istop, (Istop-Istart)/(Points-1), Comp=Comp)
+        Istep=(Istop-Istart)/(Points-1)
+        self.SetVar('VAR1', 'I', Istart, Istop, Istep, Comp=Comp)
         
         self.UFUNC('Vf=V3-V4')
+        self.UFUNC('If=-I1')
 
-        self.SetAxis('X', 'V', 1, -1e-2, 1e-2)
-        self.SetAxis('Y1', 'I', 1, Istart, Istop)
+        self.SetAxis('X', 'Vf', 1, -1e-2, 1e-2)
+        self.SetAxis('Y1', 'If', 1, Istart, Istop)
         
-        self.save_list=['I', 'V']
+        self.save_list=['I2', 'If', 'Vf']
         self.beep()
         
         self.term="4P"
@@ -455,15 +457,18 @@ class HP:
         self.Var2Name=None
         
         self.SetSMU('SMU1', 'V1', 'I1')
-        self.SetSMU('SMU4', 'V4', 'I4', 'I', 'VAR1')
-        self.SetSMU('SMU2', 'V2', 'I2', 'I', 'CONS', Value=0, Comp=1)
+        self.SetSMU('SMU2', 'V2', 'I2', 'I', 'VAR1', Comp=1)
         self.SetSMU('SMU3', 'V3', 'I3', 'I', 'CONS', Value=0, Comp=1)
+        self.SetSMU('SMU4', 'V4', 'I4', 'I', 'CONS', Value=0, Comp=1)
         self.SetVar('VAR1', 'I', Istart, Istop, (Istop-Istart)/(Points-1))
 
-        self.SetAxis('X', 'V3')
-        self.SetAxis('Y1', 'I1')
+        self.UFUNC('Vf=V4-V3')
+        self.UFUNC('If=-I1')
+
+        self.SetAxis('X', 'Vf')
+        self.SetAxis('Y1', 'If')
         
-        self.save_list=['I1', 'V3']
+        self.save_list=['I2', 'If', 'Vf']
         self.beep()
         
         self.term="4P"

@@ -354,7 +354,7 @@ class HP4155(HP):
         
         return 1
 
-    def SetDiodeConsI(self, I=10e-6, Comp=2, SMUP='SMU2', SMUN='SMU1', SMUp='SMU3', SMUn='SMU4', interval=10e-3, points=6):
+    def VCC2P(self, I=10e-6, Comp=2, SMUP='SMU2', SMUN='SMU1', interval=10e-3, points=6):
         self.DisableAll()
 
         self.Mode = "SAMPLING"
@@ -362,18 +362,58 @@ class HP4155(HP):
         
         self.SetSMU(SMUP, 'Vf', 'If', 'I', 'CONS', Value=I, Comp=Comp)
         self.SetSMU(SMUN, 'Vb', 'Ib', 'COMM')
-        self.setSMU(SMUp, 'V2', 'I2', 'I', 'CONS', Value=0, Comp=2)
-        self.setSMU(SMUn, 'V1', 'I1', 'I', 'CONS', Value=0, Comp=2)
-
-        self.UFUNC("V=V2-V1")
 
         self.write(f":PAGE:MEAS:SAMP:IINT {interval}")
         self.write(f":PAGE:MEAS:SAMP:POIN {points}")
 
-        self.save_list=['Vf', 'V', 'If']
+        self.save_list=['If', 'Vf']
         self.beep()
         
-        self.term='CCDiode'
+        self.term='VCC2P'
+        
+        print(f"Set {self.term}")
+        print(f"I={I}, Vlim={Comp},  interval={interval}, points={points}")
+
+    def ICV2P(self, V=0.1, Comp=10e-3, SMUP='SMU2', SMUN='SMU1', interval=10e-3, points=6):
+        self.DisableAll()
+
+        self.Mode = "SAMPLING"
+        self.HoldTime=100e-3
+        
+        self.SetSMU(SMUP, 'Vf', 'If', 'V', 'CONS', Value=V, Comp=Comp)
+        self.SetSMU(SMUN, 'Vb', 'Ib', 'COMM')
+
+        self.write(f":PAGE:MEAS:SAMP:IINT {interval}")
+        self.write(f":PAGE:MEAS:SAMP:POIN {points}")
+
+        self.save_list=['Vf', 'If']
+        self.beep()
+        
+        self.term='ICV2P'
+        
+        print(f"Set {self.term}")
+        print(f"V={V}, Ilim={Comp},  interval={interval}, points={points}")
+
+    def Samp4P(self, I=10e-6, Comp=2, SMUP='SMU2', SMUN='SMU1', SMUp='SMU3', SMUn='SMU4', interval=10e-3, points=6):
+        self.DisableAll()
+
+        self.Mode = "SAMPLING"
+        self.HoldTime=100e-3
+        
+        self.SetSMU(SMUP, 'Vf', 'If', 'I', 'CONS', Value=I, Comp=Comp)
+        self.SetSMU(SMUN, 'Vb', 'Ib', 'COMM')
+        self.SetSMU(SMUp, 'V2', 'I2', 'I', 'CONS', Value=0, Comp=Comp)
+        self.SetSMU(SMUn, 'V1', 'I1', 'I', 'CONS', Value=0, Comp=Comp)
+
+        self.write(f":PAGE:MEAS:SAMP:IINT {interval}")
+        self.write(f":PAGE:MEAS:SAMP:POIN {points}")
+
+        self.UFUNC("V=V2-V2")
+        
+        self.save_list=['If', 'Vf', 'V']
+        self.beep()
+        
+        self.term='VCC2P'
         
         print(f"Set {self.term}")
         print(f"I={I}, Vlim={Comp},  interval={interval}, points={points}")

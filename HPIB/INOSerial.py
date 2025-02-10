@@ -27,7 +27,7 @@ class Arduino:
                 return 'Closed'
             if i >= 1 and i <=6:
                 self.write(i)
-                return 'Open INO: ch'+self.inst.readline().decode()
+                return f'Open INO: ch {i}'
             else:
                 raise RuntimeError('Invalid channel')
 
