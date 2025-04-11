@@ -16,18 +16,11 @@ class HP4155(HP):
         return 0
 
     def stop(self):
-        return self.write(":PAGE:SCON:STOP")
-
-    def SetAxis(self, AXIS, NAME, SCALE="LIN", MIN=0, MAX=1):
-        self.write(f":PAGE:DISP:GRAP:{AXIS}:NAME \'{NAME}\'")
-        self.write(f":PAGE:DISP:GRAP:{AXIS}:SCAL {SCALE}")
-        self.write(f":PAGE:DISP:GRAP:{AXIS}:MIN {MIN}")
-        self.write(f":PAGE:DISP:GRAP:{AXIS}:MAX {MAX}")
-        self.beep()
+        while self.State=="MEAS":
+            self.write(":PAGE:SCON:STOP")
         return 0
         
     def DisableAll(self):
-        self.Mode="SWEEP"
         self.write(":PAGE:CHAN:ALL:DIS")
         self.beep()
         self.write(":PAGE:DISP:GRAP:Y2:DEL")
@@ -35,7 +28,11 @@ class HP4155(HP):
         self.write(":PAGE:CHAN:UFUN:DEL:ALL")
         self.beep()
         return 0
-
+        
+    @property
+    def State(self):
+        return self.ask(":PAGE:SCONtrol:STAT?")
+    
     @property
     def Mode(self):
         return self.ask(":PAGE:CHAN:MODE?")
@@ -90,6 +87,14 @@ class HP4155(HP):
             self.write(f":PAGE:MEAS:SAMP:HTIM {Value}")
 
     @property
+    def DelayTime(self):
+        return float(self.ask(":PAGE:MEAS:DEL?"))
+
+    @DelayTime.setter
+    def DelayTime(self, value):
+        self.write(f":PAGE:MEAS:DEL {value}")
+
+    @property
     def StopCond(self):
         return self.ask(":PAGE:MEAS:SST?")
         
@@ -98,7 +103,54 @@ class HP4155(HP):
         if Condition not in ['ABN', 'COMP', 'OFF']:
             raise ValueError("Invalid condition")
         self.write(f":PAGE:MEAS:SST {Condition}")
+        
+    @property
+    def Interval(self):
+        if self.Mode != "SAMP":
+            raise RuntimeError("Must be in sampling mode")
+        return self.ask(":PAGE:MEAS:SAMP:IINT:")
 
+    @Interval.setter
+    def Interval(self, value):
+        if self.Mode != "SAMP":
+            raise RuntimeError("Must be in sampling mode")
+        if value > 60e-6 and value < 65.535:
+            self.write(f":PAGE:MEAS:SAMP:IINT {value}")
+            return 0
+        raise ValueError("Invalid interval (must be between 60e-6 and 65.535 seconds)")
+    @property
+    def SPoints(self):
+        if self.Mode != "SAMP":
+            raise RuntimeError("Must be in sampling mode")
+        return self.ask(":PAGE:MEAS:SAMP:POIN?") 
+
+    @SPoints.setter
+    def SPoints(self, value):
+        if self.Mode != "SAMP":
+            raise RuntimeError("Must be in sampling mode")
+        if value >= 1 and value <= 10001:
+            self.write(f":PAGE:MEAS:SAMP:POIN {value}")
+            return 0
+        raise ValueError("Invalid sampling (must be between 1 and 10001)")
+
+    @property
+    def SPeriod(self):
+        if self.Mode != "SAMP":
+            raise RuntimeError("Must be in sampling mode")
+        return self.ask(":PAGE:MEASure:SAMPling:PER?")
+
+    @SPeriod.setter
+    def SPeriod(self, value):
+        if self.Mode != "SAMP": 
+            raise RuntimeError("Must be in sampling mode")
+        if value == "INF":
+            self.write(f":PAGE:MEAS:SAMP:PER {value}")
+            return 0
+        if value >= 60e-6 and value <= 1e11:
+            self.write(f":PAGE:MEAS:SAMP:PER {value}")
+            return 0
+        raise ValueError("Invalid period (must be between 60e-6 and 1e11 or 'INF')")
+        
     @property
     def save_list(self):
         if self.debug: return self.save_debug
@@ -122,6 +174,14 @@ class HP4155(HP):
                 self.write(f":PAGE:DISP:LIST \'{name}\'")
             
         self.write(":PAGE:DISP:MODE GRAP")
+
+    def SetAxis(self, AXIS, NAME, SCALE="LIN", MIN=0, MAX=1):
+        self.write(f":PAGE:DISP:GRAP:{AXIS}:NAME \'{NAME}\'")
+        self.write(f":PAGE:DISP:GRAP:{AXIS}:SCAL {SCALE}")
+        self.write(f":PAGE:DISP:GRAP:{AXIS}:MIN {MIN}")
+        self.write(f":PAGE:DISP:GRAP:{AXIS}:MAX {MAX}")
+        self.beep()
+        return 0
     
     def UFUNC(self, ufunc):
     
@@ -229,41 +289,6 @@ class HP4155(HP):
         self.write(":PAGE:DISP:MODE GRAP")
         
         return df
-
-    def SetVSMU(self, SMUno, VNAME, Func='CONS', Comp='1e-3'):
-        SMUno=SMUno.upper()
-        if SMUno not in ['VMU1', 'VMU2','VSU1','VSU2']:
-
-            raise Exception("Invalid VSU or VMU: <{SMUno}>")
-            
-        self.write(f":PAGE:CHAN:{SMUno}:VNAME \'{VNAME}\'")
-        self.write(f":PAGE:CHAN:{SMUno}:MODE V")
-        
-        Func=Func.upper()
-        if Func not in ['CONS', 'VAR1', 'VAR2', 'VARD']:
-
-            raise Exception(f"Invalid Func in {SMUno}: <{Func}>")
-
-        self.beep()
-        
-        if "VMU" in SMUno:
-            return 0
-            
-        self.write(f":PAGE:CHAN:{SMUno}:FUNC {Func}")
-        if Func[len(Func)-1] in ['1', '2', 'D']:
-            try: self.VarComp[int(Func[len(Func)-1])]=Comp
-            except: self.VarComp[0]=Comp
-
-            return 0
-        
-        if Func=='CONS':
-        #    self.write(f":PAGE:MEAS:CONS:{SMUno} {Value}")
-        #    self.write(f":PAGE:MEAS:CONS:{SMUno}:COMP {Comp}")
-        #    sleep(0.1)
-
-            return 0
-        
-        return 1
         
     def SetSMU(self, SMUno, VNAME, INAME, Mode="COMM", Func="CONS", Value=0, Comp="1e-3", SRES="0OHM"):
 
@@ -299,8 +324,8 @@ class HP4155(HP):
         
         if Func == "CONS" and self.Mode == "SWE":
             # print(f"{Value}, {Comp}")
-            # self.write(f":PAGE:MEAS")
-            # sleep(3)
+            self.write(f":PAGE:MEAS")
+            self.beep()
             self.write(f":PAGE:MEAS:CONS:{SMUno} {Value}")
             self.write(f":PAGE:MEAS:CONS:{SMUno}:COMP {Comp}")
             return 0
@@ -308,6 +333,40 @@ class HP4155(HP):
         elif Func == "CONS" and self.Mode == "SAMP":
             self.write(f":PAGE:MEAS:SAMP:CONS:{SMUno} {Value}")
             self.write(f":PAGE:MEAS:SAMP:CONS:{SMUno}:COMP {Comp}")
+        return 1
+    
+    def SetVSMU(self, SMUno, VNAME, Func='CONS', Comp='1e-3'):
+        SMUno=SMUno.upper()
+        if SMUno not in ['VMU1', 'VMU2','VSU1','VSU2']:
+            raise Exception("Invalid VSU or VMU: <{SMUno}>")
+            
+        self.write(f":PAGE:CHAN:{SMUno}:VNAME \'{VNAME}\'")
+        self.write(f":PAGE:CHAN:{SMUno}:MODE V")
+        
+        Func=Func.upper()
+        if Func not in ['CONS', 'VAR1', 'VAR2', 'VARD']:
+
+            raise Exception(f"Invalid Func in {SMUno}: <{Func}>")
+
+        self.beep()
+        
+        if "VMU" in SMUno:
+            return 0
+            
+        self.write(f":PAGE:CHAN:{SMUno}:FUNC {Func}")
+        if Func[len(Func)-1] in ['1', '2', 'D']:
+            try: self.VarComp[int(Func[len(Func)-1])]=Comp
+            except: self.VarComp[0]=Comp
+
+            return 0
+        
+        if Func=='CONS':
+        #    self.write(f":PAGE:MEAS:CONS:{SMUno} {Value}")
+        #    self.write(f":PAGE:MEAS:CONS:{SMUno}:COMP {Comp}")
+        #    sleep(0.1)
+
+            return 0
+        
         return 1
 
     def SetVar(self, VARno, Func, Start, Stop, Step=0, Comp='0.01'):
@@ -354,7 +413,7 @@ class HP4155(HP):
         
         return 1
 
-    def VCC2P(self, I=10e-6, Comp=2, SMUP='SMU2', SMUN='SMU1', interval=10e-3, points=6):
+    def VCC2P(self, I=10e-6, SMUP='SMU2', SMUN='SMU1', interval=5e-3, points=10, Comp=2):
         self.DisableAll()
 
         self.Mode = "SAMPLING"
@@ -394,26 +453,88 @@ class HP4155(HP):
         print(f"Set {self.term}")
         print(f"V={V}, Ilim={Comp},  interval={interval}, points={points}")
 
-    def Samp4P(self, I=10e-6, Comp=2, SMUP='SMU2', SMUN='SMU1', SMUp='SMU3', SMUn='SMU4', interval=10e-3, points=6):
+    def Samp4P(self, I=10e-6, Ip='SMU2', Im='SMU1', Vp='SMU3', Vm='SMU4',  Comp=2, interval=10e-3, points=20):
         self.DisableAll()
 
         self.Mode = "SAMPLING"
         self.HoldTime=100e-3
         
-        self.SetSMU(SMUP, 'Vf', 'If', 'I', 'CONS', Value=I, Comp=Comp)
-        self.SetSMU(SMUN, 'Vb', 'Ib', 'COMM')
-        self.SetSMU(SMUp, 'V2', 'I2', 'I', 'CONS', Value=0, Comp=Comp)
-        self.SetSMU(SMUn, 'V1', 'I1', 'I', 'CONS', Value=0, Comp=Comp)
+        self.SetSMU(Ip, 'VIp', 'Ip', 'I', 'CONS', Value=I, Comp=Comp)
+        self.SetSMU(Im, 'VIm', 'Im', 'COMM')
+        self.SetSMU(Vp, 'Vp', 'IVp', 'I', 'CONS', Value=0, Comp=Comp)
+        self.SetSMU(Vm, 'Vm', 'IVm', 'I', 'CONS', Value=0, Comp=Comp)
 
         self.write(f":PAGE:MEAS:SAMP:IINT {interval}")
         self.write(f":PAGE:MEAS:SAMP:POIN {points}")
 
-        self.UFUNC("V=V2-V2")
+        self.UFUNC('Vf=Vp-Vm')
+        self.UFUNC('If=-Im')
         
-        self.save_list=['If', 'Vf', 'V']
+        self.save_list=['If', 'Vf', 'Ip', 'Im', 'Vp', 'Vm', 'IVp', 'IVm']
         self.beep()
         
-        self.term='VCC2P'
+        self.term='4P SMU'
         
         print(f"Set {self.term}")
         print(f"I={I}, Vlim={Comp},  interval={interval}, points={points}")
+        return 0
+
+    def VSource(self, port_p, value, port_m="SMU1", Vname="V", Iname="I", Comp=3e-3):
+        self.DisableAll()
+        self.Mode="SAMP"
+        self.SetSMU(port_p, Vname, Iname, "V", Value=value, Comp=Comp)
+        self.SetSMU(port_m, "Vm", "Im")
+        self.SetVSMU("VSU1", "GND1")
+        self.SetVSMU("VSU2", "GND2")
+        self.Interval=0.1
+        self.SPoints=100
+        self.save_list=[Vname, Iname]
+        self.SPeriod="INF"
+    
+    def SetBiasVCO(self, Vt, Vcc=2.75, Vcc_port="SMU2", Vt_port="SMU3", GND_port="SMU1", Comp=30e-3):
+        self.DisableAll()
+        self.Mode="SAMP"
+        self.SetSMU(GND_port, "V1", "I1")
+        self.SetSMU(Vcc_port, "Vcc", "I2", "V", Value=Vcc, Comp=Comp)
+        self.SetSMU(Vt_port, "Vt", "I3", "V", Value=Vt, Comp=Comp)
+        self.SetSMU("SMU4", "V4", "I4")
+        self.SetVSMU("VSU1", "GND1")
+        self.SetVSMU("VSU2", "GND2")
+        self.Interval=1
+        self.SPoints=10
+        self.save_list=['Vcc', 'I2', 'I3']
+        self.beep()
+        self.SPeriod="INF"
+
+    def SetRampVCO(self, VtStart, VtStop, VtStep, Vcc=3, Vcc_port="SMU2", Vt_port="SMU3", GND_port="SMU1", HTime=1, DTime=0.5, Comp=30e-3):
+        self.DisableAll()
+        self.Mode="SWE"
+        self.SetSMU(GND_port, "V1", "I1")
+        self.SetSMU("SMU4", "V4", "I4")
+        self.SetSMU(Vt_port, "Vt", "I3", "V", Func="VAR1")
+        self.SetVar('VAR1', 'V', VtStart, VtStop, VtStep, Comp=Comp)
+
+        self.SetSMU(Vcc_port, "Vcc", "I2", "V", Value=Vcc, Comp=Comp)
+        
+        self.SetVSMU("VSU1", "GND1")
+        self.SetVSMU("VSU2", "GND2")
+        
+        self.SetAxis('X', 'Vcc', 'LIN', Vcc-0.5, Vcc+0.5)
+        self.SetAxis('Y1', 'I2', 'LIN', 0, 30e-3)
+
+        self.save_list=['Vcc', 'I2', 'I3']
+        self.beep()
+        
+        self.term='RampVCO'
+        self.HoldTime=HTime
+        self.DelayTime=DTime
+                    
+        print(f"Set {self.term}")
+        print(f"Vg=({VtStart}, {VtStop}, {VtStep}), Ilim={Comp}")
+        
+        return 0
+        
+    def AdjustVCOtune(self, Vt, Vt_port="SMU3"):
+        self.write(f":PAGE:MEAS:SAMP:CONS:{Vt_port} {Vt}")
+        
+

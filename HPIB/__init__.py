@@ -91,7 +91,7 @@ class HP:
         
         return path
 
-    ##### Poll DataReady == state, a cada delay em ms, no máximo de maxpoll ciclos. Retorna 1 se chegar ao máximo de ciclos.
+    ##### Poll DataReady == state, a cada delay em s, no máximo de maxpoll ciclos. Retorna 1 se chegar ao máximo de ciclos.
     def PollDR(self, state, delay=1, maxpoll=2):
         if self.debug:
             sleep(2*delay)
@@ -451,18 +451,18 @@ class HP:
 
         return 0
 
-    def Set4PSMU(self, Istart, Istop, Points):        
+    def Set4PSMU(self, Istart, Istop, Points, Im='SMU1', Ip='SMU2', Vm='SMU3', Vp='SMU4', Comp=2):        
         self.DisableAll()
         self.Var2=None
         self.Var2Name=None
         
-        self.SetSMU('SMU1', 'V1', 'I1')
-        self.SetSMU('SMU2', 'V2', 'I2', 'I', 'VAR1', Comp=1)
-        self.SetSMU('SMU3', 'V3', 'I3', 'I', 'CONS', Value=0, Comp=1)
-        self.SetSMU('SMU4', 'V4', 'I4', 'I', 'CONS', Value=0, Comp=1)
+        self.SetSMU(Im, 'V1', 'I1')
+        self.SetSMU(Ip, 'V2', 'I2', 'I', 'VAR1', Comp=Comp)
+        self.SetSMU(Vm, 'V3', 'I3', 'I', 'CONS', Value=0, Comp=Comp)
+        self.SetSMU(Vp, 'V4', 'I4', 'I', 'CONS', Value=0, Comp=Comp)
         self.SetVar('VAR1', 'I', Istart, Istop, (Istop-Istart)/(Points-1))
 
-        self.UFUNC('Vf=V4-V3')
+        self.UFUNC('Vf=V3-V4')
         self.UFUNC('If=-I1')
 
         self.SetAxis('X', 'Vf')

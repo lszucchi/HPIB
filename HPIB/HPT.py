@@ -23,6 +23,12 @@ font = {'family': 'Times New Roman',
 def getpd(df, trace):
     return df[trace][df[trace].columns[0]].to_numpy()
 
+def WriteLog(msg, path, mode='a', end='\n', output=True):
+    with open(path, mode) as logfile:
+        logfile.write(msg+end)
+    if output:
+        print(f"{msg}{end}", end='')
+
 def IdT(p, VG):
     return Id(p[:-1], VG, p[-1])
 
