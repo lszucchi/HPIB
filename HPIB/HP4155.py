@@ -175,6 +175,15 @@ class HP4155(HP):
             
         self.write(":PAGE:DISP:MODE GRAP")
 
+    @property
+    def SRES(self):
+        return self.ask(":PAGE:CHAN:SMU1:SRES?")
+
+    @SRES.setter
+    def SRES(self, value):
+        self.write(f":PAGE:CHAN:SMU1:SRES {value}")
+        self.write(f":PAGE:CHAN:SMU2:SRES {value}")
+
     def SetAxis(self, AXIS, NAME, SCALE="LIN", MIN=0, MAX=1):
         self.write(f":PAGE:DISP:GRAP:{AXIS}:NAME \'{NAME}\'")
         self.write(f":PAGE:DISP:GRAP:{AXIS}:SCAL {SCALE}")
@@ -484,6 +493,8 @@ class HP4155(HP):
         self.Mode="SAMP"
         self.SetSMU(port_p, Vname, Iname, "V", Value=value, Comp=Comp)
         self.SetSMU(port_m, "Vm", "Im")
+        self.SetSMU("SMU3", "V3", "I3")
+        self.SetSMU("SMU4", "V4", "I4")
         self.SetVSMU("VSU1", "GND1")
         self.SetVSMU("VSU2", "GND2")
         self.Interval=0.1
