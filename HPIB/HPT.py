@@ -70,6 +70,24 @@ def getvar2(df, trace):
     except:
         return None
 
+from scipy.optimize import least_squares
+
+def DiodeVf(If, x, T):
+    n, I0, Rs=x
+    Ut=k*T/e
+    return n*Ut*np.log(If/I0)+Rs*If
+
+def CostDVf(x, I, V, T, weight):
+    return weight*(DiodeVf(I, x, T)-V)
+
+def jacDVf(x, I, V, T, weight):
+    n, I0, Rs=x
+    Ut=k*T/e
+    jac_x0=Ut*np.log(I/I0)
+    jac_x1=[-n*Ut/I0 for x in I]
+    jac_x2=I
+    return np.transpose(weight*[jac_x0, jac_x1, jac_x2])
+
 def Plot(df, X, Y, sizex=640, bar='none'):
     if bar not in ['none', 'hori', 'vert', 'both']:
         return 'Invalid bar'
@@ -227,32 +245,50 @@ def PlotDiode(path, draw=False):
 
     return 0
     
-def PlotDiode4P(path, draw=False):
-    df = pd.read_csv(path)
-    V=df['V']
-    I=df['If']*1e3
-    
-    fig, ax1 = plt.subplots()
-    
-    ax1.plot(V, I)
-    
-    ax1.set_xlabel('$V_f$ (V)')
-    ax1.set_ylabel('$I_f$ (mA)')
+def PlotDiode4P(path, T_in):
+    df = pd.read_csv(path, header=[0, 1])
+    V=df['Vf'][df['Vf'].columns[0]].to_numpy()
+    I=df['If'][df['If'].columns[0]].to_numpy()
 
-    plt.savefig(path.replace('csv','png'))
+    V_fit = V[np.where(I>1e-8)]
+    I_fit = I[np.where(I>1e-8)]
     
-    ax1.set_yscale('log')
-
-    RCB=[V[np.argmin(np.abs(I-0.1))], V[np.argmin(np.abs(I-0.01))]]
+    p=np.polyfit(np.log(I_fit), V_fit, 1)
     
-    if(draw):
-        plt.draw()
-        plt.pause(0.001)
+    x0 = [np.exp(p[0]), np.exp(-p[1]/p[0]), 0]
+    
+    x0_bounds = (1, np.inf)
+    x1_bounds = (0, 1)
+    x2_bounds = (0, np.inf)  # +/- np.inf can be used instead of None
+    bounds = np.transpose([x0_bounds, x1_bounds, x2_bounds])
+    
+    # Fit model to data
+    res = least_squares(CostDVf, x0, jac=jacDVf, bounds=bounds, kwargs={"I":I_fit, "V": V_fit, "T": T_in, "weight":V_fit}, verbose=1, ftol=1e-12, gtol=1e-15)
+    
+    print(res.x)
+    n, I0, Rs = res.x
+    
+    fig , ax = plt.subplots()
+    ax.plot(V, I*1e3, '.r')
+    
+    ax2=plt.twinx(ax)
+    ax2.plot(V, I*1e3, 'xb')
+    ax.set_yscale('log')
+    
+    ax.plot(DiodeVf(I_fit, res.x, T_in), I_fit*1e3,"k--",label = "fit")
+    ax2.plot(DiodeVf(I_fit, res.x, T_in), I_fit*1e3,"k--")
+    ax.set_xlim((0,None))
+    ax.legend()
+    
+    ax.set_ylabel("$I_f$ (mA)")
+    ax.set_xlabel("$V_f$ (V)")
+    
+    ax.set_title("Diode IxV %07.3f K" % T_in)
+    ax.text(0.05,1e-3, " n = %.2f\n $I_0$ = %.2e A\n $R_s$ = %.1f $\mathrm{\Omega}$" %(n,I0,Rs))
+    
+    fig.savefig(path.replace('.csv', '.png'))
 
-    plt.savefig(path.replace('.csv',' log.png')) 
-
-    return RCB
-
+    return n, I0, Rs
 
 
 def PlotVgs(path, sizex=640, draw=False):

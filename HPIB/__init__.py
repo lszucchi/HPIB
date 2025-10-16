@@ -69,7 +69,7 @@ class HP:
     def close(self):
         self.inst.close()
 
-    def SingleSave(self, path=".", timeout=2, real=False):
+    def SingleSave(self, path=None, timeout=2, real=False):
         if self.term=="0": return "Parameters not set"
         
         print(f"Measuring {self.term} ", end='')
@@ -329,8 +329,8 @@ class HP:
         
         self.SetSMU(Im, 'Vb', 'Ib', 'COMM', Comp=Comp)
         self.SetSMU(Ip, 'Vf', 'If', 'V', 'VAR1', Comp=Comp)
-        self.SetSMU(Vp, 'Vp', 'Ip', 'I', 'CONS', Value=0, Comp=2)
-        self.SetSMU(Vm, 'Vm', 'Im', 'I', 'CONS', Value=0, Comp=2)
+        self.SetSMU(Vp, 'Vp', 'Ip', 'I', 'CONS', Value=0, Comp=5)
+        self.SetSMU(Vm, 'Vm', 'Im', 'I', 'CONS', Value=0, Comp=5)
         self.UFUNC("V=Vp-Vm")
 
         self.SetVar('VAR1', 'V', VfStart, VfStop, VfStep, Comp=Comp)
