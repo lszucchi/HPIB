@@ -244,18 +244,33 @@ def PlotDiode(path, draw=False):
     plt.savefig(save_path) 
 
     return 0
-    
-def PlotDiode4P(path, T_in):
-    df = pd.read_csv(path, header=[0, 1])
-    V=df['Vf'][df['Vf'].columns[0]].to_numpy()
-    I=df['If'][df['If'].columns[0]].to_numpy()
 
-    V_fit = V[np.where(I>1e-8)]
-    I_fit = I[np.where(I>1e-8)]
+def PlotDiode4P(input, T_in):
+    if isinstance(input, str):
+        try:
+            df = pd.read_csv(input, header=[0, 1])
+            V=df['Vf'][df['Vf'].columns[0]].to_numpy()
+            I=df['If'][df['If'].columns[0]].to_numpy()
+        except:
+            df = pd.read_csv(input)
+            V=df.Vf.values
+            I=df.If.values
+            
+    if isinstance(input, pd.DataFrame):
+        V=input.Vf.values
+        I=input.Vf.values
+    
+    if np.average(V) < 0:
+        V=-V
+
+    V_fit=V[I>1e-4]# and I<1e-3]
+    I_fit=I[I>1e-4]# and I<1e-3]
+    I_fit=np.delete(I_fit, [V_fit[n] > V_fit[n+1] for n in range(len(V_fit)-1)]+[True])
+    V_fit=np.delete(V_fit, [V_fit[n] > V_fit[n+1] for n in range(len(V_fit)-1)]+[True])
     
     p=np.polyfit(np.log(I_fit), V_fit, 1)
     
-    x0 = [np.exp(p[0]), np.exp(-p[1]/p[0]), 0]
+    x0 = [np.exp(p[0]), np.exp(-p[1]/p[0]), 25]
     
     x0_bounds = (1, np.inf)
     x1_bounds = (0, 1)
@@ -263,7 +278,7 @@ def PlotDiode4P(path, T_in):
     bounds = np.transpose([x0_bounds, x1_bounds, x2_bounds])
     
     # Fit model to data
-    res = least_squares(CostDVf, x0, jac=jacDVf, bounds=bounds, kwargs={"I":I_fit, "V": V_fit, "T": T_in, "weight":V_fit}, verbose=1, ftol=1e-12, gtol=1e-15)
+    res = least_squares(CostDVf, x0, jac=jacDVf, bounds=bounds, kwargs={"I":I_fit, "V": V_fit, "T": T_in, "weight":1}, ftol=1e-12, gtol=1e-15)
     
     print(res.x)
     n, I0, Rs = res.x
@@ -274,19 +289,22 @@ def PlotDiode4P(path, T_in):
     ax2=plt.twinx(ax)
     ax2.plot(V, I*1e3, 'xb')
     ax.set_yscale('log')
+
+    I_fit=np.linspace(np.min(I_fit), np.max(I_fit))
     
     ax.plot(DiodeVf(I_fit, res.x, T_in), I_fit*1e3,"k--",label = "fit")
-    ax2.plot(DiodeVf(I_fit, res.x, T_in), I_fit*1e3,"k--")
-    ax.set_xlim((0,None))
+    ax2.plot(DiodeVf(I, res.x, T_in), I*1e3,"k--")
+    # ax.set_xlim((0,None))
     ax.legend()
     
     ax.set_ylabel("$I_f$ (mA)")
     ax.set_xlabel("$V_f$ (V)")
     
     ax.set_title("Diode IxV %07.3f K" % T_in)
-    ax.text(0.05,1e-3, " n = %.2f\n $I_0$ = %.2e A\n $R_s$ = %.1f $\mathrm{\Omega}$" %(n,I0,Rs))
+    ax2.text(np.min(V), 0.9*np.max(I)*1e3, "    n = %.2f\n    $I_0$ = %.2e A\n    $R_s$ = %.1f $\mathrm{\Omega}$" %(n,I0,Rs), 
+            horizontalalignment='left', verticalalignment='top')
     
-    fig.savefig(path.replace('.csv', '.png'))
+    fig.savefig(input.replace('.csv', '.png'))
 
     return n, I0, Rs
 

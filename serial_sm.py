@@ -22,12 +22,16 @@ class Arduino:
             return self.read()
 
         def opench(self, i):
-            self.write(0)
             if i == 0:
                 return 'Closed'
             if i >= 1 and i <=6:
                 self.write(i)
-                return f'Open INO: ch {i}'
+                for j in range(10):
+                    try:
+                        return f'Open INO: ch {i}'
+                    except:
+                        time.sleep(1)
+                raise RuntimeError('Comm error')
             else:
                 raise RuntimeError('Invalid channel')
 
