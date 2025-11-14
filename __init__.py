@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 from datetime import datetime
 from os.path import splitext
-from HPIB.HPT import ETF, frange
+from HPIB.plot import ETF, frange
 from time import sleep
 
 ########## Tabelas para intruções HPIB ###########

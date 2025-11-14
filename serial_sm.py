@@ -1,7 +1,7 @@
 import serial
 import time
 
-class Arduino:
+class serial_sm:
 
         def __init__(self, addr, baud=9600):
             try:

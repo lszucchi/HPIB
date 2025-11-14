@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 import tkinter.font as tkFont
 from time import sleep
+from HPIB import HP4155
 
 boxw=5
 combow=boxw+2
@@ -9,23 +10,23 @@ combow=boxw+2
 default={
           'GPIB_addr' : 17,
           'fontsize' : 16,
-          'smu1_vname' : "VS",
-          'smu1_iname' : "IS",
+          'smu1_vname' : "Vs",
+          'smu1_iname' : "Is",
           'smu1_mode' : "COMM",
           'smu1_func' : "CONS",
           'smu1_comp' : "--",
-          'smu2_vname' : "VD",
-          'smu2_iname' : "ID",
+          'smu2_vname' : "Vd",
+          'smu2_iname' : "Id",
           'smu2_mode' : "V",
           'smu2_func' : "0.05",
           'smu2_comp' : "0.01",
-          'smu3_vname' : "VG",
-          'smu3_iname' : "IG",
+          'smu3_vname' : "Vg",
+          'smu3_iname' : "Ig",
           'smu3_mode' : "V",
           'smu3_func' : "VAR1",
           'smu3_comp' : "--",
-          'smu4_vname' : "VB",
-          'smu4_iname' : "IB",
+          'smu4_vname' : "Vb",
+          'smu4_iname' : "Ib",
           'smu4_mode' : "COMM",
           'smu4_func' : "CONS",
           'smu4_comp' : "--",
@@ -103,7 +104,7 @@ class App(tk.Frame):
         
         SMU1V = tk.Entry(smubox, width=boxw, name="smu1_vname", font=custom_font)
         SMU1V.grid(column=1, row=1)
-        SMU1V.insert(0, 'VS')
+        SMU1V.insert(0, default['smu1_vname'])
         
         SMU1I = tk.Entry(smubox, width=boxw, name="smu1_iname", font=custom_font)
         SMU1I.grid(column=2, row=1)
@@ -191,7 +192,7 @@ class App(tk.Frame):
         
         SMU4I = tk.Entry(smubox, width=boxw, name="smu4_iname", font=custom_font)
         SMU4I.grid(column=2, row=4)
-        SMU4I.insert(0, 'IB')
+        SMU4I.insert(0, default['smu4_iname'])
         
         smu4_mode=tk.StringVar()
         SMU4M = ttk.Combobox(smubox, textvariable=smu4_mode, width=combow, values=["COMM", "I", "V"], name="smu4_mode", font=custom_font)
@@ -342,31 +343,29 @@ class App(tk.Frame):
 
         on_button_toggle()
 
-HP = None
-i=0
-
 def close():
     root.destroy()
 
 def connect():
-    global i, HP
+    global HP
     try:
-        if i>2:
-            HP=1
-            root.destroy()
-        i=i+1
+        HP=HP4155("GPIB0::17", debug=False)
+        root.destroy()
     except:
         pass
     
-    
-root = tk.Tk()
-frm = ttk.Frame(root, padding=10)
-frm.grid()
-ttk.Label(frm, text="Waiting for HP4155", font=tkFont.Font(family="Arial", size=default['fontsize'])).grid(column=0, row=0)
-ttk.Button(frm, text="Go", command=connect).grid(column=0, row=1)
-ttk.Button(frm, text="Quit", command=close).grid(column=1, row=1)
+try:
+    HP=HP4155("GPIB0::17", debug=False)
+    root.destroy
+except:
+    root = tk.Tk()
+    frm = ttk.Frame(root, padding=10)
+    frm.grid()
+    ttk.Label(frm, text="Waiting for HP4155", font=tkFont.Font(family="Arial", size=default['fontsize'])).grid(column=0, row=0)
+    ttk.Button(frm, text="Retry", command=connect).grid(column=0, row=1)
+    ttk.Button(frm, text="Quit", command=close).grid(column=1, row=1)
 
-root.mainloop()
+    root.mainloop()
 
 if HP:
 
