@@ -4,8 +4,10 @@ import tkinter.font as tkFont
 from time import sleep
 from HPIB import HP4155
 
-boxw=5
-combow=boxw+2
+
+boxw=4
+valuew=boxw
+combow=boxw+1
 
 default={
           'GPIB_addr' : 17,
@@ -91,6 +93,34 @@ class App(tk.Frame):
                 var2_step.config(state=tk.DISABLED)
                 var2_comp.config(state=tk.DISABLED)
 
+        def send_config(self):
+            global HP
+
+            for e in enable[:4]:
+                if e:
+                    HP.set_SMU(self.SMU_name, self.SMU_vname, self.SMU_iname, self.SMU_mode, self.SMU_func, self.SMU_comp)
+                else:
+                    disable()
+
+            for e in enable[4:8]:
+                if e:
+                    HP.set_VSMU(self.SMU_name, self.SMU_vname, self.SMU_func)
+                else:
+                    disable()
+
+            HP.set_var("VAR1", var1_func, var1_start, var1_stop, var1_step, var1_step)
+
+            if "VAR2" in self.func:
+                HP.set_var("VAR2", var2_func, var2_start, var2_stop, var2_step, var2_step)
+
+            HP.set_axis("X", x_trace, self.x_scale, x_start, x_stop)
+            HP.set_axis("Y1", y1_trace, self.y1_scale, y1_start, y1_stop)
+
+            if y2_trace:
+                HP.set_axis("Y2", y2_trace, self.y2_scale, y2_start, y2_stop)
+
+            HP.term=script.get()
+
 ######################### SMU box
 
         smubox=ttk.Frame(frm, padding=2)
@@ -98,7 +128,7 @@ class App(tk.Frame):
         
         #### SMU1
         
-        SMU1E = tk.Checkbutton(smubox, text="SMU1", variable=smu1_enable, onvalue=True, offvalue=False, command=on_button_toggle, name="smu1", font=custom_font)
+        SMU1E = tk.Checkbutton(smubox, text="SMU1", variable=smu1_enable, onvalue=True, offvalue=False, command=on_button_toggle, name="SMU1", font=custom_font)
         SMU1E.select()
         SMU1E.grid(column=0, row=1, sticky='w')
         
@@ -108,7 +138,7 @@ class App(tk.Frame):
         
         SMU1I = tk.Entry(smubox, width=boxw, name="smu1_iname", font=custom_font)
         SMU1I.grid(column=2, row=1)
-        SMU1I.insert(0, 'IS')
+        SMU1I.insert(0, default['smu1_iname'])
         
         smu1_mode=tk.StringVar()
         SMU1M = ttk.Combobox(smubox, textvariable=smu1_mode, width=combow, values=["COMM", "I", "V"], name="smu1_mode", font=custom_font)
@@ -126,17 +156,17 @@ class App(tk.Frame):
 
         #### SMU2
         
-        SMU2E = tk.Checkbutton(smubox, text="SMU2", variable=smu2_enable, onvalue=True, offvalue=False, command=on_button_toggle, name="smu2", font=custom_font)
+        SMU2E = tk.Checkbutton(smubox, text="SMU2", variable=smu2_enable, onvalue=True, offvalue=False, command=on_button_toggle, name="SMU2", font=custom_font)
         SMU2E.select()
         SMU2E.grid(column=0, row=2, sticky='w')
         
         SMU2V = tk.Entry(smubox, width=boxw, name="smu2_vname", font=custom_font)
         SMU2V.grid(column=1, row=2)
-        SMU2V.insert(0, 'VD')
+        SMU2V.insert(0, default['smu2_vname'])
         
         SMU2I = tk.Entry(smubox, width=boxw, name="smu2_iname", font=custom_font)
         SMU2I.grid(column=2, row=2)
-        SMU2I.insert(0, 'ID')
+        SMU2I.insert(0, default['smu2_iname'])
         
         smu2_mode=tk.StringVar()
         SMU2M = ttk.Combobox(smubox, textvariable=smu2_mode, width=combow, values=["COMM", "I", "V"], name="smu2_mode", font=custom_font)
@@ -154,7 +184,7 @@ class App(tk.Frame):
 
         #### SMU3
         
-        SMU3E = tk.Checkbutton(smubox, text="SMU3", variable=smu3_enable, onvalue=True, offvalue=False, command=on_button_toggle, name="smu3", font=custom_font)
+        SMU3E = tk.Checkbutton(smubox, text="SMU3", variable=smu3_enable, onvalue=True, offvalue=False, command=on_button_toggle, name="SMU3", font=custom_font)
         SMU3E.select()
         SMU3E.grid(column=0, row=3, sticky='w')
         
@@ -182,7 +212,7 @@ class App(tk.Frame):
 
         #### SMU4
         
-        SMU4E = tk.Checkbutton(smubox, text="SMU4", variable=smu4_enable, onvalue=True, offvalue=False, command=on_button_toggle, name="smu4", font=custom_font)
+        SMU4E = tk.Checkbutton(smubox, text="SMU4", variable=smu4_enable, onvalue=True, offvalue=False, command=on_button_toggle, name="SMU4", font=custom_font)
         SMU4E.select()
         SMU4E.grid(column=0, row=4, sticky='w')
         
@@ -290,56 +320,119 @@ class App(tk.Frame):
         tk.Label(varbox, text="Step", font=custom_font).grid(column=3, row=0)
         tk.Label(varbox, text="Comp", font=custom_font).grid(column=4, row=0)
 
-        tk.Label(varbox, text="VAR1", font=custom_font).grid(column=0, row=1)
+        tk.Label(varbox, text="VAR1", font=custom_font).grid(column=0, row=1, sticky='w')
 
-        var1_start = tk.Entry(varbox, width=boxw, font=custom_font)
+        var1_start = tk.Entry(varbox, width=valuew, font=custom_font)
         var1_start.grid(column=1, row=1)
         var1_start.insert(0, 0)
 
-        var1_stop = tk.Entry(varbox, width=boxw, font=custom_font)
+        var1_stop = tk.Entry(varbox, width=valuew, font=custom_font)
         var1_stop.grid(column=2, row=1)
         var1_stop.insert(0, 5)
 
-        var1_step = tk.Entry(varbox, width=boxw, font=custom_font)
+        var1_step = tk.Entry(varbox, width=valuew, font=custom_font)
         var1_step.grid(column=3, row=1)
         var1_step.insert(0, .1)
 
-        var1_comp = tk.Entry(varbox, width=boxw, font=custom_font)
+        var1_comp = tk.Entry(varbox, width=valuew, font=custom_font)
         var1_comp.grid(column=4, row=1)
         var1_comp.insert(0, 10e-3)
 
-        tk.Label(varbox, text="VAR2", font=custom_font).grid(column=0, row=2)
+        tk.Label(varbox, text="VAR2", font=custom_font).grid(column=0, row=2, sticky='w')
 
-        var2_start = tk.Entry(varbox, width=boxw, font=custom_font)
+        var2_start = tk.Entry(varbox, width=valuew, font=custom_font)
         var2_start.grid(column=1, row=2, padx=1)
         var2_start.insert(0, 0)
 
-        var2_stop = tk.Entry(varbox, width=boxw, font=custom_font)
+        var2_stop = tk.Entry(varbox, width=valuew, font=custom_font)
         var2_stop.grid(column=2, row=2)
         var2_stop.insert(0, 5)
 
-        var2_step = tk.Entry(varbox, width=boxw, font=custom_font)
+        var2_step = tk.Entry(varbox, width=valuew, font=custom_font)
         var2_step.grid(column=3, row=2)
         var2_step.insert(0, .1)
 
-        var2_comp = tk.Entry(varbox, width=boxw, font=custom_font)
+        var2_comp = tk.Entry(varbox, width=valuew, font=custom_font)
         var2_comp.grid(column=4, row=2)
         var2_comp.insert(0, 10e-3)
 
-        tk.Label(varbox, text="Func", font=custom_font).grid(row=3, column=0)
-        save_list = tk.Entry(varbox, width=4*boxw+3, font=custom_font)
+        tk.Label(varbox, text="Func", font=custom_font).grid(row=3, column=0, sticky='w')
+        save_list = tk.Entry(varbox, width=4*valuew, font=custom_font)
         save_list.grid(row=3, column=1, columnspan=4, sticky='w')
-        save_list.insert(0, "Vf=V2-V1")
+        save_list.insert(0, "Vf=VM2-VM1")
 
-        tk.Label(varbox, text="Save", font=custom_font).grid(row=5, column=0)
-        save_list = tk.Entry(varbox, width=4*boxw+3, font=custom_font)
-        save_list.grid(row=5, column=1, columnspan=4, sticky='w')
+        tk.Label(varbox, text="Trace", font=custom_font).grid(column=1, row=5)
+        tk.Label(varbox, text="Start", font=custom_font).grid(column=2, row=5)
+        tk.Label(varbox, text="Stop", font=custom_font).grid(column=3, row=5)
+        tk.Label(varbox, text="Scale", font=custom_font).grid(column=4, row=5)
+
+        tk.Label(varbox, text="X", font=custom_font).grid(column=0, row=6, sticky='w')
+
+        x_trace = tk.Entry(varbox, width=valuew, font=custom_font)
+        x_trace.grid(column=1, row=6, padx=1)
+        x_trace.insert(0, "Vg")
+
+        x_start = tk.Entry(varbox, width=valuew, font=custom_font)
+        x_start.grid(column=2, row=6)
+        x_start.insert(0, 0)
+
+        x_stop = tk.Entry(varbox, width=valuew, font=custom_font)
+        x_stop.grid(column=3, row=6)
+        x_stop.insert(0, 5)
+
+        self.x_scale=tk.StringVar()    
+        self.x_scale.set("LIN")   
+        x_scale_box = ttk.Combobox(varbox, textvariable=self.x_scale, width=valuew, font=custom_font, values=["LIN", "LOG"], name="x_scale")
+        x_scale_box.grid(column=4, row=6)
+        
+
+        tk.Label(varbox, text="Y1", font=custom_font).grid(column=0, row=7, sticky='w')
+
+        y1_trace = tk.Entry(varbox, width=valuew, font=custom_font)
+        y1_trace.grid(column=1, row=7, padx=1)
+        y1_trace.insert(0, "Id")
+
+        y1_start = tk.Entry(varbox, width=valuew, font=custom_font)
+        y1_start.grid(column=2, row=7)
+        y1_start.insert(0, 0)
+
+        y1_stop = tk.Entry(varbox, width=valuew, font=custom_font)
+        y1_stop.grid(column=3, row=7)
+        y1_stop.insert(0, 1e-2)
+
+        self.y1_scale=tk.StringVar()
+        self.y1_scale.set("LIN")        
+        y1_scale_box = ttk.Combobox(varbox, textvariable=self.y1_scale, width=valuew, font=custom_font, values=["LIN", "LOG"], name="y1_scale")
+        y1_scale_box.grid(column=4, row=7)
+
+        tk.Label(varbox, text="Y2", font=custom_font).grid(column=0, row=8, sticky='w')
+
+        y2_trace = tk.Entry(varbox, width=valuew, font=custom_font)
+        y2_trace.grid(column=1, row=8, padx=1)
+        y2_trace.insert(0, "--")
+
+        y2_start = tk.Entry(varbox, width=valuew, font=custom_font)
+        y2_start.grid(column=2, row=8)
+        y2_start.insert(0, "--")
+
+        y2_stop = tk.Entry(varbox, width=valuew, font=custom_font)
+        y2_stop.grid(column=3, row=8)
+        y2_stop.insert(0, "--")
+
+        self.y2_scale=tk.StringVar() 
+        self.y2_scale.set("--")        
+        y2_scale_box = ttk.Combobox(varbox, textvariable=self.y2_scale, width=valuew, font=custom_font, values=["LIN", "LOG"], name="y2_scale")
+        y2_scale_box.grid(column=4, row=8)
+
+        tk.Label(varbox, text="Trace", font=custom_font).grid(row=9, column=0, sticky='w')
+        save_list = tk.Entry(varbox, width=4*boxw, font=custom_font)
+        save_list.grid(row=9, column=1, columnspan=4, sticky='w')
         save_list.insert(0, "Vg, Id, Vd, Ig")
 
-        tk.Label(varbox, text="Load", font=custom_font).grid(row=6, column=0)
-        save_list = ttk.Combobox(varbox, width=3*boxw, font=custom_font)
-        save_list.grid(row=6, column=1, columnspan=4, sticky='w')
-        save_list.insert(0, "Id x Vgs")
+        tk.Label(varbox, text="Load", font=custom_font).grid(row=10, column=0, sticky='w')
+        script = ttk.Combobox(varbox, width=3*boxw, font=custom_font)
+        script.grid(row=10, column=1, columnspan=4, sticky='w')
+        script.insert(0, "Id x Vgs")
 
         on_button_toggle()
 
@@ -355,8 +448,7 @@ def connect():
         pass
     
 try:
-    HP=HP4155("GPIB0::17", debug=False)
-    root.destroy
+    HP=HP4155("GPIB0::17", debug=True)
 except:
     root = tk.Tk()
     frm = ttk.Frame(root, padding=10)
