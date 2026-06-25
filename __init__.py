@@ -72,7 +72,10 @@ class HP4155:
         print(f"Measuring {self.term} ", end='')
         self.measure()
         
-        Poll=self.PollDR(1, 1, timeout)
+        for i in range(timeout*120):
+            if self.State=="IDLE":
+                break
+            sleep(0.5)
 
         ######################## Importante
         
@@ -136,7 +139,7 @@ class HP4155:
         
     @property
     def State(self):
-        return self.ask(":PAGE:SCONtrol:STAT?")
+        return self.ask(":PAGE:SCON:STAT?")
     
     @property
     def Mode(self):
@@ -224,11 +227,23 @@ class HP4155:
         self.write(f":PAGE:MEAS:DEL {value}")
     
     @property
+    def SweepMode(self):
+        return self.ask(":PAGE:MEAS:SWE:VAR1:MODE?")
+    
+    @SweepMode.setter
+    def SweepMode(self, Value="SINGle"):
+        Value=Value.translate(striplc)
+        if Value not in ['SING', 'DOUB']:
+            raise ValueError("Invalid Sweep Mode")
+        self.write(f":PAGE:MEAS:SWE:VAR1:MODE {Value}")
+
+    @property
     def StopCond(self):
         return self.ask(":PAGE:MEAS:SST?")
         
     @StopCond.setter
     def StopCond(self, Condition="OFF"):
+        Condition=Condition.translate(striplc)
         if Condition not in ['ABN', 'COMP', 'OFF']:
             raise ValueError("Invalid condition")
         self.write(f":PAGE:MEAS:SST {Condition}")
@@ -295,13 +310,13 @@ class HP4155:
     def save_list(self):
         if self.debug: return self.save_debug
         self.write(":PAGE:DISP:MODE LIST")
+        self.beep()
         return self.ask(":PAGE:DISP:LIST?").split(',')
     
     @save_list.setter
     def save_list(self, trace_list):
         if self.debug: 
             self.save_debug=trace_list
-            return 0
         self.write(":PAGE:DISP:MODE LIST")
         self.write(":PAGE:DISP:LIST:DEL:ALL")
         
@@ -433,8 +448,15 @@ class HP4155:
             return 0
     
         if VARno=='VAR2' and Step:
+            """ Step = Points """
+
             self.Var2=frange(Start, Stop, Step)
-            Points=1+(Stop-Start)/Step
+    
+            Points=Step
+            if Step > 1:
+                Step=(Stop-Start)/(Points-1)
+            elif Step < 1:
+                Points=1+(Stop-Start)/Step
             self.write(f":PAGE:MEAS:{VARno}:STAR {Start}")
             self.write(f":PAGE:MEAS:{VARno}:STEP {Step}")
             self.write(f":PAGE:MEAS:{VARno}:POINTS {Points}")
@@ -498,14 +520,14 @@ class HP4155:
         if real:
             out=[x for x in self.inst.query_binary_values(f":DATA? \'{trace}\'", datatype='d', is_big_endian=True) if not np.isnan(x)]
             if CompTrigger: out=out[:-1]
-            if self.Var2: return np.column_stack(np.split(np.array(out), len(self.Var2)))
+            if None not in self.Var2: return np.column_stack(np.split(np.array(out), len(self.Var2)))
             return out
             
-        if self.Var2: return np.column_stack(np.split(np.array(self.ask(f":DATA? \'{trace}\'").split(',')), len(self.Var2)))
+        if None not in self.Var2: return np.column_stack(np.split(np.array(self.ask(f":DATA? \'{trace}\'").split(',')), len(self.Var2)))
         return np.array(self.ask(f":DATA? \'{trace}\'").split(','))
     
     def get_data(self, real=False):
-        if self.Var2 and not (isinstance(self.Var2, list) or isinstance(self.Var2, np.ndarray)):
+        if not (isinstance(self.Var2, list) or isinstance(self.Var2, np.ndarray)):
             self.Var2=[self.Var2]
             
         if self.debug:
@@ -528,9 +550,9 @@ class HP4155:
         for listvar in header[1:]:
             lastdata = np.column_stack((lastdata, self.data_output(listvar, real and CompTrigger, real)))
         
-        if self.Var2:
+        if None not in self.Var2:
             header = pd.MultiIndex.from_product([self.save_list,
-                                        [f"{str(x)}" for x in self.Var2]],
+                                        [format(x, ".2f") for x in self.Var2]],
                                         names=["Trace", f"{self.Var2Name}"])
         
         df = pd.DataFrame(data=lastdata, columns=header, dtype=float)
@@ -545,15 +567,14 @@ class HP4155:
 
     def measure(self):
         self.write(":PAGE:SCON:MEAS:SING")
-        self.write("*ESE 1")
-        self.write("*OPC")
-        while(self.data_ready):
-            sleep(0.5)
+        while self.State=="IDLE":
+            sleep(0.1)
         return 0
 
     def stop(self):
         while self.State=="MEAS":
             self.write(":PAGE:SCON:STOP")
+            sleep(0.1)
         return 0
 
     ##################### Sweep Mode Setups
