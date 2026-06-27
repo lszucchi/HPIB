@@ -41,7 +41,6 @@ class HP4155:
             self.inst.timeout=self.timeout
             self.write(":STAT:MEAS:ENAB 8")
             self.Mode="SWEEP"
-            print(self.IDN)
 
     def IDN(self):
         return self.ask("*IDN?")

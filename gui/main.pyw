@@ -6,6 +6,7 @@ import tkinter.font as tkFont
 import configparser
 from time import sleep
 
+from matplotlib import style
 import matplotlib.pyplot as plt
 from HPIB import HP4155
 
@@ -14,11 +15,10 @@ valuew=boxw
 combow=boxw+1
 default_fontsize=16
 
-
 scripts=configparser.ConfigParser()
-scripts.read(__file__.rsplit('\\', 1)[0] + '\\scripts\\Scripts.ini')
+scripts.read(__file__.rsplit('\\', 1)[0] + '\\Scripts.ini')
 user_scripts=configparser.ConfigParser()
-user_scripts.read(__file__.rsplit('\\', 1)[0] + '\\scripts\\UserScripts.ini')
+user_scripts.read(__file__.rsplit('\\', 1)[0] + '\\UserScripts.ini')
 
 def exptofloat(s):
     try:    
@@ -145,7 +145,7 @@ class App(tk.Frame):
 
             HP.term=script.get()
 
-            Meas_btn.config(text="Measure", state=tk.NORMAL)
+            Meas_btn.config(text="Measure\n", state=tk.NORMAL)
 
         def OnMeasure(self):
 
@@ -186,7 +186,7 @@ class App(tk.Frame):
                     ax2.plot(df[x_trace.get()], df[y2_trace.get()])
                     ax2.set_ylabel(y2_trace.get())
                 fig.savefig(save_path.replace(".csv", ".png"), dpi=300)
-                Meas_btn.config(text="Measure", state=tk.NORMAL)
+                Meas_btn.config(text="Measure\n", state=tk.NORMAL)
                 plt.show()
             
 
@@ -203,8 +203,8 @@ class App(tk.Frame):
                 return 0
             
             if script.get() == "Reload":
-                scripts.read(__file__.rsplit('\\', 1)[0] + '\\scripts\\MainScripts2.ini')
-                user_scripts.read(__file__.rsplit('\\', 1)[0] + '\\scripts\\UserScripts.ini')
+                scripts.read(__file__.rsplit('\\', 1)[0] + '\\MainScripts2.ini')
+                user_scripts.read(__file__.rsplit('\\', 1)[0] + '\\UserScripts.ini')
                 script.config(values=scripts.sections()+user_scripts.sections()+['Reload', 'Save'])
                 return 0
 
@@ -257,7 +257,7 @@ class App(tk.Frame):
                             new_script[ScriptName][widget.winfo_name()]=widget.get()
                         except:
                             pass
-            with open(__file__.rsplit('\\', 1)[0] + '\\scripts\\UserScripts.ini', 'a') as configfile:
+            with open(__file__.rsplit('\\', 1)[0] + '\\UserScripts.ini', 'a') as configfile:
                 new_script.write(configfile)
 
 ######################### SMU box
@@ -500,8 +500,8 @@ class App(tk.Frame):
         var2_comp.insert(0, 10e-3)
 
         tk.Label(varbox, text="Func", font=small_font).grid(row=3, column=0, sticky='w')
-        ufunc = tk.Entry(varbox, width=4*valuew, font=small_font, name="ufunc")
-        ufunc.grid(row=3, column=1, columnspan=4, sticky='w')
+        ufunc = tk.Entry(varbox, width=18, font=small_font, name="ufunc")
+        ufunc.grid(row=3, column=1, columnspan=4, padx=(2, 0), sticky='w')
         ufunc.insert(0, "Vf=VM2-VM1")
 
         tk.Label(varbox, text="Trace", font=small_font).grid(column=1, row=5)
@@ -526,13 +526,13 @@ class App(tk.Frame):
         self.x_scale=tk.StringVar()    
         self.x_scale.set("LIN")   
         x_scale_box = ttk.Combobox(varbox, textvariable=self.x_scale, width=valuew, font=small_font, values=["LIN", "LOG"], name="x_scale")
-        x_scale_box.grid(column=4, row=6)
+        x_scale_box.grid(column=4, row=6, pady=(3, 2))
         
 
         tk.Label(varbox, text="Y1", font=small_font).grid(column=0, row=7, sticky='w')
 
         y1_trace = tk.Entry(varbox, width=valuew, font=small_font, name="y1_trace")
-        y1_trace.grid(column=1, row=7, padx=1)
+        y1_trace.grid(column=1, row=7)
         y1_trace.insert(0, "Id")
 
         y1_start = tk.Entry(varbox, width=valuew, font=small_font, name="y1_start")
@@ -546,7 +546,7 @@ class App(tk.Frame):
         self.y1_scale=tk.StringVar()
         self.y1_scale.set("LIN")        
         y1_scale_box = ttk.Combobox(varbox, textvariable=self.y1_scale, width=valuew, font=small_font, values=["LIN", "LOG"], name="y1_scale")
-        y1_scale_box.grid(column=4, row=7)
+        y1_scale_box.grid(column=4, row=7, pady=(3, 2))
 
         tk.Label(varbox, text="Y2", font=small_font).grid(column=0, row=8, sticky='w')
 
@@ -565,7 +565,7 @@ class App(tk.Frame):
         self.y2_scale=tk.StringVar() 
         self.y2_scale.set("LIN")        
         y2_scale_box = ttk.Combobox(varbox, textvariable=self.y2_scale, width=valuew, font=small_font, values=["LIN", "LOG"], name="y2_scale")
-        y2_scale_box.grid(column=4, row=8)
+        y2_scale_box.grid(column=4, row=8, pady=(3, 2))
 
         tk.Label(varbox, text="Trace", font=small_font).grid(row=9, column=0, sticky='w')
         save_list = tk.Entry(varbox, width=4*boxw, font=small_font, name="save_list")
@@ -582,83 +582,144 @@ class App(tk.Frame):
 
         ctrlbox=ttk.Frame(frm, padding=2)
         ctrlbox.grid(column=13, row=0, rowspan=12, columnspan=7, sticky='n')
-        
-        Config_btn = tk.Button(ctrlbox, text='Send Config', font=small_font, command=lambda: SendConfig(self), width=10, height=1)
-        Config_btn.grid(column=0, row=0, columnspan=7, rowspan=2)
 
-        Meas_btn = tk.Button(ctrlbox, text='Measure', font=big_font, command=lambda: OnMeasure(self), width=15, height=3)
-        Meas_btn.grid(column=0, row=3, columnspan=7, rowspan=5, pady=5)
-        Meas_btn.config(text="Measurement\nnot loaded", state=tk.DISABLED)
+        style = ttk.Style()
+        style.configure('Large.TButton', font=('Helvetica', 18))
+        style.configure('Small.TButton', font=('Helvetica', 14))
 
-        Stop_btn = tk.Button(ctrlbox, text='Stop', font=small_font, command=lambda: OnStop(self), width=10, height=1)
-        Stop_btn.grid(column=0, row=9, columnspan=7, rowspan=2, pady=(0, 5))
-        
+        Config_btn = ttk.Button(ctrlbox, text='Send Config', style='Small.TButton', command=lambda: SendConfig(self))
+        Config_btn.grid(column=0, row=0, columnspan=3, rowspan=2, ipadx=10, ipady=5)
+
+        Meas_btn = ttk.Button(ctrlbox, text='Measure\n', style='Large.TButton', command=lambda: OnMeasure(self))
+        Meas_btn.grid(column=0, row=3, columnspan=3, rowspan=5, ipadx=20, ipady=15, pady=5)
+        Meas_btn.config(text="Measurement\nnot loaded", state=tk.DISABLED)        
 
         IntTime_txt = tk.Label(ctrlbox, text="Int Time", font=small_font)
-        IntTime_txt.grid(column=0, row=11, columnspan=2, padx=(10, 0), sticky='w')
+        IntTime_txt.grid(column=0, row=10, padx=(10, 0), sticky='w')
         IntTime_combo = ttk.Combobox(ctrlbox, width=combow+2, font=small_font, values=["SHORt", "MEDium", "LONG"], name="!int_time")
-        IntTime_combo.grid(column=2, row=11, columnspan=5, padx=(0, 10))
+        IntTime_combo.grid(column=1, row=10, columnspan=2, padx=(0, 10))
         IntTime_combo.set("SHORt")
 
         DelayTime_txt = tk.Label(ctrlbox, text="DTime", font=small_font)
-        DelayTime_txt.grid(column=0, row=12, columnspan=2, padx=(10, 0), sticky='w')
+        DelayTime_txt.grid(column=0, row=11, padx=(10, 0), sticky='w')
         DelayTime_entry = tk.Entry(ctrlbox, width=combow, font=small_font, name="!delay_time")
-        DelayTime_entry.grid(column=2, row=12, columnspan=4, padx=(12, 9))
+        DelayTime_entry.grid(column=1, row=11, sticky='w')
         DelayTime_entry.insert(0, 1)
         DelayTime_unit = tk.Label(ctrlbox, text="ms", font=small_font)
-        DelayTime_unit.grid(column=6, row=12, padx=(0, 10))
+        DelayTime_unit.grid(column=2, row=11, padx=(0, 10), sticky='w')
 
         HoldTime_txt = tk.Label(ctrlbox, text="HTime", font=small_font)
-        HoldTime_txt.grid(column=0, row=13, columnspan=2, padx=(10, 0), sticky='w')
+        HoldTime_txt.grid(column=0, row=12, padx=(10, 0), sticky='w')
         HoldTime_entry = tk.Entry(ctrlbox, width=combow, font=small_font, name="!hold_time")
-        HoldTime_entry.grid(column=2, row=13, columnspan=4, padx=(12, 9))
+        HoldTime_entry.grid(column=1, row=12, sticky='w')
         HoldTime_entry.insert(0, 1)
         HoldTime_unit = tk.Label(ctrlbox, text="ms", font=small_font)
-        HoldTime_unit.grid(column=6, row=13, padx=(0, 10))
+        HoldTime_unit.grid(column=2, row=12, padx=(0, 10), sticky='w')
 
         Sweep_txt = tk.Label(ctrlbox, text="Sweep", font=small_font)
-        Sweep_txt.grid(column=0, row=14, columnspan=2, padx=(10, 0), sticky='w')
+        Sweep_txt.grid(column=0, row=13, padx=(10, 0), sticky='w')
         Sweep_combo = ttk.Combobox(ctrlbox, width=combow+2, font=small_font, values=["SINGle", "DOUBle"], name="!sweep")
-        Sweep_combo.grid(column=2, row=14, columnspan=5, padx=(0, 10))
+        Sweep_combo.grid(column=1, row=13, columnspan=2, padx=(0, 10))
         Sweep_combo.set("SINGle")
 
         Stopat_txt = tk.Label(ctrlbox, text="Stop at", font=small_font)
-        Stopat_txt.grid(column=0, row=15, columnspan=2, padx=(10, 0), sticky='w')
+        Stopat_txt.grid(column=0, row=14, padx=(10, 0), sticky='w')
         Stopat_combo = ttk.Combobox(ctrlbox, width=combow+2, font=small_font, values=["OFF", "COMPliance", "ABNormal"], name="!stopat")
-        Stopat_combo.grid(column=2, row=15, columnspan=5, padx=(0, 10))
+        Stopat_combo.grid(column=1, row=14, columnspan=2, padx=(0, 10))
         Stopat_combo.set("OFF")
 
+        Stop_btn = ttk.Button(ctrlbox, text='Stop', style='Small.TButton', command=lambda: OnStop(self))
+        Stop_btn.grid(column=0, row=15, columnspan=3, rowspan=2, ipady=5, pady=(10, 0))
+
         frm.after(100, lambda: LoadScript(self))
-        
 
-def close():
-    root.destroy()
-
-def connect():
-    global HP
-    try:
-        HP=HP4155("GPIB0::17", debug=False)
+def conn_fail():
+    def on_close():
+        global HP
         root.destroy()
-    except:
-        pass
-    
-try:
-    HP=HP4155("GPIB0::17", timeout=3000, debug=False)
-except:
+
+    def connect():
+        global HP
+        try:
+            HP=HP4155(f"GPIB0::{GPIB_Spinbox.get()}", debug=False)
+        except:
+            return 1
+        root.destroy()
+
+    def on_debug():
+        global HP
+        HP=HP4155("GPIB0::17", debug=True)
+        root.destroy()
+
+    global root
     root = tk.Tk()
+    root.title("Set GPIB Address")
     frm = ttk.Frame(root, padding=10)
     frm.grid()
-    ttk.Label(frm, text="Waiting for HP4155", font=tkFont.Font(family="Arial", size=default['fontsize'])).grid(column=0, row=0)
-    ttk.Button(frm, text="Retry", command=connect).grid(column=0, row=1)
-    ttk.Button(frm, text="Quit", command=close).grid(column=1, row=1)
+
+    style = ttk.Style()
+    style.configure('TButton', font=('Helvetica', 18))
+
+    ttk.Label(frm, text="Waiting for HP4155", font=tkFont.Font(family="Arial", size=default_fontsize+2)).grid(column=0, row=0, columnspan=2)
+    ttk.Button(frm, text="Retry", command=connect).grid(column=0, row=1, ipadx=10, ipady=15, padx=5, pady=10)
+    ttk.Button(frm, text="Debug", command=lambda: on_debug()).grid(column=1, row=1, ipadx=10, ipady=15, padx=5, pady=10)
+    ttk.Button(frm, text="Quit", command=on_close).grid(column=0, row=3, padx=5, columnspan=2, ipady=5, pady=10)
+    ttk.Label(frm, text="GPIB:", font=tkFont.Font(family="Arial", size=default_fontsize)).grid(column=0, row=2, columnspan=2, pady=10, padx=(15,5), sticky='w')
+    GPIB_Spinbox = ttk.Spinbox(frm, from_=0, to=25, width=3, font=tkFont.Font(family="Arial", size=default_fontsize+2))
+    GPIB_Spinbox.set(17)
+    GPIB_Spinbox.grid(column=1, row=2, padx=(6, 0), sticky='w')
+     
+    root.protocol('WM_DELETE_WINDOW', on_close)
+    root.mainloop()
+
+def donothing():
+    return 0
+
+def string_comm():
+    def Writebox(msg):
+        # AnsBox.delete(0, tk.END)
+        AnsBox.insert('1.0', msg + "\n")
+
+    global HP
+    root = tk.Tk()
+    root.title("Serial IO")
+    frm = ttk.Frame(root, padding=10)
+    frm.grid()
+
+    style = ttk.Style()
+    style.configure('TButton', font=('Helvetica', 18))
+
+    from tkinter.scrolledtext import ScrolledText
+
+    ttk.Label(frm, text="I/O:", font=tkFont.Font(family="Arial", size=default_fontsize+2)).grid(column=0, row=0, columnspan=6, sticky='w')
+    ttk.Button(frm, text="Send", command=lambda: HP.write(MsgBox.get().strip("\n"))).grid(column=0, row=1, padx=10, sticky='w')
+    ttk.Button(frm, text="Read", command=lambda: Writebox(HP.inst.read())).grid(column=1, row=1, padx=0, sticky='w')
+    ttk.Button(frm, text="Query", command=lambda: Writebox(HP.ask(MsgBox.get().strip("\n")))).grid(column=2, row=1, padx=10, sticky='w')
+    MsgBox=ttk.Combobox(frm, width=31, values=["*IDN?", "SYST:ERR?"])
+    MsgBox.grid(column=0, row=2, columnspan=6, ipadx=100, padx=5, sticky='w')
+    MsgBox.insert(0, "*IDN?")
+    AnsBox=ScrolledText(frm, width=24, height=10)
+    AnsBox.grid(column=0, row=3, columnspan=6, ipadx=100, padx=5)
 
     root.mainloop()
 
-if HP:
+try:
+    HP=HP4155("GPIB0::17", debug=False)
+except:
+    conn_fail()
 
+if "HP" in locals():
     myapp = App()
+    menubar=tk.Menu(myapp)
+    filemenu = tk.Menu(menubar, tearoff=0)
+    filemenu.add_command(label="Change GPIB", command=conn_fail)
+    filemenu.add_command(label="String I/O", command=string_comm)
+    filemenu.add_separator()
+    filemenu.add_command(label="Exit", command=lambda: myapp.master.destroy())
+    menubar.add_cascade(label="Command", menu=filemenu)
     myapp.master.title("HPIB")
     myapp.master.maxsize(1280, 720)
 
+    myapp.master.config(menu=menubar)
     myapp.mainloop()
 
