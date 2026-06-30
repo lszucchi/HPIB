@@ -489,15 +489,10 @@ class HP4155:
 
         if not expression:
             return self.write(":PAGE:CHANnels:UFUN:DEL:ALL")
-        
-        if expression[0]=='V':
-            unit='V'
-        else:
-            unit='A'
     
         (fname, function) = expression.split('=')
         
-        self.write(f":PAGE:CHAN:UFUN:DEF '{fname}', '{unit}', '{function}'")
+        self.write(f":PAGE:CHAN:UFUN:DEF '{fname}', 'AU', '{function}'")
         self.beep()
     
         return 0

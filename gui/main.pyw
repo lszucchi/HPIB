@@ -141,6 +141,8 @@ class App(tk.Frame):
             for trace in save_list.get().split(","):
                 if trace.strip(" ") not in trace_list:
                     trace_list.append(trace.strip(" "))
+
+            HP.user_function(ufunc.get())
             HP.save_list=trace_list
 
             HP.term=script.get()
