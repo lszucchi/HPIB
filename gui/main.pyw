@@ -117,33 +117,42 @@ class App(tk.Frame):
                 HP.beep()
 
             if vsu1_enable.get():
-                HP.set_VSMU("VSU1", VSU1V.get(), VSU1F.get())
+                HP.set_VMU("VSU1", VSU1V.get(), VSU1F.get())
                 HP.beep()
 
             if vsu2_enable.get():
-                HP.set_VSMU("VSU2", VSU2V.get(), VSU2F.get())
+                HP.set_VMU("VSU2", VSU2V.get(), VSU2F.get())
                 HP.beep()
 
-            HP.set_var("VAR1", exptofloat(var1_start.get()), exptofloat(var1_stop.get()), exptofloat(var1_step.get()))
+            if vmu1_enable.get():
+                HP.set_VMU("VMU1", VMU1V.get())
+                HP.beep()
 
-            if "VAR2" in self.func:
-                HP.set_var("VAR2", exptofloat(var2_start.get()), exptofloat(var2_stop.get()), exptofloat(var2_step.get()))
+            if vmu2_enable.get():
+                HP.set_VMU("VMU2", VMU2V.get())
+                HP.beep()
+
+            HP.user_function(ufunc.get())
+
+            HP.beep()
 
             HP.set_axis("X", x_trace.get(), self.x_scale.get(), exptofloat(x_start.get()), exptofloat(x_stop.get()))
             HP.set_axis("Y1", y1_trace.get(), self.y1_scale.get(), exptofloat(y1_start.get()), exptofloat(y1_stop.get()))
             trace_list=[x_trace.get(), y1_trace.get()]
 
+
             if "-" not in y2_trace.get():
                 trace_list.append(y2_trace.get())
                 HP.set_axis("Y2", y2_trace.get(), self.y2_scale.get(), exptofloat(y2_start.get()), exptofloat(y2_stop.get()))
-
+                HP.beep()
                 
             for trace in save_list.get().split(","):
                 if trace.strip(" ") not in trace_list:
                     trace_list.append(trace.strip(" "))
 
-            HP.user_function(ufunc.get())
             HP.save_list=trace_list
+
+            HP.beep()
 
             HP.term=script.get()
 

@@ -400,6 +400,10 @@ class HP4155:
             raise Exception("Invalid VSU or VMU: <{SMUno}>")
             
         self.write(f":PAGE:CHAN:{SMUno}:VNAME \'{VNAME}\'")
+
+        if "VMU" in SMUno:
+            return 0
+
         self.write(f":PAGE:CHAN:{SMUno}:MODE V")
         
         Func=Func.upper()
@@ -408,9 +412,6 @@ class HP4155:
             raise Exception(f"Invalid Func in {SMUno}: <{Func}>")
     
         self.beep()
-        
-        if "VMU" in SMUno:
-            return 0
             
         self.write(f":PAGE:CHAN:{SMUno}:FUNC {Func}")
         if Func[len(Func)-1] in ['1', '2', 'D']:
