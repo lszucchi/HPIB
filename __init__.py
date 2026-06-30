@@ -400,11 +400,10 @@ class HP4155:
             raise Exception("Invalid VSU or VMU: <{SMUno}>")
             
         self.write(f":PAGE:CHAN:{SMUno}:VNAME \'{VNAME}\'")
+        self.write(f":PAGE:CHAN:{SMUno}:MODE V")
 
         if "VMU" in SMUno:
             return 0
-
-        self.write(f":PAGE:CHAN:{SMUno}:MODE V")
         
         Func=Func.upper()
         if Func not in ['CONS', 'VAR1', 'VAR2', 'VARD']:

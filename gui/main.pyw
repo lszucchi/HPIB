@@ -132,9 +132,12 @@ class App(tk.Frame):
                 HP.set_VMU("VMU2", VMU2V.get())
                 HP.beep()
 
-            HP.user_function(ufunc.get())
+            HP.set_var("VAR1", exptofloat(var1_start.get()), exptofloat(var1_stop.get()), exptofloat(var1_step.get()))
 
-            HP.beep()
+            if "VAR2" in self.func:
+                HP.set_var("VAR2", exptofloat(var2_start.get()), exptofloat(var2_stop.get()), exptofloat(var2_step.get()))
+
+            HP.user_function(ufunc.get())
 
             HP.set_axis("X", x_trace.get(), self.x_scale.get(), exptofloat(x_start.get()), exptofloat(x_stop.get()))
             HP.set_axis("Y1", y1_trace.get(), self.y1_scale.get(), exptofloat(y1_start.get()), exptofloat(y1_stop.get()))
