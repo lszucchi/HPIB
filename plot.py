@@ -309,19 +309,7 @@ def PlotDiode4P(input, T_in):
     return n, I0, Rs
 
 
-def PlotVgs(path, sizex=640, draw=False):
-
-    try:
-        df=pd.read_csv(path, header=[0, 1])
-        
-        Id=df['Id'][df['Id'].columns[0]].to_numpy()
-        Vg=df['Vg'][df['Vg'].columns[0]].to_numpy()
-        Vd=float(df.columns[2][1])
-    except:
-        df=pd.read_csv(path)
-        
-        Id=df['Id'].to_numpy()
-        Vg=df['Vg'].to_numpy()
+def PlotVgs(Id, Vg, Vd, path, sizex=640, draw=False):
 
     if np.average(Id) < 0:
         Vg=-Vg
@@ -329,7 +317,7 @@ def PlotVgs(path, sizex=640, draw=False):
         Id=-Id
         ptype=True
 
-    gm=np.diff(Id)/np.diff(Vg)
+    gm=np.gradient(Id, Vg)
     maxgm=np.argmax(gm)
 
     i=0
@@ -376,7 +364,7 @@ def PlotVgs(path, sizex=640, draw=False):
     ax2.set_ylabel(f"$g_m$ ({prefix[-j]}S)")
     fig.legend(loc='upper left', bbox_to_anchor=(0.12, 0.89))
 
-    fig.savefig(f"{path.replace('csv', 'png')}")
+    fig.savefig(path)
 
     return np.around(LIN, 3)
 
@@ -396,8 +384,8 @@ def SecDer(path):
         Vg=-Vg
         Id=-Id
     
-    gm=np.diff(Id)/np.diff(Vg)
-    dgm=np.diff(gm)/np.diff(Vg[1:])
+    gm=np.gradient(Id, Vg)
+    dgm=np.gradient(gm, Vg)
     
     Vgfit=Vg[int(np.argmax(gm)/2):-1]
     dgmfit=dgm[int(np.argmax(gm)/2)-1:]

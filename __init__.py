@@ -70,19 +70,8 @@ class HP4155:
         
         print(f"Measuring {self.term} ", end='')
         self.measure()
-        
-        for i in range(timeout*120):
-            if self.State=="IDLE":
-                break
-            sleep(0.5)
-
-        ######################## Importante
-        
-        if Poll:
-            return "Operation stopped or timeout"
+            
         df=self.get_data(real)
-
-        #####################################
 
         if path==None:
             return df
@@ -101,25 +90,23 @@ class HP4155:
         return path
 
     ##### Poll DataReady == state, a cada delay em s, no máximo de maxpoll ciclos. Retorna 1 se chegar ao máximo de ciclos.
-    def PollDR(self, state, delay=1, maxpoll=2):
+    def PollDR(self, timeout=300):
         if self.debug:
             sleep(2*delay)
             print("Debug DataReady")
             return 0
+        
         start=datetime.now()  
-        for i in range(int(60*maxpoll)):
+        for i in range(int(2*timeout)):
             delta=datetime.now()-start
             freq=5
             print(f"\rMeasuring {self.term} {str(delta).split('.')[0]} {''.join(['.' if k<=delta.seconds%freq else ' ' for k in range(freq)])}", end='')
+            sleep(0.5)
 
-            sleep(delay)
-            if self.Stop_flag:
-                print('')
-                return 1
-            if self.data_ready==state:
+            if self.State=="IDLE":
                 print(f"\rDone {self.term}. Duration: {str(delta).split('.')[0]}                                       ")
                 return 0
-        print('')
+
         return 1
 
     def get_errors(self):
@@ -168,7 +155,7 @@ class HP4155:
 
     @property
     def AuxPoints(self):
-        return float(self.ask(f":PAGE:MEAS:VAR2:POINTS?"))
+        return int(self.ask(f":PAGE:MEAS:VAR2:POINTS?"))
 
     @AuxPoints.setter
     def AuxPoints(self, Value):
@@ -286,6 +273,21 @@ class HP4155:
             self.write(f":PAGE:MEAS:SAMP:POIN {value}")
             return 0
         raise ValueError("Invalid sampling (must be between 1 and 10001)")
+
+    @property
+    def SInterval(self):
+        if self.Mode != "SAMP":
+            raise RuntimeError("Must be in sampling mode")
+        return self.ask(":PAGE:MEAS:SAMP:IINT?")
+
+    @SInterval.setter
+    def SInterval(self, value):
+        if self.Mode != "SAMP":
+            raise RuntimeError("Must be in sampling mode")
+        if value >= 60e-6 and value <= 65.535:
+            self.write(f":PAGE:MEAS:SAMP:IINT {value}")
+            return 0
+        raise ValueError("Invalid sampling interval (must be between 60e-6 and 65.535 seconds)")
     
     @property
     def SPeriod(self):
@@ -297,13 +299,52 @@ class HP4155:
     def SPeriod(self, value):
         if self.Mode != "SAMP": 
             raise RuntimeError("Must be in sampling mode")
-        if value == "INF":
+        if value == "INF" or value == "AUTO":
             self.write(f":PAGE:MEAS:SAMP:PER {value}")
             return 0
         if value >= 60e-6 and value <= 1e11:
             self.write(f":PAGE:MEAS:SAMP:PER {value}")
             return 0
         raise ValueError("Invalid period (must be between 60e-6 and 1e11 or 'INF')")
+
+    @property
+    def TriggerPolarity(self):
+        return self.ask(":PAGE:STR:TRIG:POL?")
+
+    @TriggerPolarity.setter
+    def TriggerPolarity(self, value):
+        value=value.translate(striplc)
+        if value in ["POS", "NEG"]:
+            self.write(f":PAGE:STR:TRIG:POL {value}")
+
+    @property
+    def TriggerTime(self):
+        return self.ask(":PAGE:MEAS:OSEQ:TRIG:TIME?")
+    
+    @TriggerTime.setter
+    def TriggerTime(self, value):
+        if value > 0 and value < 1:
+            self.write(f":PAGE:MEAS:OSEQ:TRIG:TIME {value}")
+
+    @property
+    def TriggerFunction(self):
+        return self.ask(":PAGE:MEAS:OSEQ:TRIG:FUNC?")
+
+    @TriggerFunction.setter
+    def TriggerFunction(self, value):
+        value=value.translate(striplc)
+        if value in ["INP", "OUTP"]:
+            self.write(f":PAGE:MEAS:OSEQ:TRIG:FUNC {value}")
+
+    @property
+    def TriggerState(self):
+        return self.ask(":PAGE:MEAS:OSEQ:TRIG?")
+
+    @TriggerState.setter
+    def TriggerState(self, value):
+        if value in ["OFF", "ON", 0, 1]:
+            self.write(f":PAGE:MEAS:OSEQ:TRIG {value}")
+
         
     @property
     def save_list(self):
@@ -335,7 +376,7 @@ class HP4155:
     def reset(self):
         self.write("*RST")
         self.write(":STAT:MEAS:ENAB 8")
-        self.write(":PAGE:MEAS:MSET:ITIM MED")
+        self.write(":PAGE:MEAS:MSET:ITIM LONG")
         self.write(":PAGE:MEAS:MSET:ITIM:LONG 4")
         self.write(":PAGE:MEAS:DEL 1e-3")
         self.write(":PAGE:MEAS:HTIM 1e-3")
@@ -497,11 +538,22 @@ class HP4155:
     
         return 0
 
-    def GetDataMatrix(self, x, y, timeout=2, real=False):
-        idx=np.split(np.array(self.ask(f":DATA? \'{x}\'").split(',')), len(self.Var2))[0]
-        data=np.column_stack(np.split(np.array(self.ask(f":DATA? \'{y}\'").split(',')), len(self.Var2)))
+    def GetDataMatrix(self, x, y):
 
-        df=pd.DataFrame(data=data, index=[format(x, ".2f").strip("-") for x in self.idx], columns=[format(x, ".1f") for x in self.Var2])
+        self.write(":FORM:DATA ASC")
+        self.write(":PAGE:DISP:MODE LIST")
+
+        idx=np.split(np.array(self.ask(f":DATA? \'{x}\'").split(','), dtype=float), self.AuxPoints)[0]
+        data=np.column_stack(np.split(np.array(self.ask(f":DATA? \'{y}\'").split(','), dtype=float), self.AuxPoints))
+
+        if np.average(idx)<0:
+            idx=-idx
+            data=-data
+
+        self.Var2=frange(self.AuxStart, self.AuxStart+self.AuxStep*(self.AuxPoints-1), self.AuxStep)
+
+        df=pd.DataFrame(data=data, index=[format(x, ".2f") for x in idx], columns=[format(x, ".3f") for x in self.Var2])
+        df.index.name=x
 
         return df
     
@@ -561,9 +613,11 @@ class HP4155:
 
     def measure(self):
         self.write(":PAGE:SCON:MEAS:SING")
-        while self.State=="IDLE":
+        for i in range(100):  # Adjust the range as needed
+            if self.State == "MEAS":
+                return 0
             sleep(0.1)
-        return 0
+        raise RuntimeError("Measurement did not start within the expected time.")
 
     def stop(self):
         while self.State=="MEAS":
@@ -573,10 +627,11 @@ class HP4155:
 
     ##################### Sweep Mode Setups
 
-    def SetVgs(self, VgStart, VgStop, VgStep, VdValue=0.025, Comp=1e-3, VdSweep=False, ptype=False, sat=False):
-        
+    def SetVgs(self, VgStart, VgStop, VgStep, VdStart=0.025, VdStop=0.025, VdPoints=1, Comp=1e-3, VdSweep=False, ptype=False, sat=False):
+
         if ptype:
-                    VdValue=-VdValue
+                    VdStart=-VdStart
+                    VdStop=-VdStop
                     VgStart=-VgStart
                     VgStop=-VgStop
                     VgStep=-VgStep
@@ -587,20 +642,20 @@ class HP4155:
         self.set_SMU('SMU3', 'Vg', 'Ig', 'V', 'VAR1')
         self.set_SMU('SMU4', 'Vb', 'Ib', 'COMM', 'CONS')
 
+        self.set_var('VAR1', VgStart, VgStop, VgStep, Comp=Comp)
+
         if VdSweep:
             self.set_SMU('SMU2', 'Vd', 'Id', 'V', 'VARD')
             self.set_var('VARD', 1, 0)
         else:
-            self.set_SMU('SMU2', 'Vd', 'Id', 'V', 'CONS', Value=VdValue, Comp=Comp)
-            self.Var2=[f"{VdValue}"]
+            self.set_SMU('SMU2', 'Vd', 'Id', 'V', 'VAR2')
+            self.set_var('VAR2', VdStart, VdStop, VdPoints, Comp=Comp)
             self.Var2Name="Vds"
-
-        self.set_var('VAR1', VgStart, VgStop, VgStep, Comp=Comp)
 
         self.set_axis('X', 'Vg', 'LIN', VgStart, VgStop)
         self.set_axis('Y1', 'Id', 'LIN', 0, -1e-5 if ptype else 1e-5)
 
-        self.save_list=['Vg','Vd', 'Ig', 'Id', 'Is']
+        self.save_list=['Vg','Vd', 'Ig', 'Id', 'Is', 'Ib']
         self.beep()
         
         if sat:
@@ -609,7 +664,7 @@ class HP4155:
                     self.term='IdxVgs'
                     
         print(f"Set {self.term}")
-        print(f"Vg=({VgStart}, {VgStop}, {VgStep}), Vd={VdValue}, Ilim={Comp}")
+        print(f"Vg=({VgStart}, {VgStop}, {VgStep}), Vd=({VdStart}, {VdStop}, {VdPoints}), Ilim={Comp}")
         
         return 0
     
@@ -882,24 +937,52 @@ class HP4155:
         self.Var2Name=None
         self.disable_all()
         
-        self.set_SMU('SMU1', 'V', 'I', 'V', Func='VAR1')
-        self.set_VMU('VMU1', 'C')
-        self.set_var('VAR1', Vstart, Vstop, Vstep, Comp=ETF(Comp))
+        self.set_VMU('VSU1', 'Vforce', 'VAR1')
+        self.set_VMU('VMU1', 'VM1')
+        self.set_VMU('VMU2', 'V')
+        self.set_var('VAR1', Vstart, Vstop, Vstep, Comp=Comp)
         
 
         self.set_axis('X', 'V', 'LIN', Vstart, Vstop)
         self.set_axis('Y1', 'C', 'LIN', 0, 2)
-        self.set_axis('Y2', 'I', 'LIN', 0, 1e-3)
 
-        self.save_list=['V', 'C', 'I']
+        self.user_function('C=VM1*1e-9') # 2 nF
+
+        self.save_list=['Vforce', 'V', 'C']
         self.beep()
 
         self.term='CV'
         
         print(f"Set {self.term}")
-        print(f"V=({Vstart}, {Vstop}, {Vstep}), Ilim={Comp})")
+        print(f"V=({Vstart}, {Vstop}, {Vstep})")
         
         return 0
+
+    def SetCV_SMU(self, Vstart, Vstop, Vstep, Comp):
+            self.Var2=None
+            self.Var2Name=None
+            self.disable_all()
+            
+            self.set_SMU('SMU1', 'V', 'I', 'V', Func='VAR1')
+            self.set_VMU('VMU1', 'VM1')
+            self.set_var('VAR1', Vstart, Vstop, Vstep, Comp=ETF(Comp))
+            
+    
+            self.set_axis('X', 'V', 'LIN', Vstart, Vstop)
+            self.set_axis('Y1', 'C', 'LIN', 0, 2)
+            self.set_axis('Y2', 'I', 'LIN', 0, 1e-3)
+    
+            self.user_function('C=VM1*1e-9') # 2 nF
+    
+            self.save_list=['V', 'C', 'I']
+            self.beep()
+    
+            self.term='CV'
+            
+            print(f"Set {self.term}")
+            print(f"V=({Vstart}, {Vstop}, {Vstep}), Ilim={Comp})")
+            
+            return 0
 
     ############ Dict Wrappers
     
@@ -922,10 +1005,10 @@ class HP4155:
         self.Mode="SWE"
         self.set_SMU(GND_port, "V1", "I1")
         self.set_SMU("SMU4", "V4", "I4")
-        self.set_SMU(Vt_port, "Vt", "I3", "V", Func="VAR1")
+        self.set_SMU(Vt_port, "Vt", "It", "V", Func="VAR1")
         self.set_var('VAR1', VtStart, VtStop, VtStep, Comp=Comp)
     
-        self.set_SMU(Vcc_port, "Vcc", "I2", "V", Value=Vcc, Comp=Comp)
+        self.set_SMU(Vcc_port, "Vcc", "Icc", "V", Value=Vcc, Comp=Comp)
         
         self.set_VMU("VSU1", "GND1")
         self.set_VMU("VSU2", "GND2")
@@ -933,7 +1016,7 @@ class HP4155:
         self.set_axis('X', 'Vcc', 'LIN', Vcc-0.5, Vcc+0.5)
         self.set_axis('Y1', 'I2', 'LIN', 0, 30e-3)
     
-        self.save_list=['Vcc', 'I2', 'I3']
+        self.save_list=['Vcc', 'Vt', 'Icc', "It"]
         self.beep()
         
         self.term='RampVCO'
@@ -951,11 +1034,11 @@ class HP4155:
 
     ##################### Sampling (Static) Mode Setups
     
-    def IBias(self, I=10e-6, SMUP='SMU2', SMUN='SMU1', interval=5e-3, points=10, Comp=2):
+    def IBias(self, I=10e-6, SMUP='SMU2', SMUN='SMU1', interval=50e-3, points=10, Comp=2):
         self.disable_all()
     
         self.Mode = "SAMPLING"
-        self.HoldTime=100e-3
+        self.HoldTime=1
         
         self.set_SMU(SMUP, 'Vf', 'If', 'I', 'CONS', Value=I, Comp=Comp)
         self.set_SMU(SMUN, 'Vb', 'Ib', 'COMM')
@@ -1035,14 +1118,14 @@ class HP4155:
         self.disable_all()
         self.Mode="SAMP"
         self.set_SMU(GND_port, "V1", "I1")
-        self.set_SMU(Vcc_port, "Vcc", "I2", "V", Value=Vcc, Comp=Comp)
+        self.set_SMU(Vcc_port, "Vcc", "Icc", "V", Value=Vcc, Comp=Comp)
         self.set_SMU(Vt_port, "Vt", "I3", "V", Value=Vt, Comp=Comp)
         self.set_SMU("SMU4", "V4", "I4")
         self.set_VMU("VSU1", "GND1")
         self.set_VMU("VSU2", "GND2")
         self.Interval=1
         self.SPoints=10
-        self.save_list=['Vcc', 'I2', 'I3']
+        self.save_list=['Vcc', 'Icc', 'I3']
         self.beep()
         self.SPeriod="INF"
 

@@ -132,10 +132,10 @@ class App(tk.Frame):
                 HP.set_VMU("VMU2", VMU2V.get())
                 HP.beep()
 
-            HP.set_var("VAR1", exptofloat(var1_start.get()), exptofloat(var1_stop.get()), exptofloat(var1_step.get()))
+            HP.set_var("VAR1", exptofloat(var1_start.get()), exptofloat(var1_stop.get()), exptofloat(var1_step.get()), exptofloat(var1_comp.get()))
 
             if "VAR2" in self.func:
-                HP.set_var("VAR2", exptofloat(var2_start.get()), exptofloat(var2_stop.get()), exptofloat(var2_step.get()))
+                HP.set_var("VAR2", exptofloat(var2_start.get()), exptofloat(var2_stop.get()), exptofloat(var2_step.get()), exptofloat(var2_comp.get()))
 
             HP.user_function(ufunc.get())
 
@@ -188,16 +188,17 @@ class App(tk.Frame):
             
             if not HP.Stop_flag:
                 Meas_btn.config(text="Measurement\ncomplete")
-                df=HP.get_data()
+                df=HP.get_data(real=True if Stopat_combo.get()=="COMPliance" else False)
                 save_path=Save_path.get() + "/" + HP.term + "-" + datetime.now().strftime('%y%m%d %H%M%S') + ".csv"
                 df.to_csv(save_path, float_format='%+.5E')
                 fig, ax = plt.subplots()
-                ax.plot(df[x_trace.get()], df[y1_trace.get()])
+                # ax.plot(x[y<float(var1_comp.get())], y[y<float(var1_comp.get())])
+                ax.plot(df[x_trace.get()].to_numpy(), df[y1_trace.get()].to_numpy())
                 ax.set_xlabel(x_trace.get())
                 ax.set_ylabel(y1_trace.get())
                 if "-" not in y2_trace.get():
                     ax2 = ax.twinx()
-                    ax2.plot(df[x_trace.get()], df[y2_trace.get()])
+                    ax2.plot(df[x_trace.get()].to_numpy()[y<float(var1_comp.get())], df[y2_trace.get()].to_numpy()[y<float(var1_comp.get())])
                     ax2.set_ylabel(y2_trace.get())
                 fig.savefig(save_path.replace(".csv", ".png"), dpi=300)
                 Meas_btn.config(text="Measure\n", state=tk.NORMAL)
